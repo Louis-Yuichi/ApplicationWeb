@@ -70,8 +70,3 @@ abstract class BaseController extends Controller
 		echo $twig->render($viewName,$data);
 	}
 }
-
-// Test Twig autoload
-if (!class_exists('\Twig\Environment')) {
-    die('Twig n\'est pas chargé !');
-}

@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="fr">
 	<head>
 		<meta charset="UTF-8">
@@ -16,72 +16,20 @@
 	</head>
 	<body>
 	<header class="fixed-top">
-	<!-- Navbar -->
-	<nav class="navbar navbar-expand-lg">
-		<div class="container-fluid">
-			<!-- Logo de connexion -->
-				<a class="navbar-brand mx-3" href="login.php">
-					<img id="loginHeaderLogo" src="assets/images/login-light-mode.webp" alt="Connexion au compte" style="height: 75px;">
-				</a>
-
-			<!-- Bouton pour mobile -->
-			<button class="navbar-toggler" type="button" data-bs-toggle="collapse"
-					data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-				<i class="fa-solid fa-bars"></i>
-			</button>
-
-			<div class="collapse navbar-collapse justify-content-center" id="navbarNav">
-				<!-- Catégories à gauche -->
-				<ul class="navbar-nav">
-					<li class="nav-item">
-						<a class="nav-link fs-3 px-5" href="index.php">Accueil</a>
-					</li>
-					<li class="nav-item">
-						<a class="nav-link fs-3 px-4" href="evenement.php">Évènements</a>
-					</li>
-				</ul>
-
-				<!-- Logo au centre -->
-				<a class="navbar-brand mx-3">
-					<img src="assets/images/bde.webp" alt="Logo BDE" style="height: 100px;">
-				</a>
-
-				<!-- Catégories à droite -->
-				<ul class="navbar-nav">
-					<li class="nav-item">
-						<a class="nav-link fs-3 px-5" href="boutique.php">Boutique</a>
-					</li>
-					<li class="nav-item">
-						<a class="nav-link fs-3 px-5" href="vitrine.php">Vitrine</a>
-					</li>
-				</ul>
+		<!-- Navbar -->
+		<nav class="navbar navbar-expand-lg">
+			<div class="container-fluid">
+				<!-- Logo de connexion -->
+					<a class="navbar-brand mx-3" href="login.php">
+						<img id="loginHeaderLogo" src="assets/images/login-light-mode.webp" alt="Connexion au compte" style="height: 75px;">
+					</a>
 			</div>
-			<button id="darkModeToggle" class="navbar-brand mx-3" style="background: none; border: none; cursor: pointer;">
-				<img id="darkModeIcon" src="assets/images/luminosite.webp" alt="Mode sombre" style="height: 75px;">
-			</button>
-		</div>
-	</nav>
+		</nav>
 	</header>
 
 	<div class="container mt-5" style="padding-top: 120px;padding-bottom: 50px;">
 		{% block body %}{% endblock %}
 	</div>
-
-	<!-- Pour gérer le Popover, inclure le script JS de Bootstrap -->
-	<script>
-		// Activer le popover au chargement de la page avec html activé
-		document.addEventListener('DOMContentLoaded', function () {
-			const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]');
-
-			// Parcourir tous les éléments qui ont le data-bs-toggle="popover"
-			[...popoverTriggerList].forEach(popoverTriggerEl => {
-				// Initialiser le popover pour chaque élément et activer l'option html: true
-				new bootstrap.Popover(popoverTriggerEl, {
-					html: true  // Permet l'interprétation du HTML dans le contenu du popover
-				});
-			});
-		});
-	</script>
 
 	<!-- Bootstrap Bundle JS -->
 	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
@@ -95,21 +43,10 @@
 			<div class="d-flex flex-column flex-md-row justify-content-between align-items-center">
 				<!-- Texte centré -->
 				<div class="mb-2 mb-md-0 text-center text-md-start">
-					BDE INFORMATIQUE - LE HAVRE &copy; 2025
-				</div>
-
-				<!-- Logo Instagram et lien Contact à droite -->
-				<div class="d-flex align-items-center">
-					<a href="https://www.instagram.com/bdeinfo_lh?igsh=ZjNvNGMzeGdodHJy" 
-					target="_blank" 
-					class="me-3">
-						<img src="assets/images/instagram.webp" width="25" alt="Instagram">
-					</a>
-					<a href="contact.php" class="text-decoration-none">Contactez-nous</a>
+					BUT Informatique - Le Havre &copy; 2025
 				</div>
 			</div>
 		</div>
 	</footer>
-	<script src="assets/js/darkmode.js"></script>
 </body>
 </html>
