@@ -1,21 +1,35 @@
 {% extends 'template.html.twig' %}
 
+
 {% block body %}
-<div class="container">
-    <h1 class="text-center mb-5">Accueil</h1>
+
+<link rel="stylesheet" href="assets/css/accueil.css">
+
+<div class="container py-5">
+    <h1 class="welcome-title text-center">Bienvenue sur votre espace</h1>
     
     <div class="d-flex justify-content-center gap-5">
-        <div class="logo-container">
+        <div class="card app-card p-4 shadow-sm" style="width: 100%; max-width: 320px;">
             <a href="/scodoc" class="text-decoration-none">
-                <img src="assets/images/scodoc.png" alt="Scodoc">
-                <p class="mt-2">Scodoc</p>
+                <div class="text-center">
+                    <div class="card-img-container mb-4">
+                        <img src="assets/images/scodoc.png" alt="Scodoc" class="img-fluid">
+                    </div>
+                    <h3>Scodoc</h3>
+                    <p class="text-muted">Gestion des notes et des absences</p>
+                </div>
             </a>
         </div>
         
-        <div class="logo-container">
+        <div class="card app-card p-4 shadow-sm" style="width: 100%; max-width: 320px;">
             <a href="/parcoursup" class="text-decoration-none">
-                <img src="assets/images/parcoursup-small.png" alt="ParcourSup">
-                <p class="mt-2">ParcourSup</p>
+                <div class="text-center">
+                    <div class="card-img-container mb-4">
+                        <img src="assets/images/parcoursup-small.png" alt="ParcourSup" class="img-fluid">
+                    </div>
+                    <h3>ParcourSup</h3>
+                    <p class="text-muted">Gestion des candidatures</p>
+                </div>
             </a>
         </div>
     </div>
