@@ -3,33 +3,34 @@
 {% set hideHeader = true %}
 
 {% block body %}
-<div class="container d-flex justify-content-center align-items-center vh-0">
-    <div class="card p-4 shadow-sm" style="width: 100%; max-width: 400px;">
-        <h2 class="text-center mb-4">Connexion</h2>
-        
-        {% if error %}
-            <div class="alert alert-danger">{{ error }}</div>
-        {% endif %}
-        
-        <form method="post" action="login.php">
-            <div class="mb-3">
-                <input type="email" class="form-control rounded-pill" name="email" placeholder="Adresse mail" required>
-            </div>
-            
-            <div class="mb-3">
-                <input type="password" class="form-control rounded-pill" name="password" placeholder="Mot de passe..." required>
-            </div>
-            
-            <div class="d-grid gap-2">
-                <button type="submit" class="btn btn-primary rounded-pill">Se connecter</button>
-            </div>
-        </form>
-        
-        <hr class="my-4">
-        
-        <div class="text-center">
-            <a href="/register" class="btn btn-success rounded-pill w-100">Créer un compte</a>
-        </div>
-    </div>
+<div class="container d-flex justify-content-center align-items-center" style="min-height: 62vh;">
+	<div class="card p-4 shadow-sm" style="width: 100%; max-width: 400px;">
+		<h2 class="text-center mb-5">Connexion</h2>
+		
+		{% if error %}
+			<div class="alert alert-danger">{{ error }}</div>
+		{% endif %}
+		
+		<form method="post" action="login.php">
+			<div class="mb-4">
+				<input type="email" class="form-control rounded-pill" name="email" placeholder="Adresse mail" required>
+			</div>
+			
+			<div class="mb-4">
+				<input type="password" class="form-control rounded-pill" name="password" placeholder="Mot de passe" required>
+			</div>
+			
+			<div class="d-grid gap-2">
+				<button type="submit" class="btn btn-primary rounded-pill">Se connecter</button>
+			</div>
+		</form>
+		
+		<hr class="my-4 mb-4 mt-4">
+		
+		<div class="text-center">
+		<p> Vous n'avez pas de compte ?</p>
+			<a href="/register" class="btn btn-success rounded-pill w-100">Créer un compte</a>
+		</div>
+	</div>
 </div>
 {% endblock %}
