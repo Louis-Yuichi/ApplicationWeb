@@ -1,15 +1,13 @@
 {% extends 'template.html.twig' %}
 
-
 {% block body %}
-
 <link rel="stylesheet" href="assets/css/accueil.css">
 
 <div class="container py-5">
-    <h1 class="welcome-title text-center">Bienvenue sur votre espace</h1>
+    <h1 class="welcome-title text-center mb-5">Bienvenue sur votre espace</h1>
     
-    <div class="d-flex justify-content-center gap-5">
-        <div class="card app-card p-4 shadow-sm" style="width: 100%; max-width: 320px;">
+    <div class="cards-container">
+        <div class="card app-card p-4 shadow-sm">
             <a href="/scodoc" class="text-decoration-none">
                 <div class="text-center">
                     <div class="card-img-container mb-4">
@@ -21,7 +19,7 @@
             </a>
         </div>
         
-        <div class="card app-card p-4 shadow-sm" style="width: 100%; max-width: 320px;">
+        <div class="card app-card p-4 shadow-sm">
             <a href="/parcoursup" class="text-decoration-none">
                 <div class="text-center">
                     <div class="card-img-container mb-4">

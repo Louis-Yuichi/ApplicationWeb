@@ -1,8 +1,15 @@
 /* Styles pour les cartes de l'accueil */
+.cards-container {
+    display: flex;
+    justify-content: center;
+    gap: 200px; /* Espacement fixe de 200px entre les cartes */
+    margin-top: 5rem;
+}
+
 .app-card {
     transition: all 0.3s ease;
-    border: 1px solid rgba(0, 0, 0, 0.3);
-    border-radius: 20px;
+    border: 2px solid rgba(0, 0, 0, 0.2);
+    border-radius: 12px;
     background: white;
     width: 250px;
 }
@@ -13,8 +20,8 @@
 }
 
 .app-card .card-img-container {
-    padding: 1.5rem;
-    margin-bottom: 1rem;
+    padding: 1rem;
+    margin-bottom: 2rem;
 }
 
 .app-card img {
@@ -31,12 +38,23 @@
     color: #2c3e50;
     font-size: 1.3rem;
     font-weight: 600;
-    margin-bottom: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.app-card p {
+    color: #6c757d;
+    font-size: 0.9rem;
+    margin-bottom: 0;
 }
 
 .welcome-title {
     color: #2c3e50;
     font-size: 2.5rem;
     font-weight: 700;
-    margin-bottom: 3rem;
+    margin-bottom: 5rem;  /* Augmentation de la marge en bas du titre */
+}
+
+/* Espacement personnalisé */
+.gap-10 {
+    gap: 10rem !important;
 }

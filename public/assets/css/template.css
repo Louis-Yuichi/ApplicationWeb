@@ -1,96 +1,73 @@
-:root {
-    --header-bg: #536878;
-    --footer-bg: #536878;
-    --button-primary: #2E8B57;
-    --button-secondary: #007BFF;
-}
-
 /* Header styles */
-.navbar {
-    background-color: var(--header-bg);
-    height: 80px;
-    position: fixed;
-    top: 0;
-    width: 100%;
-    z-index: 1000;
+.navbar
+{
+	background-color: #536878;
+	height: 80px;
+	position: fixed;
+	top: 0;
+	width: 100%;
+	z-index: 1000;
 }
 
-.navbar-brand {
-    color: white;
-    font-size: 2rem;
+.navbar-brand
+{
+	color: white;
+	font-size: 2rem;
 }
 
-.navbar-brand:hover {
-    color: #f8f9fa;
+.navbar-brand:hover
+{
+	color: #f8f9fa;
 }
 
-.navbar-text {
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    color: white;
+.navbar-text
+{
+	position: absolute;
+	left: 50%;
+	transform: translateX(-50%);
+	color: white;
 }
 
-.admin-icon {
-    height: 30px;
-    width: auto;
-    vertical-align: middle;
-    margin-right: 5px;
-}
-
-/* Footer styles */
-footer {
-    background-color: var(--footer-bg);
-    color: white;
-    position: fixed;
-    bottom: 0;
-    width: 100%;
-    padding: 1rem 0;
-    z-index: 1000;
-}
-
-.footer-logo {
-    flex: 1;
-}
-
-.footer-logo img {
-    height: 60px;
-    width: auto;
-}
-
-.footer-space {
-    flex: 1;
+.admin-icon
+{
+	height: 30px;
+	width: auto;
+	vertical-align: middle;
+	margin-right: 5px;
 }
 
 /* Main content */
-.main-content {
-    margin-top: 100px;
-    margin-bottom: 100px;
-    min-height: calc(100vh - 200px);
+.main-content
+{
+	margin-top: 100px;
+	margin-bottom: 100px;
+	min-height: calc(100vh - 200px);
 }
 
-/* Logo styles */
-.logo-container {
-    width: 150px;
-    height: 150px;
-    margin: 10px;
-    padding: 10px;
-    border-radius: 5px;
-    text-align: center;
-    transition: transform 0.3s ease;
+/* Footer styles */
+footer
+{
+	background-color: #536878;
+	color: white;
+	position: fixed;
+	bottom: 0;
+	width: 100%;
+	padding: 1rem 0;
+	z-index: 1000;
 }
 
-.logo-container:hover {
-    transform: scale(1.05);
+.footer-logo
+{
+	flex: 1;
 }
 
-.logo-container img {
-    max-width: 100%;
-    height: auto;
+.footer-logo img
+{
+	height: 60px;
+	width: auto;
 }
 
-.logo-container p {
-    margin-top: 10px;
-    text-align: center;
-    color: #333;
+.footer-space
+{
+	flex: 1;
 }
