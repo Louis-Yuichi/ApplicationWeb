@@ -30,13 +30,13 @@
 # DATABASE
 #--------------------------------------------------------------------
 
-# database.default.hostname = localhost
+# database.default.hostname = woody
 # database.default.database = ci4
-# database.default.username = root
-# database.default.password = root
+# database.default.username = dt231159
+# database.default.password = THao21102005
 # database.default.DBDriver = MySQLi
 # database.default.DBPrefix =
-# database.default.port = 3306
+# database.default.port = 5432
 
 # If you use MySQLi as tests, first update the values of Config\Database::$tests.
 # database.tests.hostname = localhost

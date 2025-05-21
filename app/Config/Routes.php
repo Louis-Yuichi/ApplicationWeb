@@ -8,4 +8,6 @@ use CodeIgniter\Router\RouteCollection;
 $routes->get('/', 'Home::index');
 $routes->get('register', 'Home::register');
 $routes->get('accueil', 'Home::accueil');
-//$routes->post('register', 'Home::register'); // si tu veux gérer le POST dans la même méthode
+
+// ParcourSupController routes
+$routes->get('parcoursup', 'ParcourSupController::menu');
