@@ -1,52 +1,41 @@
 <!DOCTYPE html>
 <html lang="fr">
-	<head>
-		<meta charset="UTF-8">
-		<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-		<meta http-equiv="X-UA-Compatible" content="ie=edge">
-		<!-- Bootstrap CSS -->
-		<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
-			integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-		<!-- FontAwesome -->
-		<script src="https://kit.fontawesome.com/1038d5e71f.js" crossorigin="anonymous"></script>
-		<!-- Navbar CSS -->
-		<title>Application</title>
-		{% block css %}{% endblock %}
-		<link rel="stylesheet" href="assets/css/base.css">
-	</head>
-	<body>
-	<header class="fixed-top">
-		<!-- Navbar -->
-		<nav class="navbar navbar-expand-lg">
-			<div class="container-fluid">
-				<!-- Logo de connexion -->
-					<a class="navbar-brand mx-3" href="login.php">
-						<img id="loginHeaderLogo" src="assets/images/login-light-mode.webp" alt="Connexion au compte" style="height: 75px;">
-					</a>
-			</div>
-		</nav>
-	</header>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Application{% endblock %}</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome -->
+    <script src="https://kit.fontawesome.com/1038d5e71f.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="assets/css/template.css">
+    {% block css %}{% endblock %}
+</head>
+<body>
+    {% if not hideHeader|default(false) %}
+    <nav class="navbar">
+        <div class="container-fluid">
+            <a href="/accueil" class="navbar-brand">
+                <i class="fas fa-home"></i>
+            </a>
+            <span class="navbar-text">Admin - Thao Dujardin</span>
+            <a href="/" class="btn btn-danger">Déconnexion</a>
+        </div>
+    </nav>
+    {% endif %}
 
-	<div class="container mt-5" style="padding-top: 120px;padding-bottom: 50px;">
-		{% block body %}{% endblock %}
-	</div>
+    <main class="container main-content">
+        {% block body %}{% endblock %}
+    </main>
 
-	<!-- Bootstrap Bundle JS -->
-	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-			integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
-			crossorigin="anonymous"></script>
-	{% block javascript %}{% endblock %}
+    <footer>
+        <div class="container text-center">
+            BUT Informatique - Le Havre © 2025
+        </div>
+    </footer>
 
-	<!-- Footer -->
-	<footer class="py-3">
-		<div class="container">
-			<div class="d-flex flex-column flex-md-row justify-content-between align-items-center">
-				<!-- Texte centré -->
-				<div class="mb-2 mb-md-0 text-center text-md-start">
-					BUT Informatique - Le Havre &copy; 2025
-				</div>
-			</div>
-		</div>
-	</footer>
+    <!-- Bootstrap Bundle JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    {% block javascript %}{% endblock %}
 </body>
 </html>

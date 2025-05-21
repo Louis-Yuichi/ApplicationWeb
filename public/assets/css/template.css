@@ -1,0 +1,76 @@
+:root {
+    --header-bg: #536878;
+    --footer-bg: #536878;
+    --button-primary: #2E8B57;
+    --button-secondary: #007BFF;
+}
+
+/* Header styles */
+.navbar {
+    background-color: var(--header-bg);
+    height: 80px;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1000;
+}
+
+.navbar-brand {
+    color: white;
+    font-size: 2rem;
+}
+
+.navbar-brand:hover {
+    color: #f8f9fa;
+}
+
+.navbar-text {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    color: white;
+}
+
+/* Footer styles */
+footer {
+    background-color: var(--footer-bg);
+    color: white;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    padding: 1rem 0;
+    z-index: 1000;
+}
+
+/* Main content */
+.main-content {
+    margin-top: 100px;
+    margin-bottom: 100px;
+    min-height: calc(100vh - 200px);
+}
+
+/* Logo styles */
+.logo-container {
+    width: 150px;
+    height: 150px;
+    margin: 10px;
+    padding: 10px;
+    border-radius: 5px;
+    text-align: center;
+    transition: transform 0.3s ease;
+}
+
+.logo-container:hover {
+    transform: scale(1.05);
+}
+
+.logo-container img {
+    max-width: 100%;
+    height: auto;
+}
+
+.logo-container p {
+    margin-top: 10px;
+    text-align: center;
+    color: #333;
+}

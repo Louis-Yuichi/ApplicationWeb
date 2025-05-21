@@ -1,0 +1,23 @@
+{% extends 'template.html.twig' %}
+
+{% block body %}
+<div class="container">
+    <h1 class="text-center mb-5">Accueil</h1>
+    
+    <div class="d-flex justify-content-center gap-5">
+        <div class="logo-container">
+            <a href="/scodoc" class="text-decoration-none">
+                <img src="assets/images/scodoc.png" alt="Scodoc">
+                <p class="mt-2">Scodoc</p>
+            </a>
+        </div>
+        
+        <div class="logo-container">
+            <a href="/parcoursup" class="text-decoration-none">
+                <img src="assets/images/parcoursup-small.png" alt="ParcourSup">
+                <p class="mt-2">ParcourSup</p>
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

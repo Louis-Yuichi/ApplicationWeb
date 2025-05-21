@@ -13,4 +13,9 @@ class Home extends BaseController
 	{
 		$this->view('account/register.html.twig');
 	}
+
+	public function accueil()
+	{
+		$this->view('accueil.html.twig');
+	}
 }
