@@ -8,4 +8,9 @@ class Home extends BaseController
 	{
 		$this->view('login.html.twig');
 	}
+
+	public function register()
+	{
+		$this->view('register.html.twig');
+	}
 }
