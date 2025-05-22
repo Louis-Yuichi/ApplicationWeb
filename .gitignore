@@ -125,4 +125,4 @@ _modules/*
 /results/
 /phpunit*.xml
 
-app/config/Database.php
+/app/config/Database.php
