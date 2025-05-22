@@ -13,16 +13,25 @@
 </head>
 <body>
 	{% if not hideHeader|default(false) %}
-	<nav class="navbar">
-		<div class="container-fluid">
-			<a href="/accueil" class="navbar-brand">
+	<nav class="navbar" style="background-color: #536878; height: 80px;">
+		<div class="container-fluid d-flex justify-content-between align-items-center h-100">
+			<!-- Bouton Accueil -->
+			<a href="/accueil" class="btn btn-light d-flex align-items-center gap-2 px-3 py-2 rounded-pill shadow-sm">
 				<i class="fas fa-home"></i>
+				<span class="fw-semibold d-none d-md-inline">Accueil</span>
 			</a>
-			<span class="navbar-text">
-				<img src="assets/images/administrateur.png" alt="Admin Icon" class="admin-icon me-2">
-				Admin - Thao Dujardin
-			</span>
-			<a href="/" class="btn btn-danger">Déconnexion</a>
+			<!-- Texte et icône admin au centre -->
+			<div class="d-flex flex-column align-items-center">
+				<div class="d-flex align-items-center gap-2">
+					<i class="fas fa-user-shield text-white fs-3"></i>
+					<span class="text-white fw-semibold fs-5">Administrateur - Thao Dujardin</span>
+				</div>
+			</div>
+			<!-- Bouton Déconnexion -->
+			<a href="/" class="btn btn-outline-light d-flex align-items-center gap-2 px-3 py-2 rounded-pill shadow-sm">
+				<i class="fas fa-sign-out-alt"></i>
+				<span class="fw-semibold d-none d-md-inline">Déconnexion</span>
+			</a>
 		</div>
 	</nav>
 	{% endif %}
