@@ -27,8 +27,8 @@ class Database extends Config
    // public array $default = [
    //     'DSN'          => '',
    //     'hostname'     => 'woody',
-   //     'username'     => 'dt231159',
-   //     'password'     => 'THao21102005',
+   //     'username'     => '',
+   //     'password'     => '',
    //     'database'     => '',
    //     'DBDriver'     => 'MySQLi',
    //     'DBPrefix'     => '',
@@ -81,9 +81,9 @@ class Database extends Config
         public array $default = [
             'DSN'        => '',
             'hostname'   => 'woody',
-            'username'   => 'dt231159',
-            'password'   => 'THao21102005',
-            'database'   => 'dt231159',
+            'username'   => 'tl230827',
+            'password'   => 'Marylin08...',
+            'database'   => 'tl230827',
             'schema'     => 'public',
             'DBDriver'   => 'Postgre',
             'DBPrefix'   => '',
