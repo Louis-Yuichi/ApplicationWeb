@@ -8,4 +8,9 @@ class ParcourSupController extends BaseController
 	{
 		$this->view('parcoursup/parcoursup.html.twig');
 	}
+	public function gestion()
+	{
+		$this->view('parcoursup/gestion.html.twig');
+	}
+
 }
