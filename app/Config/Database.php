@@ -27,8 +27,8 @@ class Database extends Config
    // public array $default = [
    //     'DSN'          => '',
    //     'hostname'     => 'woody',
-   //     'username'     => '',
-   //     'password'     => '',
+   //     'username'     => 'dt231159',
+   //     'password'     => 'THao21102005',
    //     'database'     => '',
    //     'DBDriver'     => 'MySQLi',
    //     'DBPrefix'     => '',
@@ -79,11 +79,11 @@ class Database extends Config
          * @var array<string, mixed>
          */
         public array $default = [
-            'DSN'        => '',
+            'DSN'        => 'Postgre://dt231159:THao21102005@woody:5432/dt231159?charset=utf8&connect_timeout=5&sslmode=require',
             'hostname'   => 'woody',
-            'username'   => 'tl230827',
-            'password'   => 'Marylin08...',
-            'database'   => 'tl230827',
+            'username'   => 'dt231159',
+            'password'   => 'THao21102005',
+            'database'   => 'dt231159',
             'schema'     => 'public',
             'DBDriver'   => 'Postgre',
             'DBPrefix'   => '',
