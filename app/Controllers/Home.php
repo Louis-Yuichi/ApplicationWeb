@@ -47,4 +47,10 @@ class Home extends BaseController
 	{
 		$this->view('accueil.html.twig');
 	}
+
+	//--------------------------------------------------------------------
+
+	public function test()
+	{
+	}
 }
