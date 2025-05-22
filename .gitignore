@@ -125,5 +125,4 @@ _modules/*
 /results/
 /phpunit*.xml
 
-.env
-env
+app/config/Database.php
