@@ -7,6 +7,7 @@ use CodeIgniter\Router\RouteCollection;
  */
 $routes->get('/', 'Home::index');
 $routes->get('register', 'Home::register');
+$routes->post('register', 'Home::register');
 $routes->get('accueil', 'Home::accueil');
 
 // ParcourSupController routes
