@@ -1,0 +1,165 @@
+.table th {
+    background-color: #6c7c89;  /* Couleur plus douce pour les en-têtes */
+    color: white;
+    padding: 8px;
+    font-weight: 500;
+}
+
+.table td {
+    padding: 8px;
+    background-color: #ffffff;
+}
+
+.btn-primary {
+    background-color: #0d6efd;
+}
+
+.btn-danger {
+    background-color: #dc3545;
+}
+
+.btn-success {
+    background-color: #198754;
+}
+
+.dropdown-toggle {
+    min-width: 180px;
+    background-color: #fff;
+    border: 1px solid #dee2e6;
+    color: #212529;
+    padding: 0.5rem 1rem;
+}
+
+.dropdown-toggle:hover {
+    background-color: #f8f9fa;
+}
+
+.dropdown-menu {
+    min-width: 180px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.dropdown-item {
+    padding: 0.5rem 1rem;
+}
+
+.dropdown-item i {
+    width: 20px;
+}
+
+#btnModifier, #btnAnnuler, #btnValider {
+    min-width: 200px;  /* Réduction de la taille */
+    transition: all 0.3s ease;
+    padding: 8px 20px;
+}
+
+#btnModifier:hover, #btnAnnuler:hover, #btnValider:hover {
+    transform: scale(1.05);
+}
+
+/* Ajout de l'espacement entre les boutons */
+#btnAnnuler {
+    margin-right: 10rem !important; /* 10rem = environ 160px, deux fois plus grand que me-5 de Bootstrap */
+}
+
+/* Pour s'assurer que la marge n'est pas écrasée par d'autres styles */
+#editMode {
+    display: flex;
+    justify-content: center;
+    gap: 15rem;  /* Espacement entre Annuler et Valider */
+}
+
+/* Style du bouton d'import/export */
+.dropdown {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
+}
+
+/* Style du titre */
+.page-title {
+    text-align: center;
+    margin-bottom: 2rem;
+    color: #536878;
+    font-weight: 500;
+}
+
+/* Style du bouton flottant */
+.floating-action-btn {
+    position: fixed;
+    bottom: 100px;
+    right: 30px;
+    z-index: 1000;
+}
+
+.floating-action-btn .btn {
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    background-color: #536878;
+    color: white;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.floating-action-btn .btn:hover {
+    transform: scale(1.1);
+    background-color: #647885;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.floating-action-btn .fas {
+    font-size: 1.5rem;
+    color: white;
+}
+
+.floating-action-btn .dropdown-menu {
+    min-width: 200px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border: none;
+    margin-bottom: 10px;
+    background-color: white;
+}
+
+.floating-action-btn .dropdown-item:hover {
+    background-color: #f8f9fa;
+}
+
+/* Ajustement du conteneur principal */
+.main-content {
+    margin-top: 2rem;
+    margin-bottom: 120px; /* Espace pour le footer */
+}
+
+/* Style des en-têtes de tableau */
+.table-header {
+    background-color: #536878 !important;
+    color: white;
+    font-weight: bold;
+    text-align: left;
+    padding: 10px !important;
+}
+
+/* Première colonne */
+.table th:first-child {
+    background-color: #6c7c89;
+    width: 250px;
+}
+
+/* Style alterné pour les lignes du tableau */
+.table tr:nth-child(even) td {
+    background-color: #f8f9fa;
+}
+
+/* Bordures du tableau */
+.table {
+    border: 1px solid #dee2e6;
+}
+
+.table th, .table td {
+    border: 1px solid #dee2e6;
+}

@@ -13,3 +13,6 @@ $routes->get('accueil', 'Home::accueil');
 // ParcourSupController routes
 $routes->get('parcoursup', 'ParcourSupController::menu');
 $routes->get('gestionParcourSup', 'ParcourSupController::gestion');
+
+// ScodocController routes
+$routes->get('scodoc', 'ScodocController::menu');
