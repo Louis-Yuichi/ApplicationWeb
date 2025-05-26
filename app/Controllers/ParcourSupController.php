@@ -8,9 +8,14 @@ class ParcourSupController extends BaseController
 	{
 		$this->view('parcoursup/parcoursup.html.twig');
 	}
+
 	public function gestion()
 	{
-		$this->view('parcoursup/gestion.html.twig');
-	}
+		$model = new \App\Models\CandidatModel();
+		$data['candidats'] = $model->findAll();
+		$data['annees'] = ['2022/2023', '2023/2024', '2024/2025'];
+		$data['utilisateur'] = session()->get('utilisateur');
 
+		$this->view('parcoursup/gestion.html.twig', $data);
+	}
 }
