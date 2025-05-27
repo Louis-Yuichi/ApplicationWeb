@@ -42,7 +42,7 @@
 
 .app-card h3
 {
-	color: #434d5c;
+	color: #243342;
 	font-size: 1.3rem;
 	font-weight: 600;
 	margin-bottom: 1rem;
@@ -50,14 +50,13 @@
 
 .app-card p
 {
-	color: #596980;
 	font-size: 0.9rem;
 	margin-bottom: 0;
 }
 
 .welcome-title
 {
-	color: #434d5c;
+	color: #243342;
 	font-size: 2.5rem;
 	font-weight: 700;
 	margin-bottom: 5rem;  /* Augmentation de la marge en bas du titre */
