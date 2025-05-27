@@ -34,6 +34,7 @@
 		</div>
 	</div>
 </div>
+
 <!-- Modal -->
 <div class="modal fade" id="importModal" tabindex="-1" aria-labelledby="importModalLabel" aria-hidden="true">
 	<div class="modal-dialog modal-dialog-centered">
@@ -44,15 +45,26 @@
 			</div>
 			<div class="modal-body text-center">
 				<form action="/importer" method="post" enctype="multipart/form-data">
+					{% if session.error %}
+						<div class="alert alert-danger">{{ session.error }}</div>
+					{% endif %}
+					{% if session.success %}
+						<div class="alert alert-success">{{ session.success }}</div>
+					{% endif %}
+
 					<label class="form-label d-block mb-3">
-						📥 <input type="file" name="fichier" class="form-control" required>
+						<input type="file" name="fichier" class="form-control" required accept=".xlsx">
 					</label>
 
 					<div class="mb-3">
+						{% set annee_actuelle = "now"|date("Y") %}
 						<select class="form-select" name="annee" required>
 							<option value="">Choisissez une année</option>
-							<option value="2022/2023">2022/2023</option>
-							<option value="2023/2024">2023/2024</option>
+							{% for i in 0..30 %}
+								{% set debut = annee_actuelle + i %}
+								{% set fin = debut + 1 %}
+								<option value="{{ debut }}/{{ fin }}">{{ debut }}/{{ fin }}</option>
+							{% endfor %}
 						</select>
 					</div>
 

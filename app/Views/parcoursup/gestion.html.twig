@@ -2,10 +2,17 @@
 
 {% block css %}
 <link rel="stylesheet" href="assets/css/accueil.css">
+<style>
+	table {
+		table-layout: auto !important;
+		width: 100%;
+		white-space: nowrap;
+	}
+</style>
 {% endblock %}
 
 {% block body %}
-<div class="container-fluid px-5 py-4">
+<div class="container-fluid px-1 py-4">
 	<img class="mb-4 d-block mx-auto" style="height:50px;" src="assets/images/parcoursup.png" alt="Importer" class="img-fluid">
 
 	<!-- Barre de recherche + logo + filtre année -->
@@ -16,40 +23,42 @@
 				<i class="fas fa-search"></i>
 			</button>
 		</div>
-		<select class="form-select" style="width: 150px;">
-			{% for annee in annees %}
-				<option>{{ annee }}</option>
+		{% set annee_actuelle = "now"|date("Y") %}
+		<select select class="form-select" style="width: auto;" name="annee" required>
+			<option value="">Choisissez une année</option>
+			{% for i in 0..20 %}
+				{% set debut = annee_actuelle + i %}
+				{% set fin = debut + 1 %}
+				<option value="{{ debut }}/{{ fin }}">{{ debut }}/{{ fin }}</option>
 			{% endfor %}
 		</select>
 	</div>
 
 	<!-- Tableau des candidats -->
-	<table class="table table-bordered table-hover">
-		<thead class="table-dark text-center">
-			<tr>
-				<th>numCandidat</th>
-				<th>nomCandidat</th>
-				<th>...</th>
-				<th>noteDossier</th>
-				<th>commentaire</th>
-			</tr>
-		</thead>
-		<tbody>
-			{% for c in candidats %}
+	<div class="table-responsive">
+		<table class="table table-hover table-bordered align-middle">
+			<thead class="table-dark text-center">
 				<tr>
-					<td class="text-center">{{ c.numCandidat }}</td>
-					<td class="text-center">{{ c.nomCandidat }}</td>
-					<td class="text-center">-</td>
-					<td class="text-center">{{ c.noteDossier ?? '-' }}</td>
-					<td class="text-center">{{ c.commentaire ?? '' }}</td>
+					{% for field in fields %}
+						<th>{{ field }}</th>
+					{% endfor %}
 				</tr>
-			{% else %}
-				<tr>
-					<td colspan="5" class="text-center text-muted">Aucun candidat trouvé.</td>
-				</tr>
-			{% endfor %}
-		</tbody>
-	</table>
+			</thead>
+			<tbody>
+				{% for candidat in candidats %}
+					<tr>
+						{% for field in fields %}
+							<td>{{ attribute(candidat, field) }}</td>
+						{% endfor %}
+					</tr>
+				{% else %}
+					<tr>
+						<td colspan="{{ fields|length }}" class="text-center">Aucun candidat trouvé</td>
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	</div>
 
 	<!-- Boutons -->
 	<div class="d-flex justify-content-center mt-4">
