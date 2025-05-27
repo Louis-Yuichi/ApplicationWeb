@@ -1,250 +1,133 @@
 {% extends "template.html.twig" %}
 
-{% block title %}Poursuite d'études{% endblock %}
+{% block title %}Poursuite études{% endblock %}
 
 {% block css %}
-<link rel="stylesheet" href="assets/css/scodoc.css">
+    <link rel="stylesheet" href="assets/css/scodoc.css">
 {% endblock %}
 
 {% block body %}
-<div class="container" id="mainContainer">
-    <h2 class="page-title mb-4">Poursuite études</h2>
-    
-    <div class="main-content mb-5 pb-5"> <!-- Ajout de margin et padding bottom -->
-        <div class="d-flex justify-content-between mb-4">
-            <select class="form-select" style="width: auto;">
-                <option value="">nomEtudiant</option>
-                {% for etudiant in etudiants %}
-                    <option value="{{ etudiant.id }}">{{ etudiant.nom }}</option>
-                {% endfor %}
-            </select>
-            <select class="form-select" style="width: auto;">
-                <option value="2023">2023</option>
-                <option value="2022">2022</option>
-            </select>
-        </div>
+    <h2 class="mb-0 text-center page-title">Poursuite études</h2>
 
-        <!-- Premier tableau : Fiche d'information -->
-        <div class="table-responsive mb-4">
-            <table class="table table-bordered">
-                <tbody>
-                    <tr><th colspan="7" class="table-header">FICHE D'INFORMATION ÉTUDIANT(E)</th></tr>
-                    <tr>
-                        <th>NOM – Prénom :</th>
-                        <td colspan="6"></td>
-                    </tr>
-                    <tr>
-                        <th>Apprentissage : (oui/non)</th>
-                        <td>BUT1</td>
-						<td></td>
-                        <td>BUT2</td>
-						<td></td>
-                        <td>BUT3</td>
-						<td></td>
-                    </tr>
-                    <tr>
-                        <th>Parcours d'études :</th>
-                        <td>n-2</td>
-						<td></td>
-                        <td>n-1</td>
-						<td></td>
-                        <td>n</td>
-						<td></td>
-                    </tr>
-                    <tr>
-                        <th>Parcours BUT</th>
-                        <td colspan="6">« Réalisation d'applications : conception, développement, validation »</td>
-                    </tr>
-                    <tr>
-                        <th>Si mobilité à l'étranger (lieu, durée)</th>
-                        <td colspan="6"></td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-
-        <!-- Deuxième tableau : Résultats des compétences -->
-        <div class="table-responsive mb-4">
-            <table class="table table-bordered">
-                <tbody>
-                    <tr><th colspan="5" class="table-header">RÉSULTATS DES COMPÉTENCES</th></tr>
-                    <tr>
-                        <th rowspan="2"></th>
-                        <th colspan="2">BUT 1</th>
-                        <th colspan="2">BUT 2</th>
-                    </tr>
-                    <tr>
-                        <th>Moy.</th>
-                        <th>Rang</th>
-                        <th>Moy.</th>
-                        <th>Rang</th>
-                    </tr>
-                    <tr>
-                        <th>UE1 – Réaliser des applications</th>
-                        <td></td><td></td><td></td><td></td>
-                    </tr>
-                    <tr>
-                        <th>UE2 – Optimiser des applications</th>
-                        <td></td><td></td><td></td><td></td>
-                    </tr>
-                    <tr>
-                        <th>UE3 – Administrer des systèmes</th>
-                        <td></td><td></td><td></td><td></td>
-                    </tr>
-                    <tr>
-                        <th>UE4 – Gérer des données</th>
-                        <td></td><td></td><td></td><td></td>
-                    </tr>
-                    <tr>
-                        <th>UE5 – Conduire des projets</th>
-                        <td></td><td></td><td></td><td></td>
-                    </tr>
-                    <tr>
-                        <th>UE6 – Collaborer</th>
-                        <td></td><td></td><td></td><td></td>
-                    </tr>
-                    <tr>
-                        <th>Maths</th>
-                        <td></td><td></td><td></td><td></td>
-                    </tr>
-                    <tr>
-                        <th>Anglais</th>
-                        <td></td><td></td><td></td><td></td>
-                    </tr>
-                    <tr>
-                        <th>Nombre d'absences injustifiées</th>
-                        <td colspan="2"></td><td colspan="2"></td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-
-        <!-- Deuxième tableau : Résultats des compétences -->
-        <div class="table-responsive mb-4">
-            <table class="table table-bordered">
-                <tbody>
-                    <tr>
-                        <th colspan="4"></th>
-                        <th colspan="2">BUT 3 - S5</th>
-                    </tr>
-                    <tr>
-						<th colspan="4"></th>
-                        <th>Moy.</th>
-                        <th>Rang</th>
-                    </tr>
-                    <tr>
-                        <th colspan="4">UE1 – Réaliser des applications</th>
-                        <td></td><td colspan="2"></td>
-                    </tr>
-                    <tr>
-                        <th colspan="4">UE2 – Optimiser des applications</th>
-                        <td></td><td colspan="2"></td>
-                    </tr>
-                    <tr>
-                        <th colspan="4">UE3 – Administrer des systèmes</th>
-                        <td></td><td colspan="2"></td>
-                    </tr>
-                    <tr>
-                        <th colspan="4">UE4 – Gérer des données</th>
-                        <td></td><td colspan="2"></td>
-                    </tr>
-                    <tr>
-                        <th colspan="4">UE5 – Conduire des projets</th>
-                        <td></td><td colspan="2"></td>
-                    </tr>
-                    <tr>
-                        <th colspan="4">UE6 – Collaborer</th>
-                        <td></td><td colspan="2"></td>
-                    </tr>
-                    <tr>
-                        <th colspan="4">Maths</th>
-                        <td></td><td></td><td></td><td></td>
-                    </tr>
-                    <tr>
-                        <th>Nombre d'absences injustifiées</th>
-                        <td colspan="4"></td><td colspan="2"></td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-        <!-- Avis de l'équipe pédagogique -->
-        <div class="table-responsive mb-4">
-            <table class="table table-bordered">
-                <tbody>
-                    <tr>
-                        <th colspan="5">Avis de l'équipe pédagogique pour la poursuite d'études après le BUT3</th>
-                    </tr>
-                    <tr>
-                        <th rowspan="2"></th>
-                        <th>Très Favorable</th>
-                        <th>Favorable</th>
-                        <th>Assez Favorable</th>
-                        <th>Sans avis</th>
-                    </tr>
-                    <tr>
-                        <th>En école d'ingénieurs</th>
-                        <td>□</td>
-                        <td>□</td>
-                        <td>□</td>
-                        <td>□</td>
-                    </tr>
-                    <tr>
-                        <th>Pour l'étudiant</th>
-                        <th>En master</th>
-                        <td>□</td>
-                        <td>□</td>
-                        <td>□</td>
-                    </tr>
-                    <tr>
-                        <th rowspan="2">Nombre d'avis pour la promotion (total : 52)</th>
-                        <th>En école d'ingénieurs</th>
-                        <td colspan="3"></td>
-                    </tr>
-                    <tr>
-                        <th>En master</th>
-                        <td colspan="3"></td>
-                    </tr>
-                    <tr>
-                        <th>Commentaire</th>
-                        <td colspan="4"></td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-
-        <!-- Boutons de modification -->
-        <div class="text-center mb-5">
-            <div id="normalMode">
-                <button class="btn btn-primary px-5" id="btnModifier">Modifier</button>
+    <div class="table-section">
+        <!-- Premier tableau -->
+        <div class="table-container">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div class="d-flex align-items-center">
+                    <select class="form-select me-2" id="nomEtudiant">
+                        <option selected>nomEtudiant</option>
+                    </select>
+                </div>
+                <select class="form-select ms-2" style="width: auto;" id="annee">
+                    <option selected>2023</option>
+                </select>
             </div>
-            <div id="editMode" style="display: none;">
-                <button class="btn btn-danger px-5" id="btnAnnuler">Annuler</button>
-                <button class="btn btn-success px-5" id="btnValider">Valider</button>
+            <!-- Premier tableau -->
+            <div class="table-responsive">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr class="header-row">
+                            <th>etudid</th>
+                            <th>code_nip</th>
+                            <th>Rg</th>
+                            <th>Nom</th>
+                            <th>Civ.</th>
+                            <th>Nom</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Lignes à remplir dynamiquement -->
+                        <tr>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Deuxième tableau -->
+        <div class="table-container">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div class="d-flex align-items-center">
+                    <select class="form-select me-2" id="nomEtudiant2">
+                        <option selected>nomEtudiant</option>
+                    </select>
+                </div>
+                <select class="form-select ms-2" style="width: auto;" id="annee2">
+                    <option selected>2023</option>
+                </select>
+            </div>
+            <div class="table-responsive">
+                <!-- Copie du premier tableau -->
+                <table class="table table-bordered">
+                    <thead>
+                        <tr class="header-row">
+                            <th>etudid</th>
+                            <th>code_nip</th>
+                            <th>Rg</th>
+                            <th>Nom</th>
+                            <th>Civ.</th>
+                            <th>Nom</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Lignes à remplir dynamiquement -->
+                        <tr>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
 
-    <!-- Bouton flottant -->
-    <div class="floating-action-btn dropdown mb-4">
-        <button class="btn rounded-circle shadow-sm" type="button" data-bs-toggle="dropdown">
-            <i class="fas fa-file-alt"></i>
-        </button>
-        <ul class="dropdown-menu">
-            <li><a class="dropdown-item" href="#" id="importFile">
-                <i class="fas fa-file-import me-2"></i>Importer
-            </a></li>
-            <li><hr class="dropdown-divider"></li>
-            <li><a class="dropdown-item" href="#" id="exportPDF">
-                <i class="fas fa-file-pdf me-2"></i>Exporter PDF
-            </a></li>
-            <li><a class="dropdown-item" href="#" id="exportHTML">
-                <i class="fas fa-file-code me-2"></i>Exporter HTML
-            </a></li>
-        </ul>
+    <!-- Boutons de modification -->
+    <div class="text-center mt-3">
+        <button class="btn btn-primary" id="btnModifier">Modifier</button>
+        <div class="btn-group d-none" id="btnGroup">
+            <button class="btn btn-danger" id="btnAnnuler">Annuler</button>
+            <button class="btn btn-success" id="btnValider">Valider</button>
+        </div>
     </div>
-</div>
+
+    <!-- Menu flottant réorganisé -->
+    <div class="floating-btn" id="floatingBtn">
+        <i class="fas fa-file-export"></i>
+    </div>
+    <div class="floating-menu" id="floatingMenu">
+        <!-- Option d'import -->
+        <a href="#" class="menu-item" data-action="import">
+            <i class="fas fa-file-import"></i>
+            Importer
+        </a>
+        <!-- Séparateur -->
+        <div class="menu-separator"></div>
+        <!-- Options d'export -->
+        <a href="#" class="menu-item" data-format="pdf">
+            <i class="fas fa-file-pdf"></i>
+            Export PDF
+        </a>
+        <a href="#" class="menu-item" data-format="word">
+            <i class="fas fa-file-word"></i>
+            Export Word
+        </a>
+        <a href="#" class="menu-item" data-format="html">
+            <i class="fas fa-file-code"></i>
+            Export HTML
+        </a>
+    </div>
 {% endblock %}
 
 {% block javascript %}
-<script src="assets/js/scodoc.js"></script>
+    <script src="assets/js/scodoc.js"></script>
 {% endblock %}
