@@ -23,8 +23,8 @@
     background-color: #f4f7fa; /* Fond alterné pour les lignes paires */
 }
 
-.table tbody tr:hover td {
-    background-color: #faf9e8; /* Survol plus visible */
+.table td:hover {
+    background-color: #faf9e8; /* Couleur de survol pour la cellule */
     transition: background 0.2s;
 }
 
