@@ -10,21 +10,23 @@
     <h2 class="mb-0 text-center page-title">Poursuite études</h2>
 
     <div class="table-section">
-        <!-- Premier tableau -->
-        <div class="table-container">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <div class="d-flex align-items-center">
-                    <select class="form-select me-2" id="nomEtudiant">
-                        <option selected>nomEtudiant</option>
-                    </select>
-                </div>
-                <select class="form-select ms-2" style="width: auto;" id="annee">
-                    <option selected>2023</option>
+        <!-- Contrôles de sélection -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div class="d-flex align-items-center">
+                <select class="form-select me-2" id="nomEtudiant">
+                    <option selected>nomEtudiant</option>
                 </select>
             </div>
-            <!-- Premier tableau -->
+            <select class="form-select ms-2" style="width: auto;" id="annee">
+                <option selected>2023</option>
+            </select>
+        </div>
+
+        <!-- Premier tableau -->
+        <div class="table-container mb-5">
+            <h3 class="table-title">Semestre 1</h3>
             <div class="table-responsive">
-                <table class="table table-bordered">
+                <table class="table">
                     <thead>
                         <tr class="header-row">
                             <th>etudid</th>
@@ -36,7 +38,6 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <!-- Lignes à remplir dynamiquement -->
                         <tr>
                             <td></td>
                             <td></td>
@@ -52,19 +53,9 @@
 
         <!-- Deuxième tableau -->
         <div class="table-container">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <div class="d-flex align-items-center">
-                    <select class="form-select me-2" id="nomEtudiant2">
-                        <option selected>nomEtudiant</option>
-                    </select>
-                </div>
-                <select class="form-select ms-2" style="width: auto;" id="annee2">
-                    <option selected>2023</option>
-                </select>
-            </div>
+            <h3 class="table-title">Semestre 2</h3>
             <div class="table-responsive">
-                <!-- Copie du premier tableau -->
-                <table class="table table-bordered">
+                <table class="table">
                     <thead>
                         <tr class="header-row">
                             <th>etudid</th>
@@ -76,7 +67,6 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <!-- Lignes à remplir dynamiquement -->
                         <tr>
                             <td></td>
                             <td></td>
@@ -91,28 +81,25 @@
         </div>
     </div>
 
-    <!-- Boutons de modification -->
-    <div class="text-center mt-3">
-        <button class="btn btn-primary" id="btnModifier">Modifier</button>
+    <!-- Boutons d'action -->
+    <div class="actions-container text-center mt-5">
+        <button class="btn btn-primary btn-action rounded-pill" id="btnModifier">Modifier</button>
         <div class="btn-group d-none" id="btnGroup">
-            <button class="btn btn-danger" id="btnAnnuler">Annuler</button>
-            <button class="btn btn-success" id="btnValider">Valider</button>
+            <button class="btn btn-danger btn-action rounded-pill" id="btnAnnuler">Annuler</button>
+            <button class="btn btn-success btn-action rounded-pill" id="btnValider">Enregistrer</button>
         </div>
     </div>
 
-    <!-- Menu flottant réorganisé -->
+    <!-- Menu flottant -->
     <div class="floating-btn" id="floatingBtn">
-        <i class="fas fa-file-export"></i>
+        <i class="fas fa-ellipsis-v"></i>
     </div>
     <div class="floating-menu" id="floatingMenu">
-        <!-- Option d'import -->
         <a href="#" class="menu-item" data-action="import">
             <i class="fas fa-file-import"></i>
             Importer
         </a>
-        <!-- Séparateur -->
         <div class="menu-separator"></div>
-        <!-- Options d'export -->
         <a href="#" class="menu-item" data-format="pdf">
             <i class="fas fa-file-pdf"></i>
             Export PDF
