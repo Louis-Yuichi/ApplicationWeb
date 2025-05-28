@@ -55,7 +55,7 @@
 
 .btn-action {
     min-width: 10px;
-    padding: 8px 20px;
+    padding: 28px 20px;
     font-weight: 500;
     transition: all 0.3s ease;
 }
@@ -192,13 +192,13 @@
 
 /* Styles pour les boutons */
 .actions-container {
-    margin: 40px 0;
+    margin: 120px;
 }
 
 /* Styles pour le menu flottant */
 .floating-btn {
     position: fixed;
-    bottom: 100px;
+    bottom: 110px;
     right: 30px;
     width: 50px;
     height: 50px;
