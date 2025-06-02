@@ -84,7 +84,12 @@ class ParcourSupController extends BaseController
 			foreach ($sheet->getRowIterator(2) as $row)
 			{
 				$rowData = $sheet->rangeToArray('A' . $row->getRowIndex() . ':W' . $row->getRowIndex())[0];
-				
+
+				// Arrête la boucle si la ligne est totalement vide
+				if (count(array_filter($rowData, function($v) { return $v !== null && $v !== ''; })) === 0) {
+					break;
+				}
+
 				// Associe les colonnes aux champs de la base
 				$data = [
 					'numCandidat'          => $rowData[0],
@@ -120,36 +125,48 @@ class ParcourSupController extends BaseController
 					continue;
 				}
 
-				try {
-				    // Vérifie si le candidat existe déjà
-				    $existingCandidat = $model->where('numCandidat', $data['numCandidat'])
-					     .where('anneeUniversitaire', $data['anneeUniversitaire'])
-					     ->first();
-				    
-				    if ($existingCandidat) {
-				        // Met à jour le candidat existant
-				        if ($model->update(['numCandidat' => $data['numCandidat']], $data)) {
-				            $nbInserted++;
-				        } else {
-				            log_message('error', 'Erreur mise à jour ligne ' . $row->getRowIndex() . ': ' . json_encode($model->errors()));
-				        }
-				    } else {
-				        // Insère un nouveau candidat
-				        if ($model->insert($data)) {
-				            $nbInserted++;
-				        } else {
-				            log_message('error', 'Erreur insertion ligne ' . $row->getRowIndex() . ': ' . json_encode($model->errors()));
-				        }
-				    }
-				} catch (\Exception $e) {
-				    log_message('error', 'Exception ligne ' . $row->getRowIndex() . ': ' . $e->getMessage());
-				    continue;
+				try
+				{
+					// Vérifie si le candidat existe déjà
+					$existingCandidat = $model->where('numCandidat', $data['numCandidat'])
+						->where('anneeUniversitaire', $data['anneeUniversitaire'])
+						->first();
+
+					if ($existingCandidat)
+					{
+						// Met à jour le candidat existant
+						if ($model->update(['numCandidat' => $data['numCandidat']], $data))
+						{
+							$nbInserted++;
+						}
+						else
+						{
+							log_message('error', 'Erreur mise à jour ligne ' . $row->getRowIndex() . ': ' . json_encode($model->errors()));
+						}
+					}
+					else
+					{
+						// Insère un nouveau candidat
+						if ($model->insert($data))
+						{
+							$nbInserted++;
+						}
+						else
+						{
+							log_message('error', 'Erreur insertion ligne ' . $row->getRowIndex() . ': ' . json_encode($model->errors()));
+						}
+					}
+				}
+				catch (\Exception $e)
+				{
+					log_message('error', 'Exception ligne ' . $row->getRowIndex() . ': ' . $e->getMessage());
+					continue;
 				}
 			}
 
 			if ($nbInserted > 0)
 			{
-				return redirect()->to('/gestionParcourSup')->with('success', "Import réussi ! $nbInserted candidats importés.");
+				return redirect()->back()->with('success', "Import réussi ! $nbInserted candidats importés.");
 			}
 			else
 			{

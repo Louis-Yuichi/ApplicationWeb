@@ -2,9 +2,67 @@
 
 {% block css %}
 	<link rel="stylesheet" href="assets/css/accueil.css">
+	<style>
+.flash-message {
+    position: fixed;
+    top: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    min-width: 300px;
+    max-width: 90vw;
+    padding: 16px 32px;
+    border-radius: 8px;
+    font-size: 1.1em;
+    z-index: 9999;
+    opacity: 1;
+    pointer-events: none;
+    transition: opacity 0.5s, top 0.5s;
+}
+.flash-success {
+    background: #28a745;
+    color: #fff;
+    border: 1px solid #218838;
+    animation: slideDownFadeOut 3s forwards;
+}
+.flash-error {
+    background: #dc3545;
+    color: #fff;
+    border: 1px solid #b21f2d;
+    animation: slideDownFadeOut 3s forwards;
+}
+@keyframes slideDownFadeOut {
+    0%   { opacity: 0; top: 0px; }
+    10%  { opacity: 1; top: 30px; }
+    80%  { opacity: 1; top: 30px; }
+    100% { opacity: 0; top: 0px; }
+}
+</style>
+{% endblock %}
+
+{% block javascript %}
+<script>
+window.addEventListener('DOMContentLoaded', function() {
+    setTimeout(function() {
+        let flash = document.querySelector('.flash-message');
+        if (flash) flash.remove();
+    }, 3200);
+});
+</script>
 {% endblock %}
 
 {% block body %}
+{# Messages flash #}
+{% if session.success %}
+<div id="flash-success" class="flash-message flash-success">
+    {{ session.success }}
+</div>
+{% endif %}
+{% if session.error %}
+<div id="flash-error" class="flash-message flash-error">
+    {{ session.error }}
+</div>
+{% endif %}
+
 <div class="container py-5">
 	<img class="mb-5 d-block mx-auto" style="height:80px;" src="assets/images/parcoursup.png" alt="Importer" class="img-fluid">
 	
@@ -44,14 +102,7 @@
 				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
 			</div>
 			<div class="modal-body text-center">
-				<form action="/importer" method="post" enctype="multipart/form-data">
-					{% if session.error %}
-						<div class="alert alert-danger">{{ session.error }}</div>
-					{% endif %}
-					{% if session.success %}
-						<div class="alert alert-success">{{ session.success }}</div>
-					{% endif %}
-
+				<form action="/importer" method="post" enctype="multipart/form-data" id="importForm">
 					<label class="form-label d-block mb-3">
 						<input type="file" name="fichier" class="form-control" required accept=".xlsx">
 					</label>
@@ -68,8 +119,15 @@
 						</select>
 					</div>
 
-					<button type="submit" class="btn btn-primary">Confirmer</button>
+					<button type="submit" class="btn btn-primary" onclick="closeModal()">Confirmer</button>
 				</form>
+
+				<script>
+				function closeModal() {
+					const modal = bootstrap.Modal.getInstance(document.getElementById('importModal'));
+					if (modal) modal.hide();
+				}
+				</script>
 			</div>
 		</div>
 	</div>
