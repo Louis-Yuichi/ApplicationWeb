@@ -14,30 +14,28 @@
 /* Amélioration de la visibilité des cases du tableau */
 .table th,
 .table td {
-    border: 1px solid #dee2e6; /* Bordure claire autour de chaque case */
+    border: 1px solid #dee2e6;
     background-color: #fff;
-    box-shadow: 0 1px 2px rgba(60, 80, 100, 0.04); /* Légère ombre pour effet "case" */
+    box-shadow: 0 1px 2px rgba(60, 80, 100, 0.04);
+    padding: 12px;
+    vertical-align: middle;
 }
 
 .table tbody tr:nth-child(even) td {
-    background-color: #f4f7fa; /* Fond alterné pour les lignes paires */
+    background-color: #f4f7fa;
 }
 
 .table td:hover {
-    background-color: #faf9e8; /* Couleur de survol pour la cellule */
+    background-color: #faf9e8;
     transition: background 0.2s;
 }
 
-.header-row {
-    background: linear-gradient(135deg, #243342 0%, #3a5169 100%);
-    color: white;
-}
-
 .header-row th {
-    padding: 15px 12px; /* Plus de padding pour l'en-tête */
+    padding: 15px 12px;
     background: linear-gradient(135deg, #243342 0%, #3a5169 100%) !important;
     color: white;
     border-color: #3a5169;
+    font-weight: 500;
 }
 
 .form-select {
@@ -46,7 +44,7 @@
 
 .btn-group {
     justify-content: center;
-    gap: 200px; /* Espacement entre les boutons */
+    gap: 200px;
 }
 
 .btn {
@@ -54,16 +52,18 @@
 }
 
 .btn-action {
-    min-width: 10px;
-    padding: 28px 20px;
+    min-width: 200px;
+    padding: 6px 15px;
     font-weight: 500;
+    border-radius: 20px;
+    margin: 0 20px;
     transition: all 0.3s ease;
 }
 
 /* Style pour le bouton flottant */
 .floating-btn {
     position: fixed;
-    bottom: 100px; /* Au-dessus du footer */
+    bottom: 100px;
     right: 30px;
     width: 60px;
     height: 60px;
@@ -75,141 +75,6 @@
     justify-content: center;
     box-shadow: 0 2px 10px rgba(0,0,0,0.3);
     cursor: pointer;
-    z-index: 1000;
-}
-
-.floating-menu {
-    position: fixed; /* Changed from absolute to fixed */
-    bottom: 170px; /* Position au-dessus du bouton */
-    right: 30px;
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    display: none;
-    min-width: 200px;
-    z-index: 1000;
-}
-
-.menu-separator {
-    border-top: 1px solid #dee2e6;
-    margin: 8px 0;
-}
-
-.floating-menu .menu-item {
-    padding: 12px 20px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    color: #243342;
-    text-decoration: none;
-    transition: background-color 0.2s;
-}
-
-.floating-menu .menu-item:hover {
-    background-color: #faf9e8;
-}
-
-/* Premier élément avec coins arrondis en haut */
-.floating-menu .menu-item:first-child {
-    border-radius: 8px 8px 0 0;
-}
-
-/* Dernier élément avec coins arrondis en bas */
-.floating-menu .menu-item:last-child {
-    border-radius: 0 0 8px 8px;
-}
-
-/* Style pour les boutons d'action */
-.btn-action {
-    min-width: 200px; /* Réduction de la largeur */
-    padding: 6px 15px; /* Réduction du padding */
-    border-radius: 20px;
-    margin: 0 20px;
-}
-
-.table-container {
-    margin-bottom: 40px;
-    width: 100%; /* S'assure que le conteneur prend toute la largeur */
-}
-
-.table {
-    width: 100%;
-    margin-bottom: 0;
-}
-
-.table th,
-.table td {
-    padding: 12px; /* Augmentation du padding des cellules */
-    vertical-align: middle;
-}
-
-.table tbody tr {
-    height: 45px; /* Hauteur minimale pour les lignes */
-}
-
-.table-responsive {
-    padding: 0; /* Supprime le padding potentiel */
-}
-
-.table-title {
-    margin-top: 20px;
-    margin-bottom: 1.5rem;
-    font-size: 1.2rem;
-    text-align: left;
-    color: #243342;
-}
-
-/* Styles pour les tableaux */
-.table-section {
-    margin-top: 40px;
-}
-
-.table-container {
-    background: #fff;
-    border-radius: 8px;
-    overflow: hidden;
-}
-
-.table {
-    margin-bottom: 0;
-}
-
-.header-row {
-    background: linear-gradient(135deg, #243342 0%, #3a5169 100%);
-}
-
-.header-row th {
-    color: white;
-    font-weight: 500;
-    padding: 12px;
-    border-color: #3a5169;
-}
-
-.table td {
-    padding: 12px 15px;
-    vertical-align: middle;
-}
-
-/* Styles pour les boutons */
-.actions-container {
-    margin: 120px;
-}
-
-/* Styles pour le menu flottant */
-.floating-btn {
-    position: fixed;
-    bottom: 110px;
-    right: 30px;
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #243342 0%, #3a5169 100%);
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
     z-index: 1000;
 }
 
@@ -243,4 +108,53 @@
 .menu-separator {
     border-top: 1px solid #dee2e6;
     margin: 8px 0;
+}
+
+/* Premier élément avec coins arrondis en haut */
+.floating-menu .menu-item:first-child {
+    border-radius: 8px 8px 0 0;
+}
+
+/* Dernier élément avec coins arrondis en bas */
+.floating-menu .menu-item:last-child {
+    border-radius: 0 0 8px 8px;
+}
+
+/* Styles pour les tableaux */
+.table-section {
+    margin-top: 40px;
+}
+
+.table-container {
+    margin-bottom: 40px;
+    width: 100%;
+    background: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.table {
+    width: 100%;
+    margin-bottom: 0;
+}
+
+.table tbody tr {
+    height: 45px;
+}
+
+.table-responsive {
+    padding: 0;
+}
+
+.table-title {
+    margin-top: 20px;
+    margin-bottom: 1.5rem;
+    font-size: 1.2rem;
+    text-align: left;
+    color: #243342;
+}
+
+/* Styles pour les boutons */
+.actions-container {
+    margin: 120px;
 }
