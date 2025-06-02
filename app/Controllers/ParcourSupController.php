@@ -120,21 +120,30 @@ class ParcourSupController extends BaseController
 					continue;
 				}
 
-				try
-				{
-					if ($model->insert($data))
-					{
-						$nbInserted++;
-					}
-					else
-					{
-						log_message('error', 'Erreur insertion ligne ' . $row->getRowIndex() . ': ' . json_encode($model->errors()));
-					}
-				}
-				catch (\Exception $e)
-				{
-					log_message('error', 'Exception ligne ' . $row->getRowIndex() . ': ' . $e->getMessage());
-					continue; // Continue avec la ligne suivante en cas d'erreur
+				try {
+				    // Vérifie si le candidat existe déjà
+				    $existingCandidat = $model->where('numCandidat', $data['numCandidat'])
+					     .where('anneeUniversitaire', $data['anneeUniversitaire'])
+					     ->first();
+				    
+				    if ($existingCandidat) {
+				        // Met à jour le candidat existant
+				        if ($model->update(['numCandidat' => $data['numCandidat']], $data)) {
+				            $nbInserted++;
+				        } else {
+				            log_message('error', 'Erreur mise à jour ligne ' . $row->getRowIndex() . ': ' . json_encode($model->errors()));
+				        }
+				    } else {
+				        // Insère un nouveau candidat
+				        if ($model->insert($data)) {
+				            $nbInserted++;
+				        } else {
+				            log_message('error', 'Erreur insertion ligne ' . $row->getRowIndex() . ': ' . json_encode($model->errors()));
+				        }
+				    }
+				} catch (\Exception $e) {
+				    log_message('error', 'Exception ligne ' . $row->getRowIndex() . ': ' . $e->getMessage());
+				    continue;
 				}
 			}
 
