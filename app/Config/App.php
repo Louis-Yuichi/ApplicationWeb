@@ -40,7 +40,7 @@ class App extends BaseConfig
      * something else. If you have configured your web server to remove this file
      * from your site URIs, set this variable to an empty string.
      */
-    public string $indexPage = 'index.php';
+    public string $indexPage = '';
 
     /**
      * --------------------------------------------------------------------------
@@ -199,4 +199,81 @@ class App extends BaseConfig
      * @see http://www.w3.org/TR/CSP/
      */
     public bool $CSPEnabled = false;
+
+    /**
+     * --------------------------------------------------------------------------
+     * Session Driver
+     * --------------------------------------------------------------------------
+     *
+     * The session driver to use.
+     *
+     * @var string
+     */
+    public $sessionDriver = 'CodeIgniter\Session\Handlers\FileHandler';
+
+    /**
+     * --------------------------------------------------------------------------
+     * Session Cookie Name
+     * --------------------------------------------------------------------------
+     *
+     * The name of the cookie to use for sessions.
+     *
+     * @var string
+     */
+    public $sessionCookieName = 'ci_session';
+
+    /**
+     * --------------------------------------------------------------------------
+     * Session Expiration
+     * --------------------------------------------------------------------------
+     *
+     * The number of seconds until an unused session expires.
+     *
+     * @var int
+     */
+    public $sessionExpiration = 7200;
+
+    /**
+     * --------------------------------------------------------------------------
+     * Session Save Path
+     * --------------------------------------------------------------------------
+     *
+     * The location to save sessions to.
+     *
+     * @var string
+     */
+    public $sessionSavePath = WRITEPATH . 'session';
+
+    /**
+     * --------------------------------------------------------------------------
+     * Session Match IP
+     * --------------------------------------------------------------------------
+     *
+     * Whether to match the user's IP address to the session.
+     *
+     * @var bool
+     */
+    public $sessionMatchIP = false;
+
+    /**
+     * --------------------------------------------------------------------------
+     * Session Time to Update
+     * --------------------------------------------------------------------------
+     *
+     * How often to regenerate the session ID.
+     *
+     * @var int
+     */
+    public $sessionTimeToUpdate = 300;
+
+    /**
+     * --------------------------------------------------------------------------
+     * Session Regenerate Destroy
+     * --------------------------------------------------------------------------
+     *
+     * Whether to destroy the old session data when regenerating the session ID.
+     *
+     * @var bool
+     */
+    public $sessionRegenerateDestroy = false;
 }

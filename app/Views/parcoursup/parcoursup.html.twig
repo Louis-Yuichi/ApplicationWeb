@@ -51,16 +51,17 @@ window.addEventListener('DOMContentLoaded', function() {
 {% endblock %}
 
 {% block body %}
+
 {# Messages flash #}
-{% if session.success %}
-<div id="flash-success" class="flash-message flash-success">
-    {{ session.success }}
-</div>
+{% if success %}
+    <div id="flash-success" class="flash-message flash-success">
+        {{ success }}
+    </div>
 {% endif %}
-{% if session.error %}
-<div id="flash-error" class="flash-message flash-error">
-    {{ session.error }}
-</div>
+{% if error %}
+    <div id="flash-error" class="flash-message flash-error">
+        {{ error }}
+    </div>
 {% endif %}
 
 <div class="container py-5">

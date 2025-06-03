@@ -17,7 +17,12 @@ class ParcourSupController extends BaseController
 	public function menu()
 
 	{
-		$this->view('parcoursup/parcoursup.html.twig');
+		$data = [
+			'success' => session()->getFlashdata('success'),
+			'error' => session()->getFlashdata('error')
+		];
+		
+		$this->view('parcoursup/parcoursup.html.twig', $data);
 	}
 
 	public function gestion()
@@ -166,11 +171,15 @@ class ParcourSupController extends BaseController
 
 			if ($nbInserted > 0)
 			{
-				return redirect()->back()->with('success', "Import réussi ! $nbInserted candidats importés.");
+				return redirect()
+					->to('/parcoursup')
+					->with('success', "Import réussi ! $nbInserted candidats importés.");
 			}
 			else
 			{
-				return redirect()->back()->with('error', 'Aucun candidat importé.');
+				return redirect()
+					->to('/parcoursup')
+					->with('error', 'Aucun candidat importé.');
 			}
 
 		}
