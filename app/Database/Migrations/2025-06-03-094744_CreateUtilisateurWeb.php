@@ -4,7 +4,7 @@ namespace App\Database\Migrations;
 
 use CodeIgniter\Database\Migration;
 
-class CreateUtilisateur extends Migration
+class CreateUtilisateurWeb extends Migration
 {
 	public function up()
 	{
@@ -14,15 +14,15 @@ class CreateUtilisateur extends Migration
 			'nomUtilisateur'    => ['type' => 'VARCHAR', 'constraint' => 50, 'null' => false],
 			'prenomUtilisateur' => ['type' => 'VARCHAR', 'constraint' => 50, 'null' => false],
 			'mailUtilisateur'   => ['type' => 'VARCHAR', 'constraint' => 78, 'null' => false],
-			'mdpUtilisateur'    => ['type' => 'VARCHAR', 'constraint' => 64, 'null' => false]
+			'mdpUtilisateur'    => ['type' => 'VARCHAR', 'constraint' => 255, 'null' => false]
 		]);
 
 		$this->forge->addPrimaryKey('idUtilisateur');
-		$this->forge->createTable('Utilisateur', true);
+		$this->forge->createTable('UtilisateurWeb', true);
 	}
 
 	public function down()
 	{
-		$this->forge->dropTable('Utilisateur');
+		$this->forge->dropTable('UtilisateurWeb');
 	}
 }

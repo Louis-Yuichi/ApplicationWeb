@@ -24,11 +24,17 @@
 			<div class="d-flex flex-column align-items-center">
 				<div class="d-flex align-items-center gap-2">
 					<i class="fas fa-user text-white fs-3"></i>
-					<span class="text-white fw-semibold fs-5">Thao Dujardin</span>
+					<span class="text-white fw-semibold fs-5">
+                        {% if userName %}
+                            {{ userName }} {{ userPrenom }}
+                        {% else %}
+                            Non connecté
+                        {% endif %}
+                    </span>
 				</div>
 			</div>
 			<!-- Bouton Déconnexion -->
-			<a href="/" class="btn btn-outline-light d-flex align-items-center gap-2 px-3 py-2 rounded-pill shadow-sm">
+			<a href="/logout" class="btn btn-outline-light d-flex align-items-center gap-2 px-3 py-2 rounded-pill shadow-sm">
 				<i class="fas fa-sign-out-alt"></i>
 				<span class="fw-semibold d-none d-md-inline">Déconnexion</span>
 			</a>

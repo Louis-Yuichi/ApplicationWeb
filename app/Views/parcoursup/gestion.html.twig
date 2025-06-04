@@ -42,6 +42,44 @@
 </style>
 {% endblock %}
 
+{% block javascript %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+	const searchInput = document.getElementById('searchInput');
+	const tableBody = document.querySelector('tbody');
+	const rows = Array.from(tableBody.querySelectorAll('tr'));
+
+	searchInput.addEventListener('input', function() {
+		const searchValue = this.value.toLowerCase();
+		
+		rows.forEach(row => {
+			const numCandidat = row.querySelector('td')?.textContent.toLowerCase() || '';
+			
+			if (searchValue === '' || numCandidat.includes(searchValue)) {
+				row.style.display = '';
+			} else {
+				row.style.display = 'none';
+			}
+		});
+
+		// Si aucun résultat, affiche un message
+		const visibleRows = rows.filter(row => row.style.display !== 'none');
+		if (visibleRows.length === 0) {
+			if (!document.getElementById('noResults')) {
+				const noResults = document.createElement('tr');
+				noResults.id = 'noResults';
+				noResults.innerHTML = `<td colspan="${rows[0].cells.length}" class="text-center">Aucun candidat trouvé</td>`;
+				tableBody.appendChild(noResults);
+			}
+		} else {
+			const noResults = document.getElementById('noResults');
+			if (noResults) noResults.remove();
+		}
+	});
+});
+</script>
+{% endblock %}
+
 {% block body %}
 <div class="container-fluid">
 	<img class="mb-4 d-block mx-auto" style="height:50px;" src="assets/images/parcoursup.png" alt="Importer" class="img-fluid">
@@ -49,7 +87,12 @@
 	<!-- Barre de recherche + logo + filtre année -->
 	<div class="d-flex justify-content-between align-items-center mb-4">
 		<div class="input-group" style="max-width: 300px;">
-			<input type="text" class="form-control" placeholder="Numéro du candidat" aria-label="Rechercher">
+			<input type="text" 
+				id="searchInput" 
+				class="form-control" 
+				placeholder="Numéro du candidat" 
+				aria-label="Rechercher"
+				oninput="this.value = this.value.replace(/[^0-9]/g, '')">
 			<button class="btn btn-outline-secondary" type="button">
 				<i class="fas fa-search"></i>
 			</button>

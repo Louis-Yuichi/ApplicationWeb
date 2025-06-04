@@ -66,6 +66,10 @@ abstract class BaseController extends Controller
 		]);
 
 // Rendu du template accueil.twig avec des variables
+		$data['userName'] = session()->get('userName');
+		$data['userPrenom'] = session()->get('userPrenom');
+		$data['isLoggedIn'] = session()->get('isLoggedIn');
+
 		echo $twig->render($viewName,$data);
 	}
 }

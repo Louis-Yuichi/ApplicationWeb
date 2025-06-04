@@ -2,20 +2,40 @@
 
 {% set hideHeader = true %}
 
+{% block javascript %}
+<script>
+document.querySelector('form').addEventListener('submit', function(e) {
+    const password = document.querySelector('input[name="password"]').value;
+    const confirm = document.querySelector('input[name="password_confirm"]').value;
+    
+    if (password !== confirm) {
+		e.preventDefault();
+        alert('Les mots de passe ne correspondent pas');
+    }
+});
+</script>
+{% endblock %}
+
 {% block body %}
 <div class="container d-flex justify-content-center align-items-center" style="min-height: 62vh;">
 	<div class="card p-4 shadow-sm" style="width: 100%; max-width: 400px;">
 		<h2 class="text-center mb-5">Inscription</h2>
 		
+		{% if error %}
+			<div class="alert alert-danger">{{ error }}</div>
+		{% endif %}
+
 		{% if errors %}
 			<div class="alert alert-danger">
-				{% for error in errors %}
-					<p class="mb-0">{{ error }}</p>
-				{% endfor %}
+				<ul class="mb-0">
+					{% for field, error in errors %}
+						<li>{{ error }}</li>
+					{% endfor %}
+				</ul>
 			</div>
 		{% endif %}
-		
-		<form method="post" action="">
+
+		<form method="post" action="/register">
 			<div class="row mb-4">
 				<div class="col">
 					<input type="text" class="form-control rounded-pill" name="prenom" placeholder="Prénom" required>
