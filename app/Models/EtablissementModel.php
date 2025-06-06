@@ -25,4 +25,19 @@ class EtablissementModel extends Model
 		'departementEtablissement'   => 'required|min_length[2]|max_length[255]',
 		'paysEtablissement'          => 'required|min_length[2]|max_length[255]'
 	];
+
+	public function firstOrCreate(array $data)
+	{
+		$etablissement = $this->where([
+			'nomEtablissement' => $data['nomEtablissement'],
+			'villeEtablissement' => $data['villeEtablissement']
+		])->first();
+
+		if (!$etablissement) {
+			$id = $this->insert($data, true);
+			return $this->find($id);
+		}
+
+		return $etablissement;
+	}
 }

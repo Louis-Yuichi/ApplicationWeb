@@ -18,8 +18,8 @@ class EtudierDansModel extends Model
 	];
 
 	protected $validationRules = [
-		'numCandidat'     => 'required|exists[candidat.numCandidat]',
-		'idEtablissement' => 'required|exists[Etablissement.idEtablissement]',
+		'numCandidat'     => 'required',
+		'idEtablissement' => 'required',
 		'noteLycee'       => 'permit_empty|decimal',
 		'noteFicheAvenir' => 'permit_empty|decimal'
 	];

@@ -26,164 +26,113 @@ class ParcourSupController extends BaseController
 
 	public function gestion()
 	{
-		$model = new \App\Models\CandidatModel();
+		// Récupération des modèles
+		$candidatModel = new \App\Models\CandidatModel();
+		$etablissementModel = new \App\Models\EtablissementModel();
+		$etudierDansModel = new \App\Models\EtudierDansModel();
 
-		$candidats = $model->findAll();
-		$fields    = $model->allowedFields;
+		// Récupération des champs dans l'ordre souhaité
+		$columnsConfig = [
+			'candidat' => array_diff($candidatModel->allowedFields, ['noteDossier', 'commentaire']),
+			'etablissement' => $etablissementModel->allowedFields,
+			'etudierDans' => array_diff($etudierDansModel->allowedFields, ['numCandidat', 'idEtablissement']),
+			'candidat_fin' => ['noteDossier', 'commentaire']
+		];
 
-		$data['candidats'] = $candidats;
-		$data['fields'   ] = $fields;
+		// Récupération des données avec les jointures
+		$candidats = $candidatModel->select('
+			Candidat.*,
+			Etablissement.*,
+			EtudierDans.noteLycee,
+			EtudierDans.noteFicheAvenir
+		')
+		->join('EtudierDans', 'EtudierDans.numCandidat = Candidat.numCandidat')
+		->join('Etablissement', 'Etablissement.idEtablissement = EtudierDans.idEtablissement')
+		->findAll();
 
-		$this->view('parcoursup/gestion.html.twig', $data);
+		return $this->view('parcoursup/gestion.html.twig', [
+			'candidats' => $candidats,
+			'columnsConfig' => $columnsConfig
+		]);
 	}
 
 	public function importer()
 	{
-		helper(['form', 'filesystem']);
+		if (!$this->request->getFile('fichier')) {
+			return redirect()->back()->with('error', 'Aucun fichier sélectionné');
+		}
+
+		$file = $this->request->getFile('fichier');
+		$annee = $this->request->getPost('annee');
 		
-		try
-		{
-			$file = $this->request->getFile('fichier');
-			$annee = $this->request->getPost('annee');
-			
-			if (!$file)
-			{
-				log_message('error', 'Aucun fichier reçu');
-				return redirect()->back()->with('error', 'Aucun fichier reçu');
-			}
-
-			// Vérifie l'extension
-			if (!$file->isValid() || $file->getClientExtension() !== 'xlsx')
-			{
-				log_message('error', 'Extension invalide: ' . $file->getClientExtension());
-				return redirect()->back()->with('error', 'Seuls les fichiers .xlsx sont acceptés.');
-			}
-
-			// Lecture du fichier
-			$spreadsheet = IOFactory::load($file->getTempName());
+		try {
+			$reader = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
+			$spreadsheet = $reader->load($file);
 			$sheet = $spreadsheet->getActiveSheet();
-			$header = $sheet->rangeToArray('A1:W1')[0];
 			
-			// Nettoyer les en-têtes en supprimant les valeurs null
-			$header = array_filter($header, function($value)
-			{
-				return $value !== null;
-			});
-			
-			log_message('info', 'En-têtes trouvés: ' . json_encode($header));
-
-			// Vérifie les colonnes
-			if ($header !== $this->colonnesAttendues)
-			{
-				log_message('error', 'Colonnes invalides. Attendues: ' . json_encode($this->colonnesAttendues) . ' Reçues: ' . json_encode($header));
-				return redirect()->back()->with('error', 'Les colonnes du fichier ne correspondent pas au format attendu.');
-			}
-
-			$model = new \App\Models\CandidatModel();
 			$nbInserted = 0;
+			$db = \Config\Database::connect();
+			$db->transStart();
 
-			// Parcours des lignes
-			foreach ($sheet->getRowIterator(2) as $row)
-			{
-				$rowData = $sheet->rangeToArray('A' . $row->getRowIndex() . ':W' . $row->getRowIndex())[0];
+			// Initialisation des modèles
+			$etablissementModel = new \App\Models\EtablissementModel();
+			$candidatModel = new \App\Models\CandidatModel();
+			$etudierDansModel = new \App\Models\EtudierDansModel();
 
-				// Arrête la boucle si la ligne est totalement vide
-				if (count(array_filter($rowData, function($v) { return $v !== null && $v !== ''; })) === 0) {
-					break;
-				}
+			foreach ($sheet->getRowIterator(2) as $row) {
+				$rowData = $sheet->rangeToArray('A' . $row->getRowIndex() . ':U' . $row->getRowIndex())[0];
+				if (empty(array_filter($rowData))) continue;
 
-				// Associe les colonnes aux champs de la base
-				$data = [
-					'numCandidat'          => $rowData[0],
-					'anneeUniversitaire'   => $annee,
-					'nom'                  => $rowData[1],
-					'prenom'               => $rowData[2],
-					'profil'               => $rowData[3] ?? '',
-					'groupe'               => null,
-					'marqueurDossier'      => $rowData[4] ?? '',
-					'scolarite'            => $rowData[5] ?? '',
-					'diplome'              => $rowData[6] ?? '',
-					'preparation_obtenu'   => $rowData[7] ?? '', 
-					'serie'                => $rowData[8] ?? '',
-					'specialitesTerminale' => $rowData[9] ?? '',
-					'specialiteAbandonne'  => $rowData[10] ?? '',
-					'noteLycee'            => is_numeric($rowData[19]) ? $rowData[19] : null,
-					'noteFicheAvenir'      => is_numeric($rowData[18]) ? $rowData[18] : null,
-					'noteDossier'          => is_numeric($rowData[20]) ? $rowData[20] : null,
-					'commentaire'          => $rowData[21] ?? ''
+				// Gestion de l'établissement
+				$etablissementData = [
+					'nomEtablissement'         => $rowData[12] ?? '',
+					'villeEtablissement'       => $rowData[13] ?? '',
+					'codePostalEtablissement'  => $rowData[14] ?? '',
+					'departementEtablissement' => $rowData[15] ?? '',
+					'paysEtablissement'        => $rowData[16] ?? ''
 				];
 
-				// Vérifie les champs obligatoires
-				if (empty($data['numCandidat']) || empty($data['nom']) || empty($data['prenom']))
-				{
-					log_message('error', 'Ligne ignorée (champs obligatoires manquants) : ' . json_encode($rowData));
-					continue;
-				}
+				$etablissement = $etablissementModel->firstOrCreate($etablissementData);
 
-				// Ajoutez cette vérification avant l'insertion
-				if (empty($rowData[0]))
-				{
-					log_message('error', 'Ligne ignorée (numéro candidat manquant) : ' . json_encode($rowData));
-					continue;
-				}
+				// Gestion du candidat
+				$candidatModel->replace([
+					'numCandidat'           => $rowData[0],
+					'anneeUniversitaire'    => $annee,
+					'nom'                   => $rowData[1],
+					'prenom'                => $rowData[2],
+					'profil'                => $rowData[3]  ?? '',
+					'marqueurDossier'       => $rowData[4]  ?? '',
+					'scolarite'             => $rowData[5]  ?? '',
+					'diplome'               => $rowData[6]  ?? '',
+					'preparation_obtenu'    => $rowData[7]  ?? '',
+					'serie'                 => $rowData[8]  ?? '',
+					'specialitesTerminale'  => $rowData[9]  ?? '',
+					'specialiteAbandonne'   => $rowData[10] ?? '',
+					'noteDossier'           => is_numeric($rowData[19]) ? $rowData[19] : null
+				]);
 
-				try
-				{
-					// Vérifie si le candidat existe déjà
-					$existingCandidat = $model->where('numCandidat', $data['numCandidat'])
-						->where('anneeUniversitaire', $data['anneeUniversitaire'])
-						->first();
+				// Gestion de la relation
+				$etudierDansModel->replace([
+					'numCandidat'       => $rowData[0],
+					'idEtablissement'   => $etablissement['idEtablissement'],
+					'noteLycee'         => is_numeric($rowData[18]) ? $rowData[18] : null,
+					'noteFicheAvenir'   => is_numeric($rowData[17]) ? $rowData[17] : null
+				]);
 
-					if ($existingCandidat)
-					{
-						// Met à jour le candidat existant
-						if ($model->update(['numCandidat' => $data['numCandidat']], $data))
-						{
-							$nbInserted++;
-						}
-						else
-						{
-							log_message('error', 'Erreur mise à jour ligne ' . $row->getRowIndex() . ': ' . json_encode($model->errors()));
-						}
-					}
-					else
-					{
-						// Insère un nouveau candidat
-						if ($model->insert($data))
-						{
-							$nbInserted++;
-						}
-						else
-						{
-							log_message('error', 'Erreur insertion ligne ' . $row->getRowIndex() . ': ' . json_encode($model->errors()));
-						}
-					}
-				}
-				catch (\Exception $e)
-				{
-					log_message('error', 'Exception ligne ' . $row->getRowIndex() . ': ' . $e->getMessage());
-					continue;
-				}
+				$nbInserted++;
 			}
 
-			if ($nbInserted > 0)
-			{
-				return redirect()
-					->to('/parcoursup')
-					->with('success', "Import réussi ! $nbInserted candidats importés.");
-			}
-			else
-			{
-				return redirect()
-					->to('/parcoursup')
-					->with('error', 'Aucun candidat importé.');
+			$db->transComplete();
+
+			if ($db->transStatus() === false) {
+				return redirect()->back()->with('error', 'Erreur lors de la transaction');
 			}
 
-		}
-		catch (\Exception $e)
-		{
-			log_message('error', 'Exception globale: ' . $e->getMessage());
-			return redirect()->back()->with('error', 'Une erreur est survenue pendant l\'import.');
+			return redirect()->to('/parcoursup')->with('success', "Import réussi ! $nbInserted candidats importés.");
+
+		} catch (\Exception $e) {
+			log_message('error', 'Erreur globale: ' . $e->getMessage());
+			return redirect()->back()->with('error', 'Une erreur est survenue pendant l\'import');
 		}
 	}
 }

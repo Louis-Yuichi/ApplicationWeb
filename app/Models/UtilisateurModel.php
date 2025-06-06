@@ -16,7 +16,7 @@ class UtilisateurModel extends Model
 	[
 		'nomUtilisateur'    => 'required|min_length[2]|max_length[50]',
 		'prenomUtilisateur' => 'required|min_length[2]|max_length[50]',
-		'mailUtilisateur'   => 'required|valid_email|is_unique[UtilisateurWeb.mailUtilisateur]',
+		'mailUtilisateur'   => 'required|valid_email|is_unique[Utilisateur.mailUtilisateur]',
 		'mdpUtilisateur'    => 'required|min_length[6]'
 	];
 }
