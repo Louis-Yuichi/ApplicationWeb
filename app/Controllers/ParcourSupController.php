@@ -15,7 +15,6 @@ class ParcourSupController extends BaseController
 	];
 
 	public function menu()
-
 	{
 		$data = [
 			'success' => session()->getFlashdata('success'),
@@ -26,7 +25,6 @@ class ParcourSupController extends BaseController
 	}
 
 	public function gestion()
-
 	{
 		$model = new \App\Models\CandidatModel();
 
@@ -40,7 +38,6 @@ class ParcourSupController extends BaseController
 	}
 
 	public function importer()
-
 	{
 		helper(['form', 'filesystem']);
 		

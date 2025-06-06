@@ -22,8 +22,8 @@ class CreateCandidatTable extends Migration
 			'serie'               => ['type' => 'TEXT', 'null' => true],
 			'specialitesTerminale'=> ['type' => 'TEXT', 'null' => true],
 			'specialiteAbandonne' => ['type' => 'TEXT', 'null' => true],
-			'noteLycee'           => ['type' => 'DECIMAL', 'constraint' => '5,2', 'null' => true],
-			'noteFicheAvenir'     => ['type' => 'DECIMAL', 'constraint' => '5,2', 'null' => true],
+		//	'noteLycee'           => ['type' => 'DECIMAL', 'constraint' => '5,2', 'null' => true],
+		//	'noteFicheAvenir'     => ['type' => 'DECIMAL', 'constraint' => '5,2', 'null' => true],
 			'noteDossier'         => ['type' => 'DECIMAL', 'constraint' => '5,2', 'null' => true],
 			'commentaire'         => ['type' => 'TEXT', 'null' => true]
 		]);
