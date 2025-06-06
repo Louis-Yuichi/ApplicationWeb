@@ -41,35 +41,52 @@ class Home extends BaseController
 
 	public function register()
 	{
-		if ($this->request->getMethod() === 'post')
+		if ($this->request->getMethod() === 'POST')
 		{
-			if ($this->request->getPost('password') !== $this->request->getPost('password_confirm'))
+			$postData = $this->request->getPost();
+
+			// 1. Vérification des mots de passe
+			if ($postData['password'] !== $postData['password_confirm'])
 			{
-				return redirect()->back() ->with('error', 'Les mots de passe ne correspondent pas') ->withInput();
+				return redirect()->back()
+					->with('error', 'Les mots de passe ne correspondent pas')
+					->withInput();
 			}
 
-			$model = new \App\Models\UtilisateurModel();
+			// 2. Préparation des données
 			$data =
 			[
-				'nomUtilisateur'    => $this->request->getPost('nom'),
-				'prenomUtilisateur' => $this->request->getPost('prenom'),
-				'mailUtilisateur'   => $this->request->getPost('email'),
-				'mdpUtilisateur'    => password_hash($this->request->getPost('password'), PASSWORD_DEFAULT)
+				'nomUtilisateur'    => $postData['nom'],
+				'prenomUtilisateur' => $postData['prenom'],
+				'mailUtilisateur'   => $postData['email'],
+				'mdpUtilisateur'    => password_hash($postData['password'], PASSWORD_DEFAULT)
 			];
 
 			try
 			{
-				if ($model->insert($data))
+				// 3. Test direct avec la base de données
+				$db = \Config\Database::connect();
+				$builder = $db->table('UtilisateurWeb');
+				
+				// 4. Tentative d'insertion directe
+				$result = $builder->insert($data);
+				
+				if ($result)
 				{
-					return redirect()->to('/') ->with('success', 'Compte créé avec succès');
+					return redirect()->to('/')
+						->with('success', 'Compte créé avec succès');
 				}
-
-				return redirect()->back() ->with('error', implode(', ', $model->errors())) ->withInput();
+				
+				return redirect()->back()
+					->with('error', 'Erreur lors de la création du compte')
+					->withInput();
 
 			}
 			catch (\Exception $e)
 			{
-				return redirect()->back() ->with('error', 'Une erreur est survenue') ->withInput();
+				return redirect()->back()
+					->with('error', 'Une erreur est survenue')
+					->withInput();
 			}
 		}
 
