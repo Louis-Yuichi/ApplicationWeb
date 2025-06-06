@@ -6,7 +6,7 @@ use CodeIgniter\Model;
 
 class UtilisateurModel extends Model
 {
-	protected $table            = 'UtilisateurWeb';
+	protected $table            = 'utilisateur';
 	protected $primaryKey       = 'idUtilisateur';
 	protected $allowedFields    = ['nomUtilisateur', 'prenomUtilisateur', 'mailUtilisateur', 'mdpUtilisateur'];
 	protected $useAutoIncrement = true;
