@@ -10,10 +10,10 @@ class CreateUtilisateurWeb extends Migration
 	{
 		$this->forge->addField
 		([
-			'idUtilisateur'     => ['type' => 'INT'    , 'constraint' => 11, 'null' => false, 'unsigned' => true, 'auto_increment' => true],
-			'nomUtilisateur'    => ['type' => 'VARCHAR', 'constraint' => 50, 'null' => false],
-			'prenomUtilisateur' => ['type' => 'VARCHAR', 'constraint' => 50, 'null' => false],
-			'mailUtilisateur'   => ['type' => 'VARCHAR', 'constraint' => 78, 'null' => false],
+			'idUtilisateur'     => ['type' => 'INT'    , 'constraint' => 11,  'null' => false, 'unsigned' => true, 'auto_increment' => true],
+			'nomUtilisateur'    => ['type' => 'VARCHAR', 'constraint' => 50,  'null' => false],
+			'prenomUtilisateur' => ['type' => 'VARCHAR', 'constraint' => 50,  'null' => false],
+			'mailUtilisateur'   => ['type' => 'VARCHAR', 'constraint' => 78,  'null' => false],
 			'mdpUtilisateur'    => ['type' => 'VARCHAR', 'constraint' => 255, 'null' => false]
 		]);
 
