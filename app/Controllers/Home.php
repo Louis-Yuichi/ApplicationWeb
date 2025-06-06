@@ -66,7 +66,7 @@ class Home extends BaseController
 			{
 				// 3. Test direct avec la base de données
 				$db = \Config\Database::connect();
-				$builder = $db->table('UtilisateurWeb');
+				$builder = $db->table('Utilisateur');
 				
 				// 4. Tentative d'insertion directe
 				$result = $builder->insert($data);

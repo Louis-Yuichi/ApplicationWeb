@@ -4,7 +4,7 @@ namespace App\Database\Migrations;
 
 use CodeIgniter\Database\Migration;
 
-class CreateEtablissementTable extends Migration
+class CreateEtablissement extends Migration
 {
 	public function up()
 	{
@@ -30,7 +30,7 @@ class CreateEtablissementTable extends Migration
 		]);
 
 		$this->forge->addKey(['numCandidat', 'idEtablissement'], true); // Clé primaire composite
-		$this->forge->addForeignKey('numCandidat', 'candidat', 'numCandidat', 'CASCADE', 'CASCADE');
+		$this->forge->addForeignKey('numCandidat', 'Candidat', 'numCandidat', 'CASCADE', 'CASCADE');
 		$this->forge->addForeignKey('idEtablissement', 'Etablissement', 'idEtablissement', 'CASCADE', 'CASCADE');
 		
 		$this->forge->createTable('EtudierDans', true);

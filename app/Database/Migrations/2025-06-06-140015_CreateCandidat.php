@@ -29,11 +29,11 @@ class CreateCandidat extends Migration
 		]);
 		
 		$this->forge->addPrimaryKey('numCandidat');
-		$this->forge->createTable('candidat', true);
+		$this->forge->createTable('Candidat', true);
 	}
 
 	public function down()
 	{
-		$this->forge->dropTable('candidat');
+		$this->forge->dropTable('Candidat');
 	}
 }

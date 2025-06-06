@@ -18,11 +18,11 @@ class CreateUtilisateur extends Migration
 		]);
 
 		$this->forge->addPrimaryKey('idUtilisateur');
-		$this->forge->createTable('utilisateur', true);
+		$this->forge->createTable('Utilisateur', true);
 	}
 
 	public function down()
 	{
-		$this->forge->dropTable('utilisateur');
+		$this->forge->dropTable('Utilisateur');
 	}
 }
