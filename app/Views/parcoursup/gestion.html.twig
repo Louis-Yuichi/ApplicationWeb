@@ -114,21 +114,27 @@ document.addEventListener('DOMContentLoaded', function() {
 			<table class="table table-hover table-bordered align-middle">
 				<thead class="table-dark text-center">
 					<tr>
-						{% for field in fields %}
-							<th>{{ field }}</th>
+						{% for group, fields in columns %}
+							{% for field in fields %}
+								<th>{{ field|replace({'_': ' '})|title }}</th>
+							{% endfor %}
 						{% endfor %}
 					</tr>
 				</thead>
 				<tbody>
 					{% for candidat in candidats %}
 						<tr>
-							{% for field in fields %}
-								<td>{{ attribute(candidat, field) }}</td>
+							{% for group, fields in columns %}
+								{% for field in fields %}
+									<td>{{ attribute(candidat, field)|default('') }}</td>
+								{% endfor %}
 							{% endfor %}
 						</tr>
 					{% else %}
 						<tr>
-							<td colspan="{{ fields|length }}">Aucun candidat trouvé</td>
+							<td colspan="{{ columns|reduce((carry, fields) => carry + fields|length, 0) }}">
+								Aucun candidat trouvé
+							</td>
 						</tr>
 					{% endfor %}
 				</tbody>

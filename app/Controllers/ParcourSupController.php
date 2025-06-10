@@ -6,14 +6,6 @@ use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class ParcourSupController extends BaseController
 {
-	protected $colonnesAttendues = [
-		'Numéro ParcourSup', 'Nom', 'Prénom', 'Profil', 'Marqueurs Dossier', 'Scolarité 2023/2024', 'Diplôme',
-		'En Préparation / Obtenu', 'Serie', 'Combinaison des enseignements de spécialité en Terminale',
-		'Enseignement De spécialité abandonné en Première', 'Spécialité Bac Pro ou Bac avant 2021',
-		"Lycée d'origine", 'Colonne1', 'Colonne2', 'Colonne3', 'Colonne4',
-		'Note Globale Calculée', 'Note Fiche Avenir', 'Note Lycée', 'Note Dossier', 'Commentaire'
-	];
-
 	public function menu()
 	{
 		$data = [
@@ -32,11 +24,11 @@ class ParcourSupController extends BaseController
 		$etudierDansModel = new \App\Models\EtudierDansModel();
 
 		// Récupération des champs dans l'ordre souhaité
-		$columnsConfig = [
-			'candidat' => array_diff($candidatModel->allowedFields, ['noteDossier', 'commentaire']),
-			'etablissement' => $etablissementModel->allowedFields,
-			'etudierDans' => array_diff($etudierDansModel->allowedFields, ['numCandidat', 'idEtablissement']),
-			'candidat_fin' => ['noteDossier', 'commentaire']
+		$columns = [
+			'Candidat' => array_diff($candidatModel->allowedFields, ['noteDossier', 'commentaire']),
+			'Etablissement' => $etablissementModel->allowedFields,
+			'EtudierDans' => array_values(array_diff($etudierDansModel->allowedFields, ['numCandidat', 'idEtablissement'])),
+			'Candidat_fin' => ['noteDossier', 'commentaire']
 		];
 
 		// Récupération des données avec les jointures
@@ -52,85 +44,184 @@ class ParcourSupController extends BaseController
 
 		return $this->view('parcoursup/gestion.html.twig', [
 			'candidats' => $candidats,
-			'columnsConfig' => $columnsConfig
+			'columns' => $columns
 		]);
 	}
 
 	public function importer()
 	{
-		if (!$this->request->getFile('fichier')) {
+		if (!$this->request->getFile('fichier'))
+		{
 			return redirect()->back()->with('error', 'Aucun fichier sélectionné');
 		}
 
 		$file = $this->request->getFile('fichier');
 		$annee = $this->request->getPost('annee');
-		
-		try {
+
+		try
+		{
 			$reader = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
 			$spreadsheet = $reader->load($file);
 			$sheet = $spreadsheet->getActiveSheet();
-			
-			$nbInserted = 0;
-			$db = \Config\Database::connect();
-			$db->transStart();
+
+			$header = [];
+			foreach ($sheet->getRowIterator(1, 1) as $row)
+			{
+				$header = $sheet->rangeToArray('A1:' . $sheet->getHighestColumn() . '1')[0];
+			}
+
+			// Création du mapping dynamique
+			$mapping = [];
+			foreach ($header as $idx => $col)
+			{
+				$colLower = mb_strtolower($col);
+
+				// Informations Candidat
+				if (strpos($colLower, 'candidat') !== false)
+				{
+					if     (strpos($colLower, 'code')   !== false)   $mapping['numCandidat']       = $idx;
+					elseif (strpos($colLower, 'nom')    !== false && !strpos($colLower, 'prenom') !== false)   $mapping['nom']               = $idx;
+					elseif (strpos($colLower, 'prénom') !== false || strpos($colLower, 'prenom') !== false)   $mapping['prenom']            = $idx;  // Changé de 'prénom' à 'prenom'
+				}
+
+				// Civilité et profil
+				if (strpos($colLower, 'civilité')        !== false
+					|| strpos($colLower, 'civilite')     !== false)  $mapping['civilite']          = $idx;
+				if (strpos($colLower, 'profil')          !== false
+					&& strpos($colLower, 'libellé')      !== false)  $mapping['profil']            = $idx;
+				if (strpos($colLower, 'boursier')        !== false)  $mapping['boursier']          = $idx;
+
+				// Scolarité
+				if (strpos($colLower, 'filiere')         !== false)  $mapping['scolarite']         = $idx;
+				if (strpos($colLower, 'formation')       !== false)  $mapping['formation']         = $idx;
+				if (strpos($colLower, 'spécialité')      !== false
+					|| strpos($colLower, 'specialite')   !== false)
+				{
+					if     (strpos($colLower, 'mention') !== false)  $mapping['specialiteMention'] = $idx;
+					elseif (strpos($colLower, 'libellé') !== false)  $mapping['specialite']        = $idx;
+				}
+
+				// Diplôme
+				if (strpos($colLower, 'type diplôme')     !== false
+					|| strpos($colLower, 'type diplome')  !== false)
+				{
+					if     (strpos($colLower, 'code')     !== false) $mapping['typeDiplomeCode']   = $idx;
+					elseif (strpos($colLower, 'libellé')  !== false) $mapping['typeDiplome']       = $idx;
+				}
+				if (strpos($colLower, 'série diplôme')    !== false
+					|| strpos($colLower, 'serie diplome') !== false)
+				{
+					if     (strpos($colLower, 'code')     !== false) $mapping['serieCode']         = $idx;
+					elseif (strpos($colLower, 'libellé')  !== false) $mapping['serie']             = $idx;
+				}
+
+				// Spécialités
+				if (strpos($colLower, 'combinaison des enseignements') !== false)
+					$mapping['specialitesTerminale'] = $idx;
+				if (strpos($colLower, 'abandonné en première')  !== false)
+					$mapping['specialiteAbandonne']  = $idx;
+
+				// Établissement
+				if (strpos($colLower, 'établissement')          !== false
+					|| strpos($colLower, 'etablissement')       !== false)
+				{
+					if     (strpos($colLower, 'nom')            !== false) $mapping['nomEtablissement']         = $idx;
+					elseif (strpos($colLower, 'commune')        !== false)
+					{
+						if     (strpos($colLower, 'libellé')    !== false) $mapping['villeEtablissement']       = $idx;
+						elseif (strpos($colLower, 'codepostal') !== false) $mapping['codePostalEtablissement']  = $idx;
+					}
+					elseif (strpos($colLower, 'département')    !== false) $mapping['departementEtablissement'] = $idx;
+					elseif (strpos($colLower, 'pays')           !== false) $mapping['paysEtablissement']        = $idx;
+				}
+
+				// Notes
+				if (strpos($colLower, 'note') !== false)
+				{
+					if     (strpos($colLower, 'globale')      !== false) $mapping['noteGlobale']     = $idx;
+					elseif (strpos($colLower, 'fiche avenir') !== false) $mapping['noteFicheAvenir'] = $idx;
+					elseif (strpos($colLower, 'lycée')        !== false) $mapping['noteLycee']       = $idx;
+					elseif (strpos($colLower, 'dossier')      !== false) $mapping['noteDossier']     = $idx;
+				}
+
+				// Commentaire
+				if (strpos($colLower, 'commentaire') !== false) $mapping['commentaire'] = $idx;
+			}
 
 			// Initialisation des modèles
 			$etablissementModel = new \App\Models\EtablissementModel();
 			$candidatModel = new \App\Models\CandidatModel();
 			$etudierDansModel = new \App\Models\EtudierDansModel();
 
-			foreach ($sheet->getRowIterator(2) as $row) {
-				$rowData = $sheet->rangeToArray('A' . $row->getRowIndex() . ':U' . $row->getRowIndex())[0];
-				if (empty(array_filter($rowData))) continue;
+			$db = \Config\Database::connect();
+			$db->transStart();
+            
+            $nbInserted = 0; // Initialisation du compteur
+
+            foreach ($sheet->getRowIterator(2) as $row)
+            {
+                $rowData = $sheet->rangeToArray('A' . $row->getRowIndex() . ':' . $sheet->getHighestColumn() . $row->getRowIndex())[0];
+                if (empty(array_filter($rowData))) continue;
+
+                $candidatData = [
+					'numCandidat'          => $rowData[$mapping['numCandidat']] ?? '',
+					'anneeUniversitaire'   => $annee,
+					'nom'                  => $rowData[$mapping['nom']] ?? '',
+					'prenom'               => $rowData[$mapping['prenom']] ?? '',
+					'civilite'             => $rowData[$mapping['civilite']] ?? '',
+					'profil'               => $rowData[$mapping['profil']] ?? '',
+					'groupe'               => $rowData[$mapping['boursier']] ?? '',
+					'boursier'             => $rowData[$mapping['boursier']] ?? '',
+					'scolarite'            => $rowData[$mapping['scolarite']] ?? '',
+					'formation'            => $rowData[$mapping['formation']] ?? '',
+					'diplome'              => $rowData[$mapping['typeDiplome']] ?? '',
+					'typeDiplomeCode'      => $rowData[$mapping['typeDiplomeCode']] ?? '',
+					'serie'                => $rowData[$mapping['serie']] ?? '',
+					'serieCode'            => $rowData[$mapping['serieCode']] ?? '',
+					'specialitesTerminale' => $rowData[$mapping['specialitesTerminale']] ?? '',
+					'specialiteAbandonne'  => $rowData[$mapping['specialiteAbandonne']] ?? '',
+					'specialiteMention'    => $rowData[$mapping['specialiteMention']] ?? '',
+					'noteDossier'          => is_numeric($rowData[$mapping['noteDossier']] ?? '') ? $rowData[$mapping['noteDossier']] : null,
+					'noteGlobale'          => is_numeric($rowData[$mapping['noteGlobale']] ?? '') ? $rowData[$mapping['noteGlobale']] : null,
+					'commentaire'          => $rowData[$mapping['commentaire']] ?? '',
+					// ...autres champs...
+				];
 
 				// Gestion de l'établissement
 				$etablissementData = [
-					'nomEtablissement'         => $rowData[12] ?? '',
-					'villeEtablissement'       => $rowData[13] ?? '',
-					'codePostalEtablissement'  => $rowData[14] ?? '',
-					'departementEtablissement' => $rowData[15] ?? '',
-					'paysEtablissement'        => $rowData[16] ?? ''
+					'nomEtablissement'         => $rowData[$mapping['nomEtablissement']] ?? '',
+					'villeEtablissement'       => $rowData[$mapping['villeEtablissement']] ?? '',
+					'codePostalEtablissement'  => $rowData[$mapping['codePostalEtablissement']] ?? '',
+					'departementEtablissement' => $rowData[$mapping['departementEtablissement']] ?? '',
+					'paysEtablissement'        => $rowData[$mapping['paysEtablissement']] ?? ''
 				];
 
 				$etablissement = $etablissementModel->firstOrCreate($etablissementData);
+                $candidatModel->replace($candidatData);
+                
+                // Gestion de la relation
+                $etudierDansModel->replace([
+                    'numCandidat'       => $rowData[$mapping['numCandidat']] ?? '',
+                    'idEtablissement'   => $etablissement['idEtablissement'],
+                    'noteLycee'         => is_numeric($rowData[$mapping['noteLycee']] ?? '') ? $rowData[$mapping['noteLycee']] : null,
+                    'noteFicheAvenir'   => is_numeric($rowData[$mapping['noteFicheAvenir']] ?? '') ? $rowData[$mapping['noteFicheAvenir']] : null
+                ]);
 
-				// Gestion du candidat
-				$candidatModel->replace([
-					'numCandidat'           => $rowData[0],
-					'anneeUniversitaire'    => $annee,
-					'nom'                   => $rowData[1],
-					'prenom'                => $rowData[2],
-					'profil'                => $rowData[3]  ?? '',
-					'marqueurDossier'       => $rowData[4]  ?? '',
-					'scolarite'             => $rowData[5]  ?? '',
-					'diplome'               => $rowData[6]  ?? '',
-					'preparation_obtenu'    => $rowData[7]  ?? '',
-					'serie'                 => $rowData[8]  ?? '',
-					'specialitesTerminale'  => $rowData[9]  ?? '',
-					'specialiteAbandonne'   => $rowData[10] ?? '',
-					'noteDossier'           => is_numeric($rowData[19]) ? $rowData[19] : null
-				]);
+                $nbInserted++; // Incrémentation du compteur
+            }
 
-				// Gestion de la relation
-				$etudierDansModel->replace([
-					'numCandidat'       => $rowData[0],
-					'idEtablissement'   => $etablissement['idEtablissement'],
-					'noteLycee'         => is_numeric($rowData[18]) ? $rowData[18] : null,
-					'noteFicheAvenir'   => is_numeric($rowData[17]) ? $rowData[17] : null
-				]);
+            $db->transComplete();
 
-				$nbInserted++;
-			}
-
-			$db->transComplete();
-
-			if ($db->transStatus() === false) {
+			if ($db->transStatus() === false)
+			{
 				return redirect()->back()->with('error', 'Erreur lors de la transaction');
 			}
 
 			return redirect()->to('/parcoursup')->with('success', "Import réussi ! $nbInserted candidats importés.");
 
-		} catch (\Exception $e) {
+		}
+		catch (\Exception $e)
+		{
 			log_message('error', 'Erreur globale: ' . $e->getMessage());
 			return redirect()->back()->with('error', 'Une erreur est survenue pendant l\'import');
 		}
