@@ -4,7 +4,7 @@ namespace App\Database\Migrations;
 
 use CodeIgniter\Database\Migration;
 
-class CreateEtudiant extends Migration
+class CreateCompetence extends Migration
 {
 	public function up()
 	{
