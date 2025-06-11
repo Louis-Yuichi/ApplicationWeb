@@ -15,7 +15,6 @@ class CreateCandidat extends Migration
 			'prenom'                => ['type' => 'VARCHAR', 'constraint' => 255],
 			'civilite'              => ['type' => 'VARCHAR', 'constraint' => 10,  'null' => true],
 			'profil'                => ['type' => 'TEXT',    'null' => true],
-			'groupe'                => ['type' => 'VARCHAR', 'constraint' => 255, 'null' => true],
 			'boursier'              => ['type' => 'VARCHAR', 'constraint' => 5,   'null' => true],
 			'marqueurDossier'       => ['type' => 'TEXT',    'null' => true],
 			'scolarite'             => ['type' => 'TEXT',    'null' => true],
