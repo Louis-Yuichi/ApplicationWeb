@@ -17,6 +17,7 @@ class CreateEtudiant extends Migration
 		]);
 
 		$this->forge->addPrimaryKey('idEtudiant');
+
 		$this->forge->createTable('Etudiant', true);
 	}
 

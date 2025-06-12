@@ -10,12 +10,18 @@ class CreateRessource extends Migration
 	{
 		$this->forge->addField
 		([
-			'numeroRessource'  => ['type' => 'VARCHAR', 'constraint' =>  7, 'null' => false],
-			'nomRessource'     => ['type' => 'VARCHAR', 'constraint' => 50, 'null' => false],
-			'moyenneRessource' => ['type' => 'DECIMAL', 'constraint' => '5,2', 'null' => false]
+			'idEtudiant'        => ['type' => 'VARCHAR', 'constraint' =>     8, 'null' => false],
+			'numeroRessource'   => ['type' => 'VARCHAR', 'constraint' =>     7, 'null' => false],
+			'numeroSemestre'    => ['type' => 'VARCHAR', 'constraint' =>     2, 'null' => false],
+			'nomRessource'      => ['type' => 'VARCHAR', 'constraint' =>    50, 'null' => false],
+			'moyenneRessource'  => ['type' => 'DECIMAL', 'constraint' => '5,2', 'null' => false]
 		]);
 
-		$this->forge->addPrimaryKey('numeroRessource');
+		$this->forge->addPrimaryKey(['idEtudiant'   , 'numeroRessource', 'numeroSemestre']);
+
+		$this->forge->addForeignKey('idEtudiant'    , 'Etudiant'       , 'idEtudiant'    , 'CASCADE', 'CASCADE');
+		$this->forge->addForeignKey('numeroSemestre', 'Semestre'       , 'numeroSemestre', 'CASCADE', 'CASCADE');
+
 		$this->forge->createTable('Ressource', true);
 	}
 
