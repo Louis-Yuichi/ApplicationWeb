@@ -9,11 +9,12 @@ class CreateEtablissement extends Migration
 	public function up()
 	{
 		// Table Etablissement
-		$this->forge->addField([
-			'idEtablissement'            => ['type' => 'INT', 'constraint' => 11, 'unsigned' => true, 'auto_increment' => true],
+		$this->forge->addField
+		([
+			'idEtablissement'            => ['type' => 'INT'    , 'unsigned'   => true, 'auto_increment' => true],
 			'nomEtablissement'           => ['type' => 'VARCHAR', 'constraint' => 255],
 			'villeEtablissement'         => ['type' => 'VARCHAR', 'constraint' => 255],
-			'codePostalEtablissement'    => ['type' => 'VARCHAR', 'constraint' => 5],
+			'codePostalEtablissement'    => ['type' => 'VARCHAR', 'constraint' =>   5],
 			'departementEtablissement'   => ['type' => 'VARCHAR', 'constraint' => 255],
 			'paysEtablissement'          => ['type' => 'VARCHAR', 'constraint' => 255]
 		]);
@@ -22,10 +23,11 @@ class CreateEtablissement extends Migration
 		$this->forge->createTable('Etablissement', true);
 
 		// Table de relation EtudierDans
-		$this->forge->addField([
+		$this->forge->addField
+		([
 			'numCandidat'         => ['type' => 'VARCHAR', 'constraint' => 20],
 			'anneeUniversitaire'  => ['type' => 'VARCHAR', 'constraint' => 10], // Ajouter l'année
-			'idEtablissement'     => ['type' => 'INT', 'constraint' => 11, 'unsigned' => true],
+			'idEtablissement'     => ['type' => 'INT'    , 'unsigned'   => true],
 			'noteLycee'           => ['type' => 'DECIMAL', 'constraint' => '5,2', 'null' => true],
 			'noteFicheAvenir'     => ['type' => 'DECIMAL', 'constraint' => '5,2', 'null' => true]
 		]);

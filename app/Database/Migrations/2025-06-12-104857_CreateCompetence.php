@@ -16,7 +16,7 @@ class CreateCompetence extends Migration
 			'nomCompetence'     => ['type' => 'VARCHAR', 'constraint' =>    50, 'null' => false],
 			'moyenneCompetence' => ['type' => 'DECIMAL', 'constraint' => '5,2', 'null' => false],
 			'bonus'             => ['type' => 'DECIMAL', 'constraint' => '5,2', 'null' => false],
-			'rang'              => ['type' => 'INT'    , 'constraint' =>     3, 'null' => false]
+			'rang'              => ['type' => 'INT'    , 'null' => false]
 		]);
 
 		$this->forge->addPrimaryKey(['idEtudiant'   , 'numeroCompetence', 'numeroSemestre']);
