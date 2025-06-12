@@ -7,7 +7,7 @@ use CodeIgniter\Model;
 class CandidatModel extends Model
 {
     protected $table = 'Candidat';
-    protected $primaryKey = 'numCandidat';
+    protected $primaryKey = ['numCandidat', 'anneeUniversitaire']; // Clé primaire composite
     protected $useAutoIncrement = false;
     protected $returnType = 'array';
     protected $useSoftDeletes = false;

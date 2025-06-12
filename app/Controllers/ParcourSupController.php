@@ -78,9 +78,10 @@ class ParcourSupController extends BaseController
 
 		// Récupération des champs dans l'ordre souhaité
 		$columns = [
-			'Candidat' => array_diff($candidatModel->allowedFields, ['noteDossier', 'commentaire']),
+			'Candidat' => array_diff($candidatModel->allowedFields, ['noteGlobale', 'noteDossier', 'commentaire']),
 			'Etablissement' => $etablissementModel->allowedFields,
-			'EtudierDans' => array_values(array_diff($etudierDansModel->allowedFields, ['numCandidat', 'idEtablissement'])),
+			'Candidat_noteGlobale' => ['noteGlobale'],
+			'EtudierDans' => array_values(array_diff($etudierDansModel->allowedFields, ['numCandidat', 'idEtablissement', 'anneeUniversitaire'])),
 			'Candidat_fin' => ['noteDossier', 'commentaire']
 		];
 
@@ -91,7 +92,7 @@ class ParcourSupController extends BaseController
 			EtudierDans.noteLycee,
 			EtudierDans.noteFicheAvenir
 		')
-		->join('EtudierDans', 'EtudierDans.numCandidat = Candidat.numCandidat')
+		->join('EtudierDans', 'EtudierDans.numCandidat = Candidat.numCandidat AND EtudierDans.anneeUniversitaire = Candidat.anneeUniversitaire')
 		->join('Etablissement', 'Etablissement.idEtablissement = EtudierDans.idEtablissement')
 		->findAll();
 
@@ -178,22 +179,25 @@ class ParcourSupController extends BaseController
 
 					// Ajout des champs obligatoires
 					if (isset($mapping['nom'])) {
-					    $candidatData['nom'] = strval($rowData[$mapping['nom']] ?? '');
+					    $candidatData['nom'] = strval($rowData[$mapping['nom']] ?? '') ?: '-';
 					}
 					if (isset($mapping['prenom'])) {
-					    $candidatData['prenom'] = strval($rowData[$mapping['prenom']] ?? '');
+					    $candidatData['prenom'] = strval($rowData[$mapping['prenom']] ?? '') ?: '-';
 					}
 
 					// Traiter les champs textuels simples
-					$textFields = ['civilite', 'profil', 'formation', 'scolarite', 'diplome', 
-					               'typeDiplomeCode', 'preparation_obtenu', 'serie', 'serieCode', 
-					               'specialitesTerminale', 'specialiteAbandonne', 'specialiteMention', 'commentaire'];
+					$textFields = [
+					    'civilite', 'profil', 'formation', 'scolarite', 'diplome', 
+					    'typeDiplomeCode', 'preparation_obtenu', 'serie', 'serieCode', 
+					    'specialitesTerminale', 'specialiteAbandonne', 'specialiteMention', 'commentaire'
+					];
 
 					foreach ($textFields as $field) {
 					    if (isset($mapping[$field])) {
-					        $candidatData[$field] = strval($rowData[$mapping[$field]] ?? '');
+					        $value = strval($rowData[$mapping[$field]] ?? '');
+					        $candidatData[$field] = empty($value) ? '-' : $value;
 					    } else {
-					        $candidatData[$field] = '';
+					        $candidatData[$field] = '-';
 					    }
 					}
 
@@ -201,12 +205,13 @@ class ParcourSupController extends BaseController
 					$candidatData['boursier'] = isset($mapping['boursier']) ? 
 					    $this->formatBoursier($rowData[$mapping['boursier']] ?? '') : '0';
 
-					// Traiter les champs numériques
+					// Traiter les champs numériques de Candidat uniquement
 					$numericFields = ['noteDossier', 'noteGlobale'];
 					foreach ($numericFields as $field) {
-					    $candidatData[$field] = null;
+					    $candidatData[$field] = 0;  // Garder 0 pour les champs numériques
 					    if (isset($mapping[$field]) && 
 					        isset($rowData[$mapping[$field]]) && 
+					        !empty($rowData[$mapping[$field]]) && 
 					        is_numeric($rowData[$mapping[$field]])) {
 					        $candidatData[$field] = floatval($rowData[$mapping[$field]]);
 					    }
@@ -217,22 +222,22 @@ class ParcourSupController extends BaseController
 
                     // Insertion ou mise à jour simplifiée
                     try {
-                        // Vérifier si le candidat existe déjà
                         $db = \Config\Database::connect();
-                        $existingCandidat = $db->table('Candidat')
-                                              ->where('numCandidat', $numCandidat)
-                                              ->get()
-                                              ->getRow();
                         
+                        // Vérifier si le candidat existe pour cette année spécifique
+                        $existingCandidat = $db->table('Candidat')
+                            ->where('numCandidat', $numCandidat)
+                            ->where('anneeUniversitaire', $annee)
+                            ->get()
+                            ->getRow();
+
                         if ($existingCandidat) {
-                            // Mise à jour
                             $db->table('Candidat')
-                               ->where('numCandidat', $numCandidat)
-                               ->update($candidatData);
+                                ->where('numCandidat', $numCandidat)
+                                ->where('anneeUniversitaire', $annee)
+                                ->update($candidatData);
                         } else {
-                            // Insertion
-                            $db->table('Candidat')
-                               ->insert($candidatData);
+                            $db->table('Candidat')->insert($candidatData);
                         }
                         
                         $nbInserted++;
@@ -286,21 +291,20 @@ class ParcourSupController extends BaseController
 
                         $etudierDansData = [
                             'numCandidat' => strval($numCandidat),
+                            'anneeUniversitaire' => strval($annee), // Ajouter l'année
                             'idEtablissement' => intval($etablissement['idEtablissement']),
                             'noteLycee' => $noteLycee,
                             'noteFicheAvenir' => $noteFicheAvenir
                         ];
 
                         // Supprimer l'ancienne relation si elle existe
-                        $etudierDansModel->where('numCandidat', $numCandidat)
-                                         ->where('idEtablissement', $etablissement['idEtablissement'])
-                                         ->delete();
+                        $db->table('EtudierDans')
+                           ->where('numCandidat', $numCandidat)
+                           ->where('anneeUniversitaire', $annee)
+                           ->where('idEtablissement', $etablissement['idEtablissement'])
+                           ->delete();
 
-                        // Créer la nouvelle relation
-                        if (!$etudierDansModel->insert($etudierDansData)) {
-                            log_message('error', 'Erreur insertion EtudierDans: ' . print_r($etudierDansModel->errors(), true));
-                            throw new \Exception('Erreur lors de l\'insertion de la relation EtudierDans');
-                        }
+                        $db->table('EtudierDans')->insert($etudierDansData);
                     }
 
                 } catch (\Exception $e) {
@@ -362,7 +366,9 @@ class ParcourSupController extends BaseController
 				'candidat - code' => 'numCandidat',
 				'numéro parcoursup' => 'numCandidat',
 				'candidat - nom' => 'nom',
+				'nom' => 'nom',
 				'candidat - prénom' => 'prenom',
+				'prénom' => 'prenom',
 				'civilité' => 'civilite',
 				'candidat boursier - code' => 'boursier'
 			];

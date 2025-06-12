@@ -32,7 +32,8 @@ class CreateCandidat extends Migration
 			'commentaire'           => ['type' => 'TEXT',    'null' => true]
 		]);
 		
-		$this->forge->addPrimaryKey('numCandidat');
+		// Clé primaire composite
+		$this->forge->addKey(['numCandidat', 'anneeUniversitaire'], true);
 		$this->forge->createTable('Candidat', true);
 	}
 

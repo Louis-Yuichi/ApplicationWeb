@@ -23,14 +23,15 @@ class CreateEtablissement extends Migration
 
 		// Table de relation EtudierDans
 		$this->forge->addField([
-			'numCandidat'      => ['type' => 'VARCHAR', 'constraint' => 20],
-			'idEtablissement'  => ['type' => 'INT', 'constraint' => 11, 'unsigned' => true],
-			'noteLycee'        => ['type' => 'DECIMAL', 'constraint' => '5,2', 'null' => true],
-			'noteFicheAvenir'  => ['type' => 'DECIMAL', 'constraint' => '5,2', 'null' => true]
+			'numCandidat'         => ['type' => 'VARCHAR', 'constraint' => 20],
+			'anneeUniversitaire'  => ['type' => 'VARCHAR', 'constraint' => 10], // Ajouter l'année
+			'idEtablissement'     => ['type' => 'INT', 'constraint' => 11, 'unsigned' => true],
+			'noteLycee'           => ['type' => 'DECIMAL', 'constraint' => '5,2', 'null' => true],
+			'noteFicheAvenir'     => ['type' => 'DECIMAL', 'constraint' => '5,2', 'null' => true]
 		]);
 
-		$this->forge->addKey(['numCandidat', 'idEtablissement'], true); // Clé primaire composite
-		$this->forge->addForeignKey('numCandidat', 'Candidat', 'numCandidat', 'CASCADE', 'CASCADE');
+		$this->forge->addKey(['numCandidat', 'anneeUniversitaire', 'idEtablissement'], true);
+		$this->forge->addForeignKey(['numCandidat', 'anneeUniversitaire'], 'Candidat', ['numCandidat', 'anneeUniversitaire'], 'CASCADE', 'CASCADE');
 		$this->forge->addForeignKey('idEtablissement', 'Etablissement', 'idEtablissement', 'CASCADE', 'CASCADE');
 		
 		$this->forge->createTable('EtudierDans', true);
