@@ -18,6 +18,7 @@ class CreateUtilisateur extends Migration
 		]);
 
 		$this->forge->addPrimaryKey('idUtilisateur');
+
 		$this->forge->createTable('Utilisateur', true);
 	}
 
