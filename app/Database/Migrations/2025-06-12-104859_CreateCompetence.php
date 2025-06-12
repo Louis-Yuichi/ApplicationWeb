@@ -22,7 +22,6 @@ class CreateCompetence extends Migration
 		$this->forge->addPrimaryKey(['idEtudiant'   , 'numeroCompetence', 'numeroSemestre']);
 
 		$this->forge->addForeignKey('idEtudiant'    , 'Etudiant'        , 'idEtudiant'    , 'CASCADE', 'CASCADE');
-		$this->forge->addForeignKey('numeroSemestre', 'Semestre'        , 'numeroSemestre', 'CASCADE', 'CASCADE');
 
 		$this->forge->createTable('Competence', true);
 	}
