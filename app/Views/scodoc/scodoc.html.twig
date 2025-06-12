@@ -246,7 +246,7 @@
 		<i class="fas fa-ellipsis-v"></i>
 	</div>
 	<div class="floating-menu" id="floatingMenu">
-		<a href="#" class="menu-item" data-action="import">
+		<a href="#" class="menu-item" data-action="import" data-bs-toggle="modal" data-bs-target="#importModal">
 			<i class="fas fa-file-import"></i>
 			Importer
 		</a>
@@ -263,6 +263,47 @@
 			<i class="fas fa-file-code"></i>
 			Export HTML
 		</a>
+	</div>
+
+	<!-- Modal Importer (copié depuis parcoursup.html.twig) -->
+	<div class="modal fade" id="importModal" tabindex="-1" aria-labelledby="importModalLabel" aria-hidden="true">
+		<div class="modal-dialog modal-dialog-centered">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="importModalLabel">Importer une nouvelle année</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+				</div>
+				<div class="modal-body text-center">
+					<form action="/importer" method="post" enctype="multipart/form-data" id="importForm">
+						<label class="form-label d-block mb-3">
+							<input type="file" name="fichier" class="form-control" required accept=".xlsx">
+						</label>
+
+						<div class="mb-3">
+							{% set annee_actuelle = "now"|date("Y") %}
+							<select class="form-select" name="annee" required>
+								<option value="">Choisissez une année</option>
+								{% for i in 0..30 %}
+									{% set debut = annee_actuelle + i %}
+									{% set fin = debut + 1 %}
+									<option value="{{ debut }}/{{ fin }}">{{ debut }}/{{ fin }}</option>
+								{% endfor %}
+							</select>
+						</div>
+
+						<button type="submit" class="btn btn-primary" onclick="closeModal()">Confirmer</button>
+					</form>
+
+					<script>
+					function closeModal()
+					{
+						const modal = bootstrap.Modal.getInstance(document.getElementById('importModal'));
+						if (modal) modal.hide();
+					}
+					</script>
+				</div>
+			</div>
+		</div>
 	</div>
 {% endblock %}
 
