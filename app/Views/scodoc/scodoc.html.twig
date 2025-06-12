@@ -270,7 +270,7 @@
 		<div class="modal-dialog modal-dialog-centered">
 			<div class="modal-content">
 				<div class="modal-header">
-					<h5 class="modal-title" id="importModalLabel">Importer une nouvelle année</h5>
+					<h5 class="modal-title" id="importModalLabel">Importer vos données scodoc d'une promotion</h5>
 					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
 				</div>
 				<div class="modal-body text-center">
@@ -282,7 +282,7 @@
 						<div class="mb-3">
 							{% set annee_actuelle = "now"|date("Y") %}
 							<select class="form-select" name="annee" required>
-								<option value="">Choisissez une année</option>
+								<option value="">Année de la promotion</option>
 								{% for i in 0..30 %}
 									{% set debut = annee_actuelle + i %}
 									{% set fin = debut + 1 %}
@@ -291,7 +291,7 @@
 							</select>
 						</div>
 
-						<button type="submit" class="btn btn-primary" onclick="closeModal()">Confirmer</button>
+						<button type="submit" class="btn btn-primary rounded-pill" onclick="closeModal()">Confirmer</button>
 					</form>
 
 					<script>
