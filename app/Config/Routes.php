@@ -19,4 +19,4 @@ $routes->post('importer'         , 'ParcourSupController::importer');
 
 // ScodocController routes
 $routes->get ('scodoc'  , 'ScodocController::menu'    );
-$routes->post('importer', 'ScodocController::importer');
+$routes->post('importerScodoc', 'ScodocController::importerScodoc');

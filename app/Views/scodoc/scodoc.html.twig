@@ -274,7 +274,7 @@
 					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
 				</div>
 				<div class="modal-body text-center">
-					<form action="/importer" method="post" enctype="multipart/form-data" id="importForm">
+					<form action="/importerScodoc" method="post" enctype="multipart/form-data" id="importForm">
 						<label class="form-label d-block mb-3">
 							<input type="file" name="fichier" class="form-control" required accept=".xlsx">
 						</label>
@@ -284,7 +284,7 @@
 							<select class="form-select" name="annee" required>
 								<option value="" selected>Année de la promotion</option>
 								{% for annee in 2022..2035 %}
-									<option value="{{ annee }}">{{ annee }}</option>
+									<option value="{{ annee }}">{{ annee }}</option>f
 								{% endfor %}
 							</select>
 						</div>
