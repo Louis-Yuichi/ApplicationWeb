@@ -13,31 +13,28 @@ class ScodocController extends BaseController
 
 	public function importerScodoc()
 	{
-		if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['fichier']) && isset($_POST['annee']))
+		if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['fichier']) && isset($_POST['anneePromotion']))
 		{
 			$file = $_FILES['fichier']['tmp_name'];
-			$annee = $_POST['annee'];
+			$anneePromotion = $_POST['anneePromotion'];
+
+			// Récupérer le nom du fichier original
+			$filename = $_FILES['fichier']['name'];
+
+			preg_match('/^(S\d+)/', $filename, $matches);
+			$numeroSemestre = isset($matches[1]) ? $matches[1] : null;
 
 			// Lecture du fichier Excel
 			$spreadsheet = IOFactory::load($file);
 			$sheet = $spreadsheet->getActiveSheet();
 			$data = $sheet->rangeToArray('A1:AW50', null, true, false);
 
-			// Affichage temporaire pour test
-			echo '<pre>';
-			var_dump($data);
-			echo '</pre>';
-			exit;
-
 			$header = $data[0];
 
 			$colonnesAttendues =
 			[
 				'etudid', 'code_nip', 'Rg', 'Nom', 'Civ.', 'Nom', 'Prénom', 'Parcours', 'TD', 'TP', 'Cursus',
-				'UEs', 'Moy', 'Abs', 'Just.', 'BIN51', 'Bonus BIN51', 'BINR504', 'BINR505', 'BINR506', 'BINR507',
-				'BINR508', 'BINR509', 'BINR510', 'BINR513', 'BINR514', 'BINS501', 'BIN52', 'Bonus BIN52', 'BINR504',
-				'BINR505', 'BINR506', 'BINR508', 'BINR509', 'BINR510', 'BINR511', 'BINR512', 'BINR514', 'BINS501', 'BIN56',
-				'Bonus BIN56', 'BINR501', 'BINR502', 'BINR503', 'BINR506', 'BINR507', 'BINR513', 'BINR514', 'BINS501'
+				'UEs', 'Moy', 'Abs', 'Just.'
 			];
 
 			foreach ($colonnesAttendues as $col)
@@ -58,10 +55,11 @@ class ScodocController extends BaseController
 				{
 					break;
 				}
+
 				$db->query
 				(
-					"INSERT INTO scodoc (nom, prenom, but1, but2, but3, parcours, absences, annee) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-					[$row[0], $row[1], $row[2], $row[3], $row[4], $row[5], $row[6], $annee]
+					"INSERT INTO \"Etudiant\" (\"idEtudiant\", \"nomEtudiant\", \"prenomEtudiant\", \"parcoursEtudes'\", \"anneePromotion\") VALUES (?, ?, ?, ?, ?)",
+					[$row[0], $row[5], $row[6], $row[10], $anneePromotion]
 				);
 			}
 

@@ -11,9 +11,8 @@ class CreateSemestre extends Migration
 		$this->forge->addField
 		([
 			'idEtudiant'     => ['type' => 'VARCHAR', 'constraint' => 8, 'null' => false],
-			'numeroSemestre' => ['type' => 'VARCHAR', 'constraint' => 2, 'null' => false],
-			'nbAbsences'     => ['type' => 'INT'    , 'null' => false],
-			'nbAbsencesJstf' => ['type' => 'INT'    , 'null' => false]
+			'numeroSemestre' => ['type' => 'INT'    , 'null' => false],
+			'nbAbsences'     => ['type' => 'INT'    , 'null' => false]
 		]);
 
 		$this->forge->addPrimaryKey(['idEtudiant', 'numeroSemestre']);

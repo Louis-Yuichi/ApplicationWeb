@@ -13,7 +13,8 @@ class CreateEtudiant extends Migration
 			'idEtudiant'     => ['type' => 'VARCHAR' , 'constraint' =>  8, 'null' => false],
 			'nomEtudiant'    => ['type' => 'VARCHAR' , 'constraint' => 50, 'null' => false],
 			'prenomEtudiant' => ['type' => 'VARCHAR' , 'constraint' => 50, 'null' => false],
-			'annee'          => ['type' => 'INT'     , 'null' => false]
+			'parcoursEtudes' => ['type' => 'VARCHAR' , 'constraint' => 29, 'null' => false],
+			'anneePromotion' => ['type' => 'INT'     , 'null' => false]
 		]);
 
 		$this->forge->addPrimaryKey('idEtudiant');

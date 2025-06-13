@@ -17,7 +17,7 @@
 					<option selected>nomEtudiant</option>
 				</select>
 			</div>
-			<select class="form-select ms-2" style="width: auto;" id="annee">
+			<select class="form-select ms-2" style="width: auto;" id="anneePromotion">
 				<option selected>2023</option>
 			</select>
 		</div>
@@ -281,10 +281,10 @@
 
 						<div class="mb-3">
 							{% set annee_actuelle = "now"|date("Y") %}
-							<select class="form-select" name="annee" required>
+							<select class="form-select" name="anneePromotion" required>
 								<option value="" selected>Année de la promotion</option>
-								{% for annee in 2022..2035 %}
-									<option value="{{ annee }}">{{ annee }}</option>f
+								{% for anneePromotion in 2022..2035 %}
+									<option value="{{ anneePromotion }}">{{ anneePromotion }}</option>
 								{% endfor %}
 							</select>
 						</div>
