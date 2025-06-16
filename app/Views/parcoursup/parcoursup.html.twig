@@ -46,6 +46,47 @@ window.addEventListener('DOMContentLoaded', function() {
         let flash = document.querySelector('.flash-message');
         if (flash) flash.remove();
     }, 3200);
+
+    const searchInput = document.getElementById('searchInput');
+    const tableBody = document.querySelector('tbody');
+    const rows = Array.from(tableBody.querySelectorAll('tr'));
+
+    // Auto-sélectionner l'année actuelle si aucune n'est sélectionnée
+    const anneeSelect = document.querySelector('select[name="annee"]');
+    if (!anneeSelect.value) {
+        const anneeActuelle = new Date().getFullYear();
+        const anneeDefaut = anneeActuelle + '/' + (anneeActuelle + 1);
+        anneeSelect.value = anneeDefaut;
+        anneeSelect.form.submit();
+    }
+
+    searchInput.addEventListener('input', function() {
+        const searchValue = this.value.toLowerCase();
+        
+        rows.forEach(row => {
+            const numCandidat = row.querySelector('td')?.textContent.toLowerCase() || '';
+            
+            if (searchValue === '' || numCandidat.includes(searchValue)) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+
+        // Si aucun résultat, affiche un message
+        const visibleRows = rows.filter(row => row.style.display !== 'none');
+        if (visibleRows.length === 0) {
+            if (!document.getElementById('noResults')) {
+                const noResults = document.createElement('tr');
+                noResults.id = 'noResults';
+                noResults.innerHTML = `<td colspan="${rows[0].cells.length}" class="text-center">Aucun candidat trouvé</td>`;
+                tableBody.appendChild(noResults);
+            }
+        } else {
+            const noResults = document.getElementById('noResults');
+            if (noResults) noResults.remove();
+        }
+    });
 });
 </script>
 {% endblock %}
@@ -68,6 +109,7 @@ window.addEventListener('DOMContentLoaded', function() {
 	<img class="mb-5 d-block mx-auto" style="height:80px;" src="assets/images/parcoursup.png" alt="Importer" class="img-fluid">
 	
 	<div class="cards-container" style="margin-top:80px;">
+
 		<div class="card app-card p-4 shadow-sm">
 			<a class="text-decoration-none" data-bs-toggle="modal" data-bs-target="#importModal" style="cursor:pointer;">
 				<div class="text-center">
@@ -91,6 +133,19 @@ window.addEventListener('DOMContentLoaded', function() {
 				</div>
 			</a>
 		</div>
+
+		<div class="card app-card p-4 shadow-sm">
+			<a href="/filtres" class="text-decoration-none">
+				<div class="text-center">
+					<div class="card-img-container mb-4">
+						<img src="assets/images/filtre.png" alt="Importer" class="img-fluid">
+					</div>
+					<h3>Filtres</h3>
+					<p class="text-muted">Gestion des filtres</p>
+				</div>
+			</a>
+		</div>
+
 	</div>
 </div>
 

@@ -6,7 +6,169 @@ use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class ParcourSupController extends BaseController
 {
-	private $columnMappings = [
+	public function menu()
+	{
+		$data = [
+			'success' => session()->getFlashdata('success'),
+			'error' => session()->getFlashdata('error')
+		];
+		
+		$this->view('parcoursup/parcoursup.html.twig', $data);
+	}
+
+	public function filtres()
+	{
+		$filtreModel = new \App\Models\FiltreModel();
+		$filtres = $filtreModel->findAll();
+		
+		// Récupérer les colonnes disponibles pour les filtres
+		$candidatModel = new \App\Models\CandidatModel();
+		$colonnesDisponibles = $candidatModel->allowedFields;
+		
+		$data = [
+			'filtres' => $filtres,
+			'colonnesDisponibles' => $colonnesDisponibles,
+			'success' => session()->getFlashdata('success'),
+			'error' => session()->getFlashdata('error')
+		];
+		
+		return $this->view('parcoursup/filtrer/filtres.html.twig', $data);
+	}
+
+	public function creerFiltre()
+	{
+		$filtreModel = new \App\Models\FiltreModel();
+		
+		$data = [
+			'nomFiltre' => $this->request->getPost('nomFiltre'),
+			'typeAction' => $this->request->getPost('typeAction'),
+			'valeurAction' => $this->request->getPost('valeurAction'),
+			'colonneSource' => $this->request->getPost('colonneSource'),
+			'conditionType' => $this->request->getPost('conditionType'),
+			'valeurCondition' => $this->request->getPost('valeurCondition'),
+			'actif' => $this->request->getPost('actif') ? 1 : 0
+		];
+		
+		if ($filtreModel->insert($data)) {
+			return redirect()->to('/filtres');
+		} else {
+			return redirect()->to('/filtres')->with('error', 'Erreur lors de la création du filtre');
+		}
+	}
+
+	public function toggleFiltre($idFiltre)
+	{
+    $filtreModel = new \App\Models\FiltreModel();
+    $filtre = $filtreModel->find($idFiltre);
+    
+    if ($filtre) {
+        $nouveauStatut = $filtre['actif'] ? 0 : 1;
+        $filtreModel->update($idFiltre, ['actif' => $nouveauStatut]);
+        
+        return redirect()->to('/filtres');
+    }
+    
+    return redirect()->to('/filtres')->with('error', 'Filtre non trouvé');
+}
+
+public function supprimerFiltre($idFiltre)
+{
+    $filtreModel = new \App\Models\FiltreModel();
+    
+    if ($filtreModel->delete($idFiltre)) {
+        return redirect()->to('/filtres');
+    } else {
+        return redirect()->to('/filtres')->with('error', 'Erreur lors de la suppression');
+    }
+}
+
+public function calculerNotes()
+{
+    $filtreModel = new \App\Models\FiltreModel();
+    $candidatModel = new \App\Models\CandidatModel();
+    
+    // Récupérer tous les filtres actifs
+    $filtres = $filtreModel->where('actif', 1)->findAll();
+    
+    if (empty($filtres)) {
+        return redirect()->to('/filtres')->with('error', 'Aucun filtre actif trouvé');
+    }
+    
+    // Récupérer tous les candidats
+    $candidats = $candidatModel->findAll();
+    $nbMisAJour = 0;
+    
+    foreach ($candidats as $candidat) {
+        $noteCalculee = $this->appliquerFiltres($candidat, $filtres);
+        
+        // Mettre à jour la note dossier
+        $candidatModel->update([
+            'numCandidat' => $candidat['numCandidat'],
+            'anneeUniversitaire' => $candidat['anneeUniversitaire']
+        ], [
+            'noteDossier' => $noteCalculee
+        ]);
+        
+        $nbMisAJour++;
+    }
+    
+    return redirect()->to('/filtres');
+}
+
+	private function appliquerFiltres($candidat, $filtres)
+	{
+		$noteBase = 10; // Note de base
+		$noteFinale = $noteBase;
+		
+		foreach ($filtres as $filtre) {
+			if ($this->evaluerCondition($candidat, $filtre)) {
+				switch ($filtre['typeAction']) {
+					case 'bonus':
+						$noteFinale += $filtre['valeurAction'];
+						break;
+					case 'malus':
+						$noteFinale -= abs($filtre['valeurAction']);
+						break;
+					case 'coefficient':
+						$noteFinale *= $filtre['valeurAction'];
+						break;
+					case 'note_directe':
+						$noteFinale = $filtre['valeurAction'];
+						break;
+				}
+			}
+		}
+		
+		// S'assurer que la note reste dans les limites (0-20)
+		return max(0, min(20, $noteFinale));
+	}
+
+	private function evaluerCondition($candidat, $filtre)
+	{
+		$valeurCandidat = $candidat[$filtre['colonneSource']] ?? '';
+		$valeurCondition = $filtre['valeurCondition'];
+		
+		switch ($filtre['conditionType']) {
+			case 'contient':
+				return stripos($valeurCandidat, $valeurCondition) !== false;
+			case 'egal':
+				return strcasecmp($valeurCandidat, $valeurCondition) === 0;
+			case 'different':
+				return strcasecmp($valeurCandidat, $valeurCondition) !== 0;
+			case 'commence_par':
+				return stripos($valeurCandidat, $valeurCondition) === 0;
+			case 'finit_par':
+				return strlen($valeurCondition) <= strlen($valeurCandidat) && 
+					strcasecmp(substr($valeurCandidat, -strlen($valeurCondition)), $valeurCondition) === 0;
+			default:
+				return false;
+		}
+	}
+
+
+
+
+		private $columnMappings = [
 		'candidat' => [
 			'code' => 'numCandidat',
 			'nom' => 'nom',
@@ -81,16 +243,6 @@ class ParcourSupController extends BaseController
 		]
 	];
 
-	public function menu()
-	{
-		$data = [
-			'success' => session()->getFlashdata('success'),
-			'error' => session()->getFlashdata('error')
-		];
-		
-		$this->view('parcoursup/parcoursup.html.twig', $data);
-	}
-
 	public function gestion()
 	{
 		// Récupération des modèles
@@ -98,6 +250,12 @@ class ParcourSupController extends BaseController
 		$etablissementModel = new \App\Models\EtablissementModel();
 		$etudierDansModel = new \App\Models\EtudierDansModel();
 
+		// Récupération de l'année sélectionnée
+		$anneeSelectionnee = $this->request->getGet('annee');
+		
+		// Log pour debug
+		log_message('debug', 'Année sélectionnée: ' . ($anneeSelectionnee ?? 'null'));
+		
 		// Récupération des champs dans l'ordre souhaité
 		$columns = [
 			'Candidat' => array_diff($candidatModel->allowedFields, ['noteGlobale', 'noteDossier', 'commentaire']),
@@ -107,20 +265,31 @@ class ParcourSupController extends BaseController
 			'Candidat_fin' => ['noteDossier', 'commentaire']
 		];
 
-		// Récupération des données avec les jointures
-		$candidats = $candidatModel->select('
-			Candidat.*,
-			Etablissement.*,
-			EtudierDans.noteLycee,
-			EtudierDans.noteFicheAvenir
-		')
-		->join('EtudierDans', 'EtudierDans.numCandidat = Candidat.numCandidat AND EtudierDans.anneeUniversitaire = Candidat.anneeUniversitaire')
-		->join('Etablissement', 'Etablissement.idEtablissement = EtudierDans.idEtablissement')
-		->findAll();
+		// Récupération des données uniquement si une année est sélectionnée
+		$candidats = [];
+		if ($anneeSelectionnee) {
+			try {
+				$candidats = $candidatModel->select('
+					Candidat.*,
+					Etablissement.*,
+					EtudierDans.noteLycee,
+					EtudierDans.noteFicheAvenir
+				')
+				->join('EtudierDans', 'EtudierDans.numCandidat = Candidat.numCandidat AND EtudierDans.anneeUniversitaire = Candidat.anneeUniversitaire')
+				->join('Etablissement', 'Etablissement.idEtablissement = EtudierDans.idEtablissement')
+				->where('Candidat.anneeUniversitaire', $anneeSelectionnee)
+				->findAll();
+				
+				log_message('debug', 'Nombre de candidats trouvés: ' . count($candidats));
+			} catch (\Exception $e) {
+				log_message('error', 'Erreur requête candidats: ' . $e->getMessage());
+			}
+		}
 
 		return $this->view('parcoursup/gestion.html.twig', [
 			'candidats' => $candidats,
-			'columns' => $columns
+			'columns' => $columns,
+			'anneeSelectionnee' => $anneeSelectionnee
 		]);
 	}
 
@@ -412,15 +581,15 @@ class ParcourSupController extends BaseController
 				'numéro parcoursup' => 'numCandidat',
 				'candidat - nom' => 'nom',
 				'candidat - prénom' => 'prenom',
-				'nom' => 'nom',                    // AJOUTER
-				'prénom' => 'prenom',             // AJOUTER
-				'profil' => 'profil',             // AJOUTER
-				'marqueurs dossier' => 'marqueurDossier',  // AJOUTER
-				'diplôme' => 'diplome',           // AJOUTER
-				'serie' => 'serie',               // AJOUTER
-				'commentaires' => 'commentaire',   // AJOUTER
-				'en préparation / obtenu' => 'preparation_obtenu',  // AJOUTER
-				
+				'nom' => 'nom',
+				'prénom' => 'prenom',
+				'profil' => 'profil',
+				'marqueurs dossier' => 'marqueurDossier',
+				'diplôme' => 'diplome',
+				'serie' => 'serie',
+				'commentaires' => 'commentaire',
+				'en préparation / obtenu' => 'preparation_obtenu',
+				'combinaison des enseignements de spécialité en terminale' => 'specialitesTerminale',
 				'civilité' => 'civilite',
 				'candidat boursier - code' => 'boursier'
 			];
