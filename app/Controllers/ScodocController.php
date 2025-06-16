@@ -58,7 +58,7 @@ class ScodocController extends BaseController
 
 				$db->query
 				(
-					"INSERT INTO \"Etudiant\" (\"idEtudiant\", \"nomEtudiant\", \"prenomEtudiant\", \"parcoursEtudes'\", \"anneePromotion\") VALUES (?, ?, ?, ?, ?)",
+					"INSERT INTO \"Etudiant\" (\"idEtudiant\", \"nomEtudiant\", \"prenomEtudiant\", \"parcoursEtudes\", \"anneePromotion\") VALUES (?, ?, ?, ?, ?)",
 					[$row[0], $row[5], $row[6], $row[10], $anneePromotion]
 				);
 			}
