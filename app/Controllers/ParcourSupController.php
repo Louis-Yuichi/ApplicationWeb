@@ -14,7 +14,8 @@ class ParcourSupController extends BaseController
 			'civilité' => 'civilite',
 			'profil' => 'profil',
 			'boursier' => 'boursier',
-			'marqueur_dossier' => 'marqueurDossier'
+			'marqueur_dossier' => 'marqueurDossier',
+			'marqueurs dossier' => 'marqueurDossier'
 		],
 		'filiere' => [
 			'libellé' => 'scolarite'
@@ -36,12 +37,32 @@ class ParcourSupController extends BaseController
 			'libellé' => 'serie',
 			'code' => 'serieCode'
 		],
+		'série' => [
+			'' => 'serie'
+		],
+		'scolarité' => [
+			'2022/2023' => 'scolarite'
+		],
+		'en préparation' => [
+			'obtenu' => 'preparation_obtenu'
+		],
+		'combinaison' => [
+			'enseignements' => 'specialitesTerminale',
+			'spécialité' => 'specialitesTerminale'
+		],
+		'enseignement' => [
+			'spécialité abandonné' => 'specialiteAbandonne'
+		],
 		'spécialité' => [
 			'terminale' => 'specialitesTerminale',
 			'abandonné' => 'specialiteAbandonne',
-			'mention' => 'specialiteMention'
+			'mention' => 'specialiteMention',
+			'bac pro' => 'specialiteMention'
 		],
 		'commentaire' => [
+			'' => 'commentaire'
+		],
+		'commentaires' => [
 			'' => 'commentaire'
 		],
 		'établissement' => [
@@ -55,7 +76,8 @@ class ParcourSupController extends BaseController
 			'globale' => 'noteGlobale',
 			'fiche avenir' => 'noteFicheAvenir',
 			'lycée' => 'noteLycee',
-			'dossier' => 'noteDossier'
+			'dossier' => 'noteDossier',
+			'globale calculée' => 'noteGlobale'
 		]
 	];
 
@@ -128,20 +150,23 @@ class ParcourSupController extends BaseController
 			$mapping = $this->mapColumns($header);
 
 			// Vérification du mapping après la boucle
-            $requiredFields = ['numCandidat', 'nom', 'prenom'];
-            $missingFields = [];
-            foreach ($requiredFields as $field) {
-                if (!isset($mapping[$field])) {
-                    $missingFields[] = $field;
-                    log_message('error', 'Champ manquant: ' . $field);
-                }
-            }
+			$requiredFields = ['numCandidat', 'nom', 'prenom'];
+			$missingFields = [];
+			foreach ($requiredFields as $field)
+			{
+				if (!isset($mapping[$field]))
+				{
+					$missingFields[] = $field;
+					log_message('error', 'Champ manquant: ' . $field);
+				}
+			}
 
-            if (!empty($missingFields)) {
-                throw new \Exception('Champs obligatoires manquants : ' . implode(', ', $missingFields));
-            }
+			if (!empty($missingFields))
+			{
+				throw new \Exception('Champs obligatoires manquants : ' . implode(', ', $missingFields));
+			}
 
-            log_message('debug', 'Mapping final: ' . print_r($mapping, true));
+			log_message('debug', 'Mapping final: ' . print_r($mapping, true));
 
 			// Initialisation des modèles
 			$etablissementModel = new \App\Models\EtablissementModel();
@@ -150,177 +175,193 @@ class ParcourSupController extends BaseController
 
 			$db = \Config\Database::connect();
 			$db->transStart();
-            
-            $nbInserted = 0; // Initialisation du compteur
+			
+			$nbInserted = 0; // Initialisation du compteur
 
-            foreach ($sheet->getRowIterator(2) as $row) {
-                $rowData = $sheet->rangeToArray('A' . $row->getRowIndex() . ':' . $sheet->getHighestColumn() . $row->getRowIndex())[0];
-                if (empty(array_filter($rowData))) continue;
+			foreach ($sheet->getRowIterator(2) as $row)
+			{
+				$rowData = $sheet->rangeToArray('A' . $row->getRowIndex() . ':' . $sheet->getHighestColumn() . $row->getRowIndex())[0];
+				if (empty(array_filter($rowData))) continue;
 
-                try {
-                    // 1. Vérification et préparation du numCandidat
-                    $numCandidat = strval($rowData[$mapping['numCandidat']] ?? ''); // Conversion explicite en string
-                    if (empty($numCandidat)) {
-                        log_message('error', 'numCandidat vide à la ligne ' . $row->getRowIndex());
-                        continue;
-                    }
-                    
-                    // Nettoyage du numCandidat (enlever les espaces et caractères spéciaux si nécessaire)
-                    $numCandidat = trim($numCandidat);
-                    
-                    // Log pour vérifier la valeur
-                    log_message('debug', 'numCandidat traité: ' . $numCandidat);
+				try {
+					// 1. Vérification et préparation du numCandidat
+					$numCandidat = strval($rowData[$mapping['numCandidat']] ?? ''); // Conversion explicite en string
+					if (empty($numCandidat))
+					{
+						log_message('error', 'numCandidat vide à la ligne ' . $row->getRowIndex());
+						continue;
+					}
+					
+					// Nettoyage du numCandidat (enlever les espaces et caractères spéciaux si nécessaire)
+					$numCandidat = trim($numCandidat);
+					
+					// Log pour vérifier la valeur
+					log_message('debug', 'numCandidat traité: ' . $numCandidat);
 
-                    // 2. Préparation des données du candidat de base (champs obligatoires)
+					// 2. Préparation des données du candidat de base (champs obligatoires)
 					$candidatData = [
 						'numCandidat' => strval($numCandidat),
 						'anneeUniversitaire' => strval($annee)
 					];
 
 					// Ajout des champs obligatoires
-					if (isset($mapping['nom'])) {
-					    $candidatData['nom'] = strval($rowData[$mapping['nom']] ?? '') ?: '-';
+					if (isset($mapping['nom']))
+					{
+						$candidatData['nom'] = strval($rowData[$mapping['nom']] ?? '') ?: '-';
 					}
-					if (isset($mapping['prenom'])) {
-					    $candidatData['prenom'] = strval($rowData[$mapping['prenom']] ?? '') ?: '-';
+					if (isset($mapping['prenom']))
+					{
+						$candidatData['prenom'] = strval($rowData[$mapping['prenom']] ?? '') ?: '-';
 					}
 
 					// Traiter les champs textuels simples
 					$textFields = [
-					    'civilite', 'profil', 'formation', 'scolarite', 'diplome', 
-					    'typeDiplomeCode', 'preparation_obtenu', 'serie', 'serieCode', 
-					    'specialitesTerminale', 'specialiteAbandonne', 'specialiteMention', 'commentaire'
+						'civilite', 'profil', 'formation', 'scolarite', 'diplome', 
+						'typeDiplomeCode', 'preparation_obtenu', 'serie', 'serieCode', 
+						'specialitesTerminale', 'specialiteAbandonne', 'specialiteMention', 'commentaire'
 					];
 
-					foreach ($textFields as $field) {
-					    if (isset($mapping[$field])) {
-					        $value = strval($rowData[$mapping[$field]] ?? '');
-					        $candidatData[$field] = empty($value) ? '-' : $value;
-					    } else {
-					        $candidatData[$field] = '-';
-					    }
+					foreach ($textFields as $field)
+					{
+						if (isset($mapping[$field]))
+						{
+							$value = strval($rowData[$mapping[$field]] ?? '');
+							$candidatData[$field] = empty($value) ? '-' : $value;
+						} else {
+							$candidatData[$field] = '-';
+						}
 					}
 
 					// Traiter le champ boursier séparément
 					$candidatData['boursier'] = isset($mapping['boursier']) ? 
-					    $this->formatBoursier($rowData[$mapping['boursier']] ?? '') : '0';
+						$this->formatBoursier($rowData[$mapping['boursier']] ?? '') : '0';
 
 					// Traiter les champs numériques de Candidat uniquement
 					$numericFields = ['noteDossier', 'noteGlobale'];
-					foreach ($numericFields as $field) {
-					    $candidatData[$field] = 0;  // Garder 0 pour les champs numériques
-					    if (isset($mapping[$field]) && 
-					        isset($rowData[$mapping[$field]]) && 
-					        !empty($rowData[$mapping[$field]]) && 
-					        is_numeric($rowData[$mapping[$field]])) {
-					        $candidatData[$field] = floatval($rowData[$mapping[$field]]);
-					    }
+					foreach ($numericFields as $field)
+					{
+						$candidatData[$field] = 0;  // Garder 0 pour les champs numériques
+						if (isset($mapping[$field]) && 
+							isset($rowData[$mapping[$field]]) && 
+							!empty($rowData[$mapping[$field]]) && 
+							is_numeric($rowData[$mapping[$field]]))
+							{
+							$candidatData[$field] = floatval($rowData[$mapping[$field]]);
+						}
 					}
 
-                    // Log des données avant insertion
-                    log_message('debug', 'Données préparées pour insertion : ' . print_r($candidatData, true));
+					// Log des données avant insertion
+					log_message('debug', 'Données préparées pour insertion : ' . print_r($candidatData, true));
 
-                    // Insertion ou mise à jour simplifiée
-                    try {
-                        $db = \Config\Database::connect();
-                        
-                        // Vérifier si le candidat existe pour cette année spécifique
-                        $existingCandidat = $db->table('Candidat')
-                            ->where('numCandidat', $numCandidat)
-                            ->where('anneeUniversitaire', $annee)
-                            ->get()
-                            ->getRow();
+					// Insertion ou mise à jour simplifiée
+					try {
+						$db = \Config\Database::connect();
+						
+						// Vérifier si le candidat existe pour cette année spécifique
+						$existingCandidat = $db->table('Candidat')
+							->where('numCandidat', $numCandidat)
+							->where('anneeUniversitaire', $annee)
+							->get()
+							->getRow();
 
-                        if ($existingCandidat) {
-                            $db->table('Candidat')
-                                ->where('numCandidat', $numCandidat)
-                                ->where('anneeUniversitaire', $annee)
-                                ->update($candidatData);
-                        } else {
-                            $db->table('Candidat')->insert($candidatData);
-                        }
-                        
-                        $nbInserted++;
+						if ($existingCandidat)
+						{
+							$db->table('Candidat')
+								->where('numCandidat', $numCandidat)
+								->where('anneeUniversitaire', $annee)
+								->update($candidatData);
+						} else {
+							$db->table('Candidat')->insert($candidatData);
+						}
+						
+						$nbInserted++;
 
-                    } catch (\Exception $e) {
-                        log_message('error', 'Erreur insertion/update: ' . $e->getMessage());
-                        continue;
-                    }
+					} catch (\Exception $e)
+					{
+						log_message('error', 'Erreur insertion/update: ' . $e->getMessage());
+						continue;
+					}
 
-                    // 4. Gestion de l'établissement
-                    $etablissementData = [
-                        'nomEtablissement' => isset($mapping['nomEtablissement']) ? strval($rowData[$mapping['nomEtablissement']] ?? '') : '',
-                        'villeEtablissement' => isset($mapping['villeEtablissement']) ? strval($rowData[$mapping['villeEtablissement']] ?? '') : '',
-                        'codePostalEtablissement' => isset($mapping['codePostalEtablissement']) ? strval($rowData[$mapping['codePostalEtablissement']] ?? '') : '',
-                        'departementEtablissement' => isset($mapping['departementEtablissement']) ? strval($rowData[$mapping['departementEtablissement']] ?? '') : '',
-                        'paysEtablissement' => isset($mapping['paysEtablissement']) ? strval($rowData[$mapping['paysEtablissement']] ?? '') : ''
-                    ];
+					// 4. Gestion de l'établissement
+					$etablissementData = [
+						'nomEtablissement' => isset($mapping['nomEtablissement']) ? strval($rowData[$mapping['nomEtablissement']] ?? '') : '',
+						'villeEtablissement' => isset($mapping['villeEtablissement']) ? strval($rowData[$mapping['villeEtablissement']] ?? '') : '',
+						'codePostalEtablissement' => isset($mapping['codePostalEtablissement']) ? strval($rowData[$mapping['codePostalEtablissement']] ?? '') : '',
+						'departementEtablissement' => isset($mapping['departementEtablissement']) ? strval($rowData[$mapping['departementEtablissement']] ?? '') : '',
+						'paysEtablissement' => isset($mapping['paysEtablissement']) ? strval($rowData[$mapping['paysEtablissement']] ?? '') : ''
+					];
 
-                    // Vérifier si au moins le nom et la ville sont présents
-                    if (!empty($etablissementData['nomEtablissement']) || !empty($etablissementData['villeEtablissement'])) {
-                        $etablissement = $this->getOrCreateEtablissement($etablissementModel, $etablissementData);
-                    } else {
-                        // Créer un établissement par défaut si les données sont manquantes
-                        $etablissementData = [
-                            'nomEtablissement' => 'Non renseigné',
-                            'villeEtablissement' => 'Non renseigné',
-                            'codePostalEtablissement' => '',
-                            'departementEtablissement' => '',
-                            'paysEtablissement' => ''
-                        ];
-                        $etablissement = $this->getOrCreateEtablissement($etablissementModel, $etablissementData);
-                        log_message('warning', 'Données établissement manquantes ligne ' . $row->getRowIndex() . ' - Utilisation établissement par défaut');
-                    }
+					// Vérifier si au moins le nom et la ville sont présents
+					if (!empty($etablissementData['nomEtablissement']) || !empty($etablissementData['villeEtablissement']))
+					{
+						$etablissement = $this->getOrCreateEtablissement($etablissementModel, $etablissementData);
+					} else {
+						// Créer un établissement par défaut si les données sont manquantes
+						$etablissementData = [
+							'nomEtablissement' => 'Non renseigné',
+							'villeEtablissement' => 'Non renseigné',
+							'codePostalEtablissement' => '',
+							'departementEtablissement' => '',
+							'paysEtablissement' => ''
+						];
+						$etablissement = $this->getOrCreateEtablissement($etablissementModel, $etablissementData);
+						log_message('warning', 'Données établissement manquantes ligne ' . $row->getRowIndex() . ' - Utilisation établissement par défaut');
+					}
 
-                    // 5. Création de la relation
-                    if ($etablissement && isset($etablissement['idEtablissement'])) {
-                        // Préparer les données
-                        $noteLycee = null;
-                        if (isset($mapping['noteLycee']) && 
-                            isset($rowData[$mapping['noteLycee']]) && 
-                            is_numeric($rowData[$mapping['noteLycee']])) {
-                            $noteLycee = number_format(floatval($rowData[$mapping['noteLycee']]), 2, '.', '');
-                        }
-                        
-                        $noteFicheAvenir = null;
-                        if (isset($mapping['noteFicheAvenir']) && 
-                            isset($rowData[$mapping['noteFicheAvenir']]) && 
-                            is_numeric($rowData[$mapping['noteFicheAvenir']])) {
-                            $noteFicheAvenir = number_format(floatval($rowData[$mapping['noteFicheAvenir']]), 2, '.', '');
-                        }
+					// 5. Création de la relation
+					if ($etablissement && isset($etablissement['idEtablissement']))
+					{
+						// Préparer les données
+						$noteLycee = null;
+						if (isset($mapping['noteLycee']) && 
+							isset($rowData[$mapping['noteLycee']]) && 
+							is_numeric($rowData[$mapping['noteLycee']]))
+							{
+							$noteLycee = number_format(floatval($rowData[$mapping['noteLycee']]), 2, '.', '');
+						}
+						
+						$noteFicheAvenir = null;
+						if (isset($mapping['noteFicheAvenir']) && 
+							isset($rowData[$mapping['noteFicheAvenir']]) && 
+							is_numeric($rowData[$mapping['noteFicheAvenir']]))
+							{
+							$noteFicheAvenir = number_format(floatval($rowData[$mapping['noteFicheAvenir']]), 2, '.', '');
+						}
 
-                        $etudierDansData = [
-                            'numCandidat' => strval($numCandidat),
-                            'anneeUniversitaire' => strval($annee), // Ajouter l'année
-                            'idEtablissement' => intval($etablissement['idEtablissement']),
-                            'noteLycee' => $noteLycee,
-                            'noteFicheAvenir' => $noteFicheAvenir
-                        ];
+						$etudierDansData = [
+							'numCandidat' => strval($numCandidat),
+							'anneeUniversitaire' => strval($annee), // Ajouter l'année
+							'idEtablissement' => intval($etablissement['idEtablissement']),
+							'noteLycee' => $noteLycee,
+							'noteFicheAvenir' => $noteFicheAvenir
+						];
 
-                        // Supprimer l'ancienne relation si elle existe
-                        $db->table('EtudierDans')
-                           ->where('numCandidat', $numCandidat)
-                           ->where('anneeUniversitaire', $annee)
-                           ->where('idEtablissement', $etablissement['idEtablissement'])
-                           ->delete();
+						// Supprimer l'ancienne relation si elle existe
+						$db->table('EtudierDans')
+						->where('numCandidat', $numCandidat)
+						->where('anneeUniversitaire', $annee)
+						->where('idEtablissement', $etablissement['idEtablissement'])
+						->delete();
 
-                        $db->table('EtudierDans')->insert($etudierDansData);
-                    }
+						$db->table('EtudierDans')->insert($etudierDansData);
+					}
 
-                } catch (\Exception $e) {
-                    log_message('error', 'Erreur ligne ' . $row->getRowIndex() . ': ' . $e->getMessage());
-                    continue;
-                }
-            }
+				} catch (\Exception $e)
+				{
+					log_message('error', 'Erreur ligne ' . $row->getRowIndex() . ': ' . $e->getMessage());
+					continue;
+				}
+			}
 
-            $db->transComplete();
+			$db->transComplete();
 
 			if ($db->transStatus() === false)
 			{
 				return redirect()->back()->with('error', 'Erreur lors de la transaction');
 			}
 
-			if ($nbInserted === 0) {
+			if ($nbInserted === 0)
+			{
 				return redirect()->back()->with('error', 'Aucun candidat n\'a été importé');
 			} else {
 				return redirect()->to('/parcoursup')->with('success', "$nbInserted candidat(s) importé(s) avec succès");
@@ -334,10 +375,12 @@ class ParcourSupController extends BaseController
 		}
 	}
 
-	private function mapColumns($headers) {
+	private function mapColumns($headers)
+	{
 		$mapping = [];
 		
-		foreach ($headers as $idx => $col) {
+		foreach ($headers as $idx => $col)
+		{
 			if (empty($col)) continue;
 			
 			$colLower = mb_strtolower(trim($col));
@@ -353,8 +396,10 @@ class ParcourSupController extends BaseController
 			];
 
 			// Vérifier les colonnes d'établissement
-			foreach ($etablissementCases as $pattern => $field) {
-				if (strpos($colLower, $pattern) !== false) {
+			foreach ($etablissementCases as $pattern => $field)
+			{
+				if (strpos($colLower, $pattern) !== false)
+				{
 					$mapping[$field] = $idx;
 					log_message('debug', "Mapping établissement trouvé: {$colLower} -> {$field} (index: {$idx})");
 					continue 2;
@@ -366,16 +411,25 @@ class ParcourSupController extends BaseController
 				'candidat - code' => 'numCandidat',
 				'numéro parcoursup' => 'numCandidat',
 				'candidat - nom' => 'nom',
-				'nom' => 'nom',
 				'candidat - prénom' => 'prenom',
-				'prénom' => 'prenom',
+				'nom' => 'nom',                    // AJOUTER
+				'prénom' => 'prenom',             // AJOUTER
+				'profil' => 'profil',             // AJOUTER
+				'marqueurs dossier' => 'marqueurDossier',  // AJOUTER
+				'diplôme' => 'diplome',           // AJOUTER
+				'serie' => 'serie',               // AJOUTER
+				'commentaires' => 'commentaire',   // AJOUTER
+				'en préparation / obtenu' => 'preparation_obtenu',  // AJOUTER
+				
 				'civilité' => 'civilite',
 				'candidat boursier - code' => 'boursier'
 			];
 
 			// Vérifier d'abord les cas spéciaux
-			foreach ($specialCases as $pattern => $field) {
-				if (strpos($colLower, $pattern) !== false) {
+			foreach ($specialCases as $pattern => $field)
+			{
+				if ($colLower === $pattern)
+				{
 					$mapping[$field] = $idx;
 					log_message('debug', "Mapping spécial trouvé: {$colLower} -> {$field} (index: {$idx})");
 					continue 2;
@@ -383,10 +437,12 @@ class ParcourSupController extends BaseController
 			}
 
 			// Pour les autres colonnes, on utilise une approche plus flexible
-			foreach ($this->columnMappings as $category => $fields) {
+			foreach ($this->columnMappings as $category => $fields)
+			{
 				$categoryLower = mb_strtolower($category);
 				
-				foreach ($fields as $search => $dbField) {
+				foreach ($fields as $search => $dbField)
+				{
 					$searchLower = mb_strtolower($search);
 					
 					// Construire plusieurs patterns possibles
@@ -397,8 +453,10 @@ class ParcourSupController extends BaseController
 						$categoryLower . '.*' . $searchLower
 					];
 
-					foreach ($patterns as $pattern) {
-						if (strpos($colLower, $pattern) !== false) {
+					foreach ($patterns as $pattern)
+					{
+						if (strpos($colLower, $pattern) !== false)
+						{
 							$mapping[$dbField] = $idx;
 							log_message('debug', "Mapping trouvé: {$colLower} -> {$dbField} (index: {$idx})");
 							continue 3;  // Sort des 3 boucles une fois le mapping trouvé
@@ -409,11 +467,15 @@ class ParcourSupController extends BaseController
 		}
 
 		// Log des colonnes non mappées pour le débogage
-		$unmappedColumns = array_diff(array_map('mb_strtolower', $headers), array_map(function($idx) use ($headers) {
-			return mb_strtolower($headers[$idx]);
-		}, $mapping));
-		
-		if (!empty($unmappedColumns)) {
+		$unmappedColumns = [];
+foreach ($headers as $idx => $header) {
+    if ($header !== null && !in_array($idx, $mapping)) {
+        $unmappedColumns[$idx] = mb_strtolower($header);
+    }
+}
+
+		if (!empty($unmappedColumns))
+		{
 			log_message('warning', 'Colonnes non mappées: ' . print_r($unmappedColumns, true));
 		}
 
@@ -425,37 +487,42 @@ class ParcourSupController extends BaseController
 	{
 		// Chercher l'établissement existant
 		$etablissement = $model->where('nomEtablissement', $data['nomEtablissement'])
-							  ->where('villeEtablissement', $data['villeEtablissement'])
-							  ->first();
+							->where('villeEtablissement', $data['villeEtablissement'])
+							->first();
 		
 		// Si non trouvé, on le crée
-		if (!$etablissement) {
+		if (!$etablissement)
+		{
 			$model->insert($data);
 			$etablissement = $model->where('nomEtablissement', $data['nomEtablissement'])
-								  ->where('villeEtablissement', $data['villeEtablissement'])
-								  ->first();
+								->where('villeEtablissement', $data['villeEtablissement'])
+								->first();
 		}
 		
 		return $etablissement;
 	}
 
-    private function formatBoursier($value) {
-        if (empty($value)) {
-            return '0';
-        }
-        
-        // Si c'est déjà un nombre
-        if (is_numeric($value)) {
-            $intValue = intval($value);
-            return (string)($intValue > 0 ? $intValue : 0);
-        }
-        
-        // Si c'est une chaîne
-        $value = strtolower(trim($value));
-        if ($value === 'oui' || $value === '1' || $value === 'true') {
-            return '1';
-        }
-        
-        return '0';
-    }
+	private function formatBoursier($value)
+	{
+		if (empty($value))
+		{
+			return '0';
+		}
+		
+		// Si c'est déjà un nombre
+		if (is_numeric($value))
+		{
+			$intValue = intval($value);
+			return (string)($intValue > 0 ? $intValue : 0);
+		}
+		
+		// Si c'est une chaîne
+		$value = strtolower(trim($value));
+		if ($value === 'oui' || $value === '1' || $value === 'true')
+		{
+			return '1';
+		}
+		
+		return '0';
+	}
 }
