@@ -70,4 +70,47 @@ class ScodocController extends BaseController
 			echo "Aucun fichier ou année reçus.";
 		}
 	}
+
+	public function listeEtudiants()
+	{
+		$db = db_connect();
+
+		$annees = $db->table('Etudiant')
+			->select('anneePromotion')
+			->distinct()
+			->orderBy('anneePromotion', 'ASC')
+			->get()
+			->getResultArray();
+		$annees = array_column($annees, 'anneePromotion');
+
+		// Année sélectionnée (GET)
+		$annee = $this->request->getGet('anneePromotion');
+
+		// Récupérer les étudiants de l'année sélectionnée uniquement si une année est choisie
+		$etudiants = [];
+		if ($annee) {
+			$etudiants = $db->table('Etudiant')
+				->where('anneePromotion', $annee)
+				->orderBy('nomEtudiant', 'ASC')
+				->get()
+				->getResultArray();
+		}
+
+		return $this->view('scodoc/scodoc.html.twig', [
+			'etudiants' => $etudiants,
+			'anneePromotion' => $annee,
+			'annees' => $annees
+		]);
+	}
+
+	public function etudiantsParAnnee($annee)
+	{
+		$db = db_connect();
+		$etudiants = $db->table('Etudiant')
+			->where('anneePromotion', $annee)
+			->orderBy('nomEtudiant', 'ASC')
+			->get()
+			->getResultArray();
+		return $this->response->setJSON($etudiants);
+	}
 }

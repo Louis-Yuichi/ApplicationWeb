@@ -24,5 +24,6 @@ $routes->get ('supprimerFiltre/(:num)' , 'ParcourSupController::supprimerFiltre/
 $routes->get ('calculerNotes'          , 'ParcourSupController::calculerNotes');
 
 // ScodocController routes
-$routes->get ('scodoc'  , 'ScodocController::menu'    );
+$routes->get ('scodoc', 'ScodocController::listeEtudiants');
 $routes->post('importerScodoc', 'ScodocController::importerScodoc');
+$routes->get('api/etudiants/(:num)', 'ScodocController::etudiantsParAnnee/$1');
