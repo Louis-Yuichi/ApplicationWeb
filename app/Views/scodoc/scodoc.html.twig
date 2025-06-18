@@ -45,25 +45,25 @@
 						</tr>
 						<tr>
 							<td>Apprentissage : (oui/non)</td>
-							<td style="width: 10%;">BUT1</td>
+							<td style="width: 10%;">BUT 1</td>
 							<td></td>
-							<td style="width: 10%;">BUT2</td>
+							<td style="width: 10%;">BUT 2</td>
 							<td></td>
-							<td style="width: 10%;">BUT3</td>
+							<td style="width: 10%;">BUT 3</td>
 							<td></td>
 						</tr>
 						<tr>
 							<td>Parcours d’études :</td>
 							<td>n-2</td>
-							<td></td>
+							<td id="parcours_n2"></td>
 							<td>n-1</td>
-							<td></td>
+							<td id="parcours_n1"></td>
 							<td>n</td>
-							<td></td>
+							<td id="parcours_n"></td>
 						</tr>
 						<tr>
 							<td>Parcours BUT</td>
-							<td colspan="6"></td>
+							<td colspan="6" id="parcours_but">A « Réalisation d'applications : conception, développement, validation »</td>
 						</tr>
 						<tr>
 							<td>Si mobilité à l’étranger (lieu, durée)</td>
@@ -127,7 +127,8 @@
 						</tr>
 						<tr>
 							<td>Nombre d’absences injustifiées</td>
-							<td colspan="2"></td><td colspan="2"></td>
+							<td colspan="2" id="abs_but1"></td>
+							<td colspan="2" id="abs_but2"></td>
 						</tr>
 					</tbody>
 				</table>
@@ -179,7 +180,7 @@
 						</tr>
 						<tr>
 							<td>Nombre d’absences injustifiées</td>
-							<td colspan="2"></td>
+							<td colspan="2" id="abs_but3"></td>
 						</tr>
 					</tbody>
 				</table>
@@ -280,9 +281,9 @@
 					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
 				</div>
 				<div class="modal-body text-center">
-					<form action="/importerScodoc" method="post" enctype="multipart/form-data" id="importForm">
+					<form action="/scodoc" method="post" enctype="multipart/form-data" id="importForm">
 						<label class="form-label d-block mb-3">
-							<input type="file" name="fichier" class="form-control" required accept=".xlsx">
+							<input type="file" name="fichier[]" class="form-control" required accept=".xlsx" multiple>
 						</label>
 
 						<div class="mb-3">
@@ -301,33 +302,6 @@
 			</div>
 		</div>
 	</div>
-{% endblock %}
 
-{% block javascript %}
-<script>
-document.getElementById('anneePromotion').addEventListener('change', function() {
-    const annee = this.value;
-    const selectEtu = document.getElementById('nomEtudiant');
-    selectEtu.innerHTML = '<option value="">Sélectionner un étudiant</option>';
-    document.getElementById('ficheNomPrenom').textContent = '';
-    if (annee) {
-        fetch('/api/etudiants/' + annee)
-            .then(r => r.json())
-            .then(data => {
-                data.forEach(etu => {
-                    const opt = document.createElement('option');
-                    opt.value = etu.idEtudiant;
-                    opt.textContent = etu.nomEtudiant + ' ' + etu.prenomEtudiant;
-                    selectEtu.appendChild(opt);
-                });
-            });
-    }
-});
-document.getElementById('nomEtudiant').addEventListener('change', function() {
-    const id = this.value;
-    const opt = this.selectedOptions[0];
-    document.getElementById('ficheNomPrenom').textContent = opt && id ? opt.textContent : '';
-});
-</script>
-<script src="assets/js/scodoc.js"></script>
+	<script src="assets/js/scodoc.js"></script>
 {% endblock %}

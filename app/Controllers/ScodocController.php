@@ -15,59 +15,113 @@ class ScodocController extends BaseController
 	{
 		if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['fichier']) && isset($_POST['anneePromotion']))
 		{
-			$file = $_FILES['fichier']['tmp_name'];
 			$anneePromotion = $_POST['anneePromotion'];
+			$files = $_FILES['fichier'];
 
-			// Récupérer le nom du fichier original
-			$filename = $_FILES['fichier']['name'];
-
-			preg_match('/^(S\d+)/', $filename, $matches);
-			$numeroSemestre = isset($matches[1]) ? $matches[1] : null;
-
-			// Lecture du fichier Excel
-			$spreadsheet = IOFactory::load($file);
-			$sheet = $spreadsheet->getActiveSheet();
-			$data = $sheet->rangeToArray('A1:AW50', null, true, false);
-
-			$header = $data[0];
-
-			$colonnesAttendues =
-			[
-				'etudid', 'code_nip', 'Rg', 'Nom', 'Civ.', 'Nom', 'Prénom', 'Parcours', 'TD', 'TP', 'Cursus',
-				'UEs', 'Moy', 'Abs', 'Just.'
-			];
-
-			foreach ($colonnesAttendues as $col)
+			// Gère l'import de plusieurs fichiers
+			for ($i = 0; $i < count($files['name']); $i++)
 			{
-				if (!in_array($col, $header))
-				{
-					die("Fichier non conforme : colonne '$col' manquante.");
-				}
-			}
+				$file = $files['tmp_name'][$i];
+				$filename = $files['name'][$i];
 
-			unset($data[0]); // On retire l'en-tête
+				$numeroSemestre = isset($filename[1]) ? intval($filename[1]) : null;
 
-			$db = db_connect();
-			foreach ($data as $row)
-			{
-				// Si la première colonne (Nom) est vide, on arrête la lecture
-				if (empty($row[0]))
+				$spreadsheet = IOFactory::load($file);
+
+				$sheet         = $spreadsheet->getActiveSheet();
+				$highestRow    = $sheet->getHighestRow();
+				$highestColumn = $sheet->getHighestColumn();
+				$data          = $sheet->rangeToArray("A1:{$highestColumn}{$highestRow}", null, true, false);
+
+				$header = $data[0];
+
+				// Associe chaque nom de colonne à son index
+				$index = [];
+				foreach ($header as $j => $colName)
 				{
-					break;
+					$index[$colName] = $j;
 				}
 
-				$db->query
-				(
-					"INSERT INTO \"Etudiant\" (\"idEtudiant\", \"nomEtudiant\", \"prenomEtudiant\", \"parcoursEtudes\", \"anneePromotion\") VALUES (?, ?, ?, ?, ?)",
-					[$row[0], $row[5], $row[6], $row[10], $anneePromotion]
-				);
-			}
+				foreach ($data as $k => $row)
+				{
+					if ($k === 0) continue; // saute l'en-tête
 
-			echo "Import réussi !";
-		}
-		else
-		{
-			echo "Aucun fichier ou année reçus.";
+					if (empty($row[$index['etudid']])) break;
+
+					$idEtudiant     = $row[$index['etudid']];
+					$nomEtudiant    = $row[$index['Nom']];
+					$prenomEtudiant = $row[$index['Prénom']];
+					$parcoursEtudes = $row[$index['Cursus']];
+
+					$nbAbsences     = $row[$index['Abs']] - $row[$index['Just.']];
+
+					$db = db_connect();
+					$db->query
+					(
+						"INSERT INTO \"Etudiant\" (\"idEtudiant\", \"nomEtudiant\", \"prenomEtudiant\", \"parcoursEtudes\", \"anneePromotion\") VALUES (?, ?, ?, ?, ?)",
+						[$idEtudiant, $nomEtudiant, $prenomEtudiant, $parcoursEtudes, $anneePromotion]
+					);
+
+					$db->query
+					(
+						"INSERT INTO \"Semestre\" (\"idEtudiant\", \"numeroSemestre\", \"nbAbsences\") VALUES (?, ?, ?)",
+						[$idEtudiant, $numeroSemestre, $nbAbsences]
+					);
+
+					/*
+					if ($numeroSemestre === 1)
+					{
+						$db->query
+						(
+							"INSERT INTO \"Semestre\" (\"numeroSemestre\", \"anneePromotion\", \"idEtudiant\") VALUES (?, ?, ?)",
+							[$numeroSemestre, $anneePromotion, $idEtudiant]
+						);
+					}
+					elseif ($numeroSemestre === 2)
+					{
+						$db->query
+						(
+							"INSERT INTO \"Semestre\" (\"numeroSemestre\", \"anneePromotion\", \"idEtudiant\") VALUES (?, ?, ?)",
+							[$numeroSemestre, $anneePromotion, $idEtudiant]
+						);
+					}
+					elseif ($numeroSemestre === 3)
+					{
+						$db->query
+						(
+							"INSERT INTO \"Semestre\" (\"numeroSemestre\", \"anneePromotion\", \"idEtudiant\") VALUES (?, ?, ?)",
+							[$numeroSemestre, $anneePromotion, $idEtudiant]
+						);
+					}
+					elseif ($numeroSemestre === 4)
+					{
+						$db->query
+						(
+							"INSERT INTO \"Semestre\" (\"numeroSemestre\", \"anneePromotion\", \"idEtudiant\") VALUES (?, ?, ?)",
+							[$numeroSemestre, $anneePromotion, $idEtudiant]
+						);
+					}
+					elseif ($numeroSemestre === 5)
+					{
+						$db->query
+						(
+							"INSERT INTO \"Semestre\" (\"numeroSemestre\", \"anneePromotion\", \"idEtudiant\") VALUES (?, ?, ?)",
+							[$numeroSemestre, $anneePromotion, $idEtudiant]
+						);
+					}
+					elseif ($numeroSemestre === 6)
+					{
+						$db->query
+						(
+							"INSERT INTO \"Semestre\" (\"numeroSemestre\", \"anneePromotion\", \"idEtudiant\") VALUES (?, ?, ?)",
+							[$numeroSemestre, $anneePromotion, $idEtudiant]
+						);
+					}
+					*/
+				}
+			}
+			// Redirige vers la page de la liste après l'import
+			return redirect()->to('/scodoc');
 		}
 	}
 
@@ -83,12 +137,11 @@ class ScodocController extends BaseController
 			->getResultArray();
 		$annees = array_column($annees, 'anneePromotion');
 
-		// Année sélectionnée (GET)
-		$annee = $this->request->getGet('anneePromotion');
+		$annee  = $this->request->getGet('anneePromotion');
 
-		// Récupérer les étudiants de l'année sélectionnée uniquement si une année est choisie
 		$etudiants = [];
-		if ($annee) {
+		if ($annee)
+		{
 			$etudiants = $db->table('Etudiant')
 				->where('anneePromotion', $annee)
 				->orderBy('nomEtudiant', 'ASC')
@@ -96,7 +149,8 @@ class ScodocController extends BaseController
 				->getResultArray();
 		}
 
-		return $this->view('scodoc/scodoc.html.twig', [
+		return $this->view('scodoc/scodoc.html.twig',
+		[
 			'etudiants' => $etudiants,
 			'anneePromotion' => $annee,
 			'annees' => $annees
@@ -108,9 +162,35 @@ class ScodocController extends BaseController
 		$db = db_connect();
 		$etudiants = $db->table('Etudiant')
 			->where('anneePromotion', $annee)
+			->like('parcoursEtudes', 'S6', 'right')
 			->orderBy('nomEtudiant', 'ASC')
 			->get()
 			->getResultArray();
 		return $this->response->setJSON($etudiants);
+	}
+
+	public function absencesParEtudiant($idEtudiant)
+	{
+		$db = db_connect();
+		$absences = $db->table('Semestre')
+			->select('numeroSemestre, nbAbsences')
+			->where('idEtudiant', $idEtudiant)
+			->get()
+			->getResultArray();
+
+		// Regroupe par BUT
+		$but1 = 0; $but2 = 0; $but3 = 0;
+		foreach ($absences as $abs)
+		{
+			if (in_array($abs['numeroSemestre'], [1,2])) $but1 += $abs['nbAbsences'];
+			if (in_array($abs['numeroSemestre'], [3,4])) $but2 += $abs['nbAbsences'];
+			if (in_array($abs['numeroSemestre'], [5,6])) $but3 += $abs['nbAbsences'];
+		}
+		return $this->response->setJSON
+		([
+			'but1' => $but1,
+			'but2' => $but2,
+			'but3' => $but3
+		]);
 	}
 }

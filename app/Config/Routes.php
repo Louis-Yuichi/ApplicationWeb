@@ -25,5 +25,6 @@ $routes->get ('calculerNotes'          , 'ParcourSupController::calculerNotes');
 
 // ScodocController routes
 $routes->get ('scodoc', 'ScodocController::listeEtudiants');
-$routes->post('importerScodoc', 'ScodocController::importerScodoc');
+$routes->post('scodoc', 'ScodocController::importerScodoc');
 $routes->get('api/etudiants/(:num)', 'ScodocController::etudiantsParAnnee/$1');
+$routes->get('api/absences/(:num)', 'ScodocController::absencesParEtudiant/$1');
