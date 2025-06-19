@@ -68,56 +68,27 @@ class ScodocController extends BaseController
 						[$idEtudiant, $numeroSemestre, $nbAbsences]
 					);
 
-					/*
-					if ($numeroSemestre === 1)
+					foreach ($index as $colName => $j)
 					{
-						$db->query
-						(
-							"INSERT INTO \"Semestre\" (\"numeroSemestre\", \"anneePromotion\", \"idEtudiant\") VALUES (?, ?, ?)",
-							[$numeroSemestre, $anneePromotion, $idEtudiant]
-						);
+						if (preg_match('/^BIN\d+$/', $colName))
+						{
+							$moyenne = $row[$j];
+							// Bonus éventuel (ex: "Bonus BIN11")
+							$bonusCol = "Bonus $colName";
+							$bonus = isset($index[$bonusCol]) ? $row[$index[$bonusCol]] : null;
+							if ($bonus === null || $bonus === '') $bonus = 0.00;
+
+							// On ne stocke que si la case n'est pas vide ou ~
+							if ($moyenne !== null && $moyenne !== '' && $moyenne !== '~')
+							{
+								$db->query
+								(
+									"INSERT INTO \"Competence\" (\"idEtudiant\", \"numeroSemestre\", \"codeCompetence\", \"nomCompetence\", \"moyenneCompetence\", \"bonusCompetence\", \"rangCompetence\") VALUES (?, ?, ?, ?, ?, ?, ?)",
+									[$idEtudiant, $numeroSemestre, $colName, $colName, $moyenne, $bonus, 99]
+								);
+							}
+						}
 					}
-					elseif ($numeroSemestre === 2)
-					{
-						$db->query
-						(
-							"INSERT INTO \"Semestre\" (\"numeroSemestre\", \"anneePromotion\", \"idEtudiant\") VALUES (?, ?, ?)",
-							[$numeroSemestre, $anneePromotion, $idEtudiant]
-						);
-					}
-					elseif ($numeroSemestre === 3)
-					{
-						$db->query
-						(
-							"INSERT INTO \"Semestre\" (\"numeroSemestre\", \"anneePromotion\", \"idEtudiant\") VALUES (?, ?, ?)",
-							[$numeroSemestre, $anneePromotion, $idEtudiant]
-						);
-					}
-					elseif ($numeroSemestre === 4)
-					{
-						$db->query
-						(
-							"INSERT INTO \"Semestre\" (\"numeroSemestre\", \"anneePromotion\", \"idEtudiant\") VALUES (?, ?, ?)",
-							[$numeroSemestre, $anneePromotion, $idEtudiant]
-						);
-					}
-					elseif ($numeroSemestre === 5)
-					{
-						$db->query
-						(
-							"INSERT INTO \"Semestre\" (\"numeroSemestre\", \"anneePromotion\", \"idEtudiant\") VALUES (?, ?, ?)",
-							[$numeroSemestre, $anneePromotion, $idEtudiant]
-						);
-					}
-					elseif ($numeroSemestre === 6)
-					{
-						$db->query
-						(
-							"INSERT INTO \"Semestre\" (\"numeroSemestre\", \"anneePromotion\", \"idEtudiant\") VALUES (?, ?, ?)",
-							[$numeroSemestre, $anneePromotion, $idEtudiant]
-						);
-					}
-					*/
 				}
 			}
 			// Redirige vers la page de la liste après l'import

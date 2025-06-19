@@ -10,12 +10,11 @@ class CreateCompetence extends Migration
 	{
 		$this->forge->addField
 		([
-			'idEtudiant'        => ['type' => 'VARCHAR', 'constraint' =>     8, 'null' => false],
+			'idEtudiant'        => ['type' => 'INT'    ,                        'null' => false],
 			'numeroSemestre'    => ['type' => 'INT'    ,                        'null' => false],
 			'codeCompetence'    => ['type' => 'VARCHAR', 'constraint' =>     5, 'null' => false],
-			'nomCompetence'     => ['type' => 'VARCHAR', 'constraint' =>    50, 'null' => false],
 			'moyenneCompetence' => ['type' => 'DECIMAL', 'constraint' => '5,2', 'null' => false],
-			'bonusCompetence'   => ['type' => 'DECIMAL', 'constraint' => '5,2', 'null' => false],
+			'bonusCompetence'   => ['type' => 'DECIMAL', 'constraint' => '5,2', 'null' => true ],
 			'rangCompetence'    => ['type' => 'INT'    ,                        'null' => false]
 		]);
 
