@@ -1,105 +1,11 @@
 {% extends 'template.html.twig' %}
 
 {% block css %}
-<style>
-    body {
-        padding-bottom: 120px;
-    }
-    
-    .table-container {
-        max-height: calc(100vh - 460px);
-        overflow-y: auto;
-        border: 1px solid #dee2e6;
-        border-radius: 8px;
-        margin-bottom: 2rem;
-        box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-    
-    .table-responsive {
-        margin: 0;
-    }
-    
-    table {
-        table-layout: auto !important;
-        width: 100%;
-        white-space: nowrap;
-        margin-bottom: 0 !important;
-    }
-    
-    thead {
-        position: sticky;
-        top: 0;
-        z-index: 1;
-    }
-    
-    .table-dark th {
-        background-color: #212529;
-    }
-    
-    tbody tr:last-child td {
-        border-bottom: 0;
-    }
-</style>
+<link rel="stylesheet" href="/assets/css/gestion.css">
 {% endblock %}
 
 {% block javascript %}
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const searchInput = document.getElementById('searchInput');
-    const anneeSelect = document.querySelector('select[name="annee"]');
-    
-    // Auto-redirection vers l'année actuelle si aucune année n'est sélectionnée
-    if (anneeSelect && !anneeSelect.value && !window.location.search.includes('annee=')) {
-        const anneeActuelle = new Date().getFullYear();
-        const anneeDefaut = anneeActuelle + '/' + (anneeActuelle + 1);
-        window.location.href = '/gestionParcourSup?annee=' + encodeURIComponent(anneeDefaut);
-        return;
-    }
-    
-    // Gérer le changement d'année
-    if (anneeSelect) {
-        anneeSelect.addEventListener('change', function() {
-            if (this.value) {
-                window.location.href = '/gestionParcourSup?annee=' + encodeURIComponent(this.value);
-            }
-        });
-    }
-    
-    // Fonction de recherche (si on a des candidats affichés)
-    const tableBody = document.querySelector('tbody');
-    if (tableBody && searchInput) {
-        const rows = Array.from(tableBody.querySelectorAll('tr'));
-        
-        searchInput.addEventListener('input', function() {
-            const searchValue = this.value.toLowerCase();
-            
-            rows.forEach(row => {
-                const numCandidat = row.querySelector('td')?.textContent.toLowerCase() || '';
-                
-                if (searchValue === '' || numCandidat.includes(searchValue)) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
-                }
-            });
-
-            // Si aucun résultat, affiche un message
-            const visibleRows = rows.filter(row => row.style.display !== 'none');
-            if (visibleRows.length === 0 && searchValue !== '') {
-                if (!document.getElementById('noResults')) {
-                    const noResults = document.createElement('tr');
-                    noResults.id = 'noResults';
-                    noResults.innerHTML = `<td colspan="${rows[0]?.cells.length || 1}" class="text-center">Aucun candidat trouvé</td>`;
-                    tableBody.appendChild(noResults);
-                }
-            } else {
-                const noResults = document.getElementById('noResults');
-                if (noResults) noResults.remove();
-            }
-        });
-    }
-});
-</script>
+<script src="/assets/js/gestion.js"></script>
 {% endblock %}
 
 {% block body %}
@@ -156,7 +62,18 @@ document.addEventListener('DOMContentLoaded', function() {
                         <tr>
                             {% for group, fields in columns %}
                                 {% for field in fields %}
-                                    <td>{{ attribute(candidat, field)|default('') }}</td>
+                                    {% set readonly_fields = ['numCandidat', 'anneeUniversitaire'] %}
+                                    {% set value = attribute(candidat, field)|default('') %}
+                                    <td {% if field not in readonly_fields %}
+                                            class="editable-cell" 
+                                            data-field="{{ field }}"
+                                            data-candidat="{{ candidat.numCandidat }}"
+                                            data-annee="{{ candidat.anneeUniversitaire }}"
+                                        {% else %}
+                                            class="readonly-cell"
+                                        {% endif %}>
+                                        {{ value }}
+                                    </td>
                                 {% endfor %}
                             {% endfor %}
                         </tr>
@@ -181,13 +98,19 @@ document.addEventListener('DOMContentLoaded', function() {
         <a href="/filtres" class="btn btn-success mx-2">
             <i class="fas fa-filter"></i> Gérer les filtres
         </a>
-        <button class="btn btn-primary mx-2">
-            <i class="fas fa-calculator"></i> Calculer les résultats
+        <button class="btn btn-primary mx-2" id="calculerNotesBtn" onclick="calculerNotesAjax()">
+            <i class="fas fa-calculator"></i> 
+            <span id="btnText">Calculer les résultats</span>
+            <span id="anneeInfo" class="d-none">pour {{ anneeSelectionnee|default('') }}</span>
+            <span class="spinner-border spinner-border-sm d-none" id="loadingSpinner"></span>
         </button>
         <button class="btn btn-primary mx-2">
-            <i class="fas fa-download"></i> Exporter les résultats
+            <i class="fas fa-upload"></i> Exporter les résultats
         </button>
     </div>
+
+    <!-- Zone pour les messages avec info sur l'année -->
+    <div id="messageArea" class="mt-3"></div>
 </div>
 
 <!-- Footer -->

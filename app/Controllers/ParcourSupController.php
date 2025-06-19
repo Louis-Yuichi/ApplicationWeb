@@ -94,8 +94,17 @@ public function calculerNotes()
         return redirect()->to('/filtres')->with('error', 'Aucun filtre actif trouvé');
     }
     
-    // Récupérer tous les candidats
-    $candidats = $candidatModel->findAll();
+    // CORRECTION: Récupérer avec les jointures pour avoir noteLycee
+    $candidats = $candidatModel->select('
+            Candidat.*,
+            Etablissement.*,
+            EtudierDans.noteLycee,
+            EtudierDans.noteFicheAvenir
+        ')
+        ->join('EtudierDans', 'EtudierDans.numCandidat = Candidat.numCandidat AND EtudierDans.anneeUniversitaire = Candidat.anneeUniversitaire')
+        ->join('Etablissement', 'Etablissement.idEtablissement = EtudierDans.idEtablissement')
+        ->findAll();
+    
     $nbMisAJour = 0;
     
     foreach ($candidats as $candidat) {
@@ -117,30 +126,51 @@ public function calculerNotes()
 
 	private function appliquerFiltres($candidat, $filtres)
 	{
-		$noteBase = 10; // Note de base
+		// CORRECTION: Utiliser noteLycee comme note de base, sinon 10
+		$noteBase = 10; // Valeur par défaut
+		
+		if (isset($candidat['noteLycee']) && !empty($candidat['noteLycee']) && is_numeric($candidat['noteLycee'])) {
+			$noteBase = floatval($candidat['noteLycee']);
+			log_message('debug', "Note de base (noteLycee) pour candidat {$candidat['numCandidat']}: {$noteBase}");
+		} else {
+			log_message('debug', "Pas de noteLycee pour candidat {$candidat['numCandidat']}, utilisation de la note par défaut: {$noteBase}");
+		}
+		
 		$noteFinale = $noteBase;
 		
 		foreach ($filtres as $filtre) {
 			if ($this->evaluerCondition($candidat, $filtre)) {
+				log_message('debug', "Filtre '{$filtre['nomFiltre']}' appliqué au candidat {$candidat['numCandidat']}");
+				
 				switch ($filtre['typeAction']) {
 					case 'bonus':
 						$noteFinale += $filtre['valeurAction'];
+						log_message('debug', "Bonus +{$filtre['valeurAction']}: {$noteFinale}");
 						break;
 					case 'malus':
 						$noteFinale -= abs($filtre['valeurAction']);
+						log_message('debug', "Malus -{$filtre['valeurAction']}: {$noteFinale}");
 						break;
 					case 'coefficient':
 						$noteFinale *= $filtre['valeurAction'];
+						log_message('debug', "Coefficient x{$filtre['valeurAction']}: {$noteFinale}");
 						break;
 					case 'note_directe':
 						$noteFinale = $filtre['valeurAction'];
+						log_message('debug', "Note directe = {$filtre['valeurAction']}: {$noteFinale}");
 						break;
 				}
+			} else {
+				log_message('debug', "Filtre '{$filtre['nomFiltre']}' PAS appliqué au candidat {$candidat['numCandidat']} (condition non remplie)");
 			}
 		}
 		
 		// S'assurer que la note reste dans les limites (0-20)
-		return max(0, min(20, $noteFinale));
+		$noteFinale = max(0, min(20, $noteFinale));
+		
+		log_message('debug', "Note finale pour candidat {$candidat['numCandidat']}: {$noteFinale}");
+		
+		return $noteFinale;
 	}
 
 	private function evaluerCondition($candidat, $filtre)
@@ -148,21 +178,47 @@ public function calculerNotes()
 		$valeurCandidat = $candidat[$filtre['colonneSource']] ?? '';
 		$valeurCondition = $filtre['valeurCondition'];
 		
+		// Log détaillé pour debug
+		log_message('debug', "=== EVALUATION CONDITION ===");
+		log_message('debug', "Filtre: {$filtre['nomFiltre']}");
+		log_message('debug', "Colonne: {$filtre['colonneSource']}");
+		log_message('debug', "Valeur candidat: '{$valeurCandidat}' (type: " . gettype($valeurCandidat) . ")");
+		log_message('debug', "Valeur condition: '{$valeurCondition}' (type: " . gettype($valeurCondition) . ")");
+		log_message('debug', "Type condition: {$filtre['conditionType']}");
+		
+		$result = false;
+		
 		switch ($filtre['conditionType']) {
 			case 'contient':
-				return stripos($valeurCandidat, $valeurCondition) !== false;
+				$result = stripos($valeurCandidat, $valeurCondition) !== false;
+				log_message('debug', "Test 'contient': stripos('{$valeurCandidat}', '{$valeurCondition}') = " . (stripos($valeurCandidat, $valeurCondition) === false ? 'false' : stripos($valeurCandidat, $valeurCondition)));
+				break;
 			case 'egal':
-				return strcasecmp($valeurCandidat, $valeurCondition) === 0;
+				$result = strcasecmp($valeurCandidat, $valeurCondition) === 0;
+				log_message('debug', "Test 'egal': strcasecmp('{$valeurCandidat}', '{$valeurCondition}') = " . strcasecmp($valeurCandidat, $valeurCondition));
+				break;
 			case 'different':
-				return strcasecmp($valeurCandidat, $valeurCondition) !== 0;
+				$result = strcasecmp($valeurCandidat, $valeurCondition) !== 0;
+				log_message('debug', "Test 'different': strcasecmp('{$valeurCandidat}', '{$valeurCondition}') = " . strcasecmp($valeurCandidat, $valeurCondition));
+				break;
 			case 'commence_par':
-				return stripos($valeurCandidat, $valeurCondition) === 0;
+				$result = stripos($valeurCandidat, $valeurCondition) === 0;
+				log_message('debug', "Test 'commence_par': stripos('{$valeurCandidat}', '{$valeurCondition}') = " . (stripos($valeurCandidat, $valeurCondition) === false ? 'false' : stripos($valeurCandidat, $valeurCondition)));
+				break;
 			case 'finit_par':
-				return strlen($valeurCondition) <= strlen($valeurCandidat) && 
-					strcasecmp(substr($valeurCandidat, -strlen($valeurCondition)), $valeurCondition) === 0;
+				$result = strlen($valeurCondition) <= strlen($valeurCandidat) && 
+					   strcasecmp(substr($valeurCandidat, -strlen($valeurCondition)), $valeurCondition) === 0;
+				log_message('debug', "Test 'finit_par': substr('{$valeurCandidat}', -" . strlen($valeurCondition) . ") = '" . substr($valeurCandidat, -strlen($valeurCondition)) . "'");
+				break;
 			default:
-				return false;
+				$result = false;
+				log_message('debug', "Type de condition non reconnu: {$filtre['conditionType']}");
 		}
+		
+		log_message('debug', "RESULTAT FINAL: " . ($result ? 'TRUE' : 'FALSE'));
+		log_message('debug', "=== FIN EVALUATION ===");
+		
+		return $result;
 	}
 
 
@@ -694,4 +750,194 @@ foreach ($headers as $idx => $header) {
 		
 		return '0';
 	}
+
+public function modifierCandidat()
+{
+    // Vérifier que c'est une requête AJAX
+    if (!$this->request->isAJAX()) {
+        return $this->response->setJSON(['success' => false, 'message' => 'Requête non autorisée']);
+    }
+    
+    $json = $this->request->getJSON(true);
+    
+    // Validation des données
+    if (!isset($json['numCandidat'], $json['anneeUniversitaire'], $json['field'], $json['value'])) {
+        return $this->response->setJSON(['success' => false, 'message' => 'Données manquantes']);
+    }
+    
+    $numCandidat = $json['numCandidat'];
+    $anneeUniversitaire = $json['anneeUniversitaire'];
+    $field = $json['field'];
+    $value = $json['value'];
+    
+    // Validation du champ
+    $candidatModel = new \App\Models\CandidatModel();
+    $allowedFields = array_diff($candidatModel->allowedFields, ['numCandidat', 'anneeUniversitaire']);
+    
+    if (!in_array($field, $allowedFields)) {
+        return $this->response->setJSON(['success' => false, 'message' => 'Champ non modifiable']);
+    }
+    
+    try {
+        $db = \Config\Database::connect();
+        
+        // Vérifier que le candidat existe
+        $candidat = $db->table('Candidat')
+            ->where('numCandidat', $numCandidat)
+            ->where('anneeUniversitaire', $anneeUniversitaire)
+            ->get()
+            ->getRow();
+            
+        if (!$candidat) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Candidat non trouvé']);
+        }
+        
+        // Traitement spécial selon le type de champ
+        $processedValue = $this->processFieldValue($field, $value);
+        
+        // Mise à jour
+        $result = $db->table('Candidat')
+            ->where('numCandidat', $numCandidat)
+            ->where('anneeUniversitaire', $anneeUniversitaire)
+            ->update([$field => $processedValue]);
+            
+        if ($result) {
+            return $this->response->setJSON([
+                'success' => true, 
+                'message' => 'Modification sauvegardée',
+                'newValue' => $processedValue
+            ]);
+        } else {
+            return $this->response->setJSON(['success' => false, 'message' => 'Erreur lors de la sauvegarde']);
+        }
+        
+    } catch (\Exception $e) {
+        log_message('error', 'Erreur modification candidat: ' . $e->getMessage());
+        return $this->response->setJSON(['success' => false, 'message' => 'Erreur serveur']);
+    }
+}
+
+private function processFieldValue($field, $value)
+{
+    // Champs numériques
+    $numericFields = ['noteDossier', 'noteGlobale'];
+    if (in_array($field, $numericFields)) {
+        if (empty($value) || !is_numeric($value)) {
+            return 0;
+        }
+        return floatval($value);
+    }
+    
+    // Champ boursier
+    if ($field === 'boursier') {
+        return $this->formatBoursier($value);
+    }
+    
+    // Champs texte - nettoyer et limiter
+    $value = trim($value);
+    if (empty($value)) {
+        return '-';
+    }
+    
+    // Limiter la longueur selon le champ
+    $maxLengths = [
+        'nom' => 100,
+        'prenom' => 100,
+        'civilite' => 10,
+        'profil' => 50,
+        'commentaire' => 500
+    ];
+    
+    if (isset($maxLengths[$field])) {
+        $value = substr($value, 0, $maxLengths[$field]);
+    }
+    
+    return $value;
+}
+
+public function calculerNotesAjax()
+{
+    // Vérifier que c'est une requête AJAX
+    if (!$this->request->isAJAX()) {
+        return $this->response->setJSON(['success' => false, 'message' => 'Requête non autorisée']);
+    }
+    
+    try {
+        $json = $this->request->getJSON(true);
+        $annee = $json['annee'] ?? '';
+        
+        if (empty($annee)) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Année non spécifiée']);
+        }
+        
+        log_message('debug', "Calcul des notes pour l'année: {$annee}");
+        
+        $filtreModel = new \App\Models\FiltreModel();
+        $candidatModel = new \App\Models\CandidatModel();
+        
+        // Récupérer tous les filtres actifs
+        $filtres = $filtreModel->where('actif', 1)->findAll();
+        
+        if (empty($filtres)) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Aucun filtre actif trouvé']);
+        }
+        
+        log_message('debug', "Nombre de filtres actifs: " . count($filtres));
+        
+        // CORRECTION: Récupérer les candidats AVEC les jointures pour avoir noteLycee
+        $candidats = $candidatModel->select('
+                Candidat.*,
+                Etablissement.*,
+                EtudierDans.noteLycee,
+                EtudierDans.noteFicheAvenir
+            ')
+            ->join('EtudierDans', 'EtudierDans.numCandidat = Candidat.numCandidat AND EtudierDans.anneeUniversitaire = Candidat.anneeUniversitaire')
+            ->join('Etablissement', 'Etablissement.idEtablissement = EtudierDans.idEtablissement')
+            ->where('Candidat.anneeUniversitaire', $annee)
+            ->findAll();
+        
+        if (empty($candidats)) {
+            return $this->response->setJSON(['success' => false, 'message' => "Aucun candidat trouvé pour l'année {$annee}"]);
+        }
+        
+        log_message('debug', "Nombre de candidats trouvés pour {$annee}: " . count($candidats));
+        
+        $nbMisAJour = 0;
+        $notesCalculees = [];
+        $db = \Config\Database::connect();
+        
+        foreach ($candidats as $candidat) {
+            // CORRECTION: Passer la noteLycee à la méthode
+            $noteCalculee = $this->appliquerFiltres($candidat, $filtres);
+            
+            // Log pour debug
+            log_message('debug', "Candidat {$candidat['numCandidat']}: noteLycee = " . ($candidat['noteLycee'] ?? 'null') . ", noteCalculee = {$noteCalculee}");
+            
+            // Mettre à jour la note dossier dans la base UNIQUEMENT pour cette année
+            $result = $db->table('Candidat')
+                ->where('numCandidat', $candidat['numCandidat'])
+                ->where('anneeUniversitaire', $annee)
+                ->update(['noteDossier' => $noteCalculee]);
+            
+            if ($result) {
+                $nbMisAJour++;
+                $notesCalculees[$candidat['numCandidat']] = number_format($noteCalculee, 2);
+            }
+        }
+        
+        log_message('debug', "Nombre de candidats mis à jour: {$nbMisAJour}");
+        
+        return $this->response->setJSON([
+            'success' => true,
+            'message' => "Notes calculées avec succès pour l'année {$annee}",
+            'nbMisAJour' => $nbMisAJour,
+            'notes' => $notesCalculees,
+            'annee' => $annee
+        ]);
+        
+    } catch (\Exception $e) {
+        log_message('error', 'Erreur calcul notes AJAX: ' . $e->getMessage());
+        return $this->response->setJSON(['success' => false, 'message' => 'Erreur serveur lors du calcul: ' . $e->getMessage()]);
+    }
+}
 }

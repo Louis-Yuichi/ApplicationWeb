@@ -16,6 +16,9 @@ $routes->get  ('accueil' , 'Home::accueil' );
 $routes->get ('parcoursup'             , 'ParcourSupController::menu'    );
 $routes->get ('gestionParcourSup'      , 'ParcourSupController::gestion' );
 $routes->post('importer'               , 'ParcourSupController::importer');
+$routes->post('modifierCandidat'       , 'ParcourSupController::modifierCandidat');
+$routes->post('calculerNotesAjax'      , 'ParcourSupController::calculerNotesAjax');
+
 // Filtres routes
 $routes->get ('filtres'                , 'ParcourSupController::filtres' );
 $routes->post('creerFiltre'            , 'ParcourSupController::creerFiltre');

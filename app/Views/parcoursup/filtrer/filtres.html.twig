@@ -1,82 +1,11 @@
 {% extends 'template.html.twig' %}
 
 {% block css %}
-<style>
-    /* Container principal avec hauteur adaptée */
-    .main-container {
-        min-height: calc(100vh - 200px); /* Hauteur écran - header - footer */
-    }
-    
-    .filtre-card {
-        border-left: 4px solid #007bff;
-        transition: all 0.3s ease;
-        margin-bottom: 1rem; /* Espacement entre les cartes */
-    }
-    
-    .filtre-card.inactif {
-        border-left-color: #dc3545;
-        opacity: 0.7;
-    }
-    
-    .badge-type {
-        font-size: 0.9em;
-    }
-    
-    .btn-action {
-        margin: 2px;
-    }
-    
-    /* Assurer que les colonnes ont la bonne hauteur */
-    .row {
-        margin-bottom: 2rem;
-    }
-    
-    /* Scrolling amélioré pour la liste des filtres */
-    .filtres-list {
-        max-height: calc(100vh - 380px);
-        overflow-y: auto;
-        padding-right: 10px; /* Espace pour la scrollbar */
-    }
-    
-    /* Personnaliser la scrollbar */
-    .filtres-list::-webkit-scrollbar {
-        width: 8px;
-    }
-    
-    .filtres-list::-webkit-scrollbar-track {
-        background: #f1f1f1;
-        border-radius: 4px;
-    }
-    
-    .filtres-list::-webkit-scrollbar-thumb {
-        background: #888;
-        border-radius: 4px;
-    }
-    
-    .filtres-list::-webkit-scrollbar-thumb:hover {
-        background: #555;
-    }
-</style>
+<link rel="stylesheet" href="/assets/css/filtres.css">
 {% endblock %}
 
 {% block javascript %}
-<script>
-function toggleFiltre(idFiltre) {
-    window.location.href = '/toggleFiltre/' + idFiltre;
-}
-
-function supprimerFiltre(idFiltre) {
-    if (confirm('Êtes-vous sûr de vouloir supprimer ce filtre ?')) {
-        window.location.href = '/supprimerFiltre/' + idFiltre;
-    }
-}
-
-function calculerNotes() {
-    if (confirm('Êtes-vous sûr de vouloir recalculer toutes les notes dossier ?')) {
-        window.location.href = '/calculerNotes';
-    }
-}
-</script>
+<script src="/assets/js/filtres.js"></script>
 {% endblock %}
 
 {% block body %}
@@ -89,6 +18,9 @@ function calculerNotes() {
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h2>Gestion des filtres</h2>
                 <div>
+                    <a class="btn btn-success" href="/gestionParcourSup">
+                        <i class="fas fa-database"></i> Gerer les candidats
+                    </a>
                     <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#nouveauFiltreModal">
                         <i class="fas fa-plus"></i> Nouveau filtre
                     </button>
@@ -186,7 +118,7 @@ function calculerNotes() {
     </div>
 </div>
 
-<!-- Modal nouveau filtre (reste inchangé) -->
+<!-- Modal nouveau filtre -->
 <div class="modal fade" id="nouveauFiltreModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
