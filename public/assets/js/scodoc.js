@@ -58,6 +58,9 @@ document.getElementById('anneePromotion').addEventListener('change', function()
 	document.getElementById('parcours_n'    ).textContent = '';
 
 	etudiants = [];
+	// Ajout : reset le nombre d'avis
+	document.getElementById('nbAvisPromo').textContent = '0';
+
 	if (annee)
 	{
 		fetch('/api/etudiants/' + annee)
@@ -72,6 +75,8 @@ document.getElementById('anneePromotion').addEventListener('change', function()
 					opt.textContent = etu.nomEtudiant + ' ' + etu.prenomEtudiant;
 					selectEtu.appendChild(opt);
 				});
+				// Ajout : affiche le nombre d'étudiants S6
+				document.getElementById('nbAvisPromo').textContent = data.length;
 			});
 	}
 });
