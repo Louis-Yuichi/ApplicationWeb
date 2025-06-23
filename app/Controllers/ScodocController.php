@@ -53,7 +53,7 @@ class ScodocController extends BaseController
 					$prenomEtudiant = $row[$index['Prénom']];
 					$parcoursEtudes = $row[$index['Cursus']];
 
-					$nbAbsences     = $row[$index['Abs']] - $row[$index['Just.']];
+					$nbAbsencesInjust = $row[$index['Abs']] - $row[$index['Just.']];
 
 					$db = db_connect();
 					$db->query
@@ -64,8 +64,8 @@ class ScodocController extends BaseController
 
 					$db->query
 					(
-						"INSERT INTO \"Semestre\" (\"idEtudiant\", \"numeroSemestre\", \"nbAbsences\") VALUES (?, ?, ?)",
-						[$idEtudiant, $numeroSemestre, $nbAbsences]
+						"INSERT INTO \"Semestre\" (\"idEtudiant\", \"numeroSemestre\", \"nbAbsencesInjust\") VALUES (?, ?, ?)",
+						[$idEtudiant, $numeroSemestre, $nbAbsencesInjust]
 					);
 
 					foreach ($index as $colName => $j)
@@ -144,7 +144,7 @@ class ScodocController extends BaseController
 	{
 		$db = db_connect();
 		$absences = $db->table('Semestre')
-			->select('numeroSemestre, nbAbsences')
+			->select('numeroSemestre, nbAbsencesInjust')
 			->where('idEtudiant', $idEtudiant)
 			->get()
 			->getResultArray();
@@ -153,9 +153,9 @@ class ScodocController extends BaseController
 		$but1 = 0; $but2 = 0; $but3 = 0;
 		foreach ($absences as $abs)
 		{
-			if (in_array($abs['numeroSemestre'], [1,2])) $but1 += $abs['nbAbsences'];
-			if (in_array($abs['numeroSemestre'], [3,4])) $but2 += $abs['nbAbsences'];
-			if (in_array($abs['numeroSemestre'], [5,6])) $but3 += $abs['nbAbsences'];
+			if (in_array($abs['numeroSemestre'], [1,2])) $but1 += $abs['nbAbsencesInjust'];
+			if (in_array($abs['numeroSemestre'], [3,4])) $but2 += $abs['nbAbsencesInjust'];
+			if (in_array($abs['numeroSemestre'], [5,6])) $but3 += $abs['nbAbsencesInjust'];
 		}
 		return $this->response->setJSON
 		([
@@ -164,4 +164,35 @@ class ScodocController extends BaseController
 			'but3' => $but3
 		]);
 	}
+
+	public function apprentissageParEtudiant($idEtudiant)
+	{
+    $db = db_connect();
+    $semestres = $db->table('Semestre')
+        ->select('numeroSemestre, apprentissage')
+        ->where('idEtudiant', $idEtudiant)
+        ->get()
+        ->getResultArray();
+
+    $but = [1 => null, 2 => null, 3 => null];
+    foreach ($semestres as $s) {
+        if (in_array($s['numeroSemestre'], [1, 2]) && $but[1] === null) {
+            $but[1] = $s['apprentissage'];
+        }
+        if (in_array($s['numeroSemestre'], [3, 4]) && $but[2] === null) {
+            $but[2] = $s['apprentissage'];
+        }
+        if (in_array($s['numeroSemestre'], [5, 6]) && $but[3] === null) {
+            $but[3] = $s['apprentissage'];
+        }
+    }
+
+    return $this->response->setJSON([
+        'but1' => $but[1] ?? '',
+        'but2' => $but[2] ?? '',
+        'but3' => $but[3] ?? ''
+    ]);
+}
+
+
 }
