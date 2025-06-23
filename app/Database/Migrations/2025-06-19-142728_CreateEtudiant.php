@@ -13,7 +13,6 @@ class CreateEtudiant extends Migration
 			'idEtudiant'       => ['type' => 'INT'     ,                         'null' => false],
 			'nomEtudiant'      => ['type' => 'VARCHAR' , 'constraint' =>     50, 'null' => false],
 			'prenomEtudiant'   => ['type' => 'VARCHAR' , 'constraint' =>     50, 'null' => false],
-			'apprentissage'    => ['type' => 'BOOLEAN' ,                         'null' => false, 'default' => false],
 			'parcoursEtudes'   => ['type' => 'VARCHAR' , 'constraint' =>     30, 'null' => false],
 			'parcoursBUT'      => ['type' => 'VARCHAR' , 'constraint' =>     80, 'null' => false,
 								   'default' => 'A « Réalisation d\'applications : conception, développement, validation »'],

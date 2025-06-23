@@ -12,7 +12,8 @@ class CreateSemestre extends Migration
 		([
 			'idEtudiant'       => ['type' => 'INT'    , 'null' => false],
 			'numeroSemestre'   => ['type' => 'INT'    , 'null' => false],
-			'nbAbsencesInjust' => ['type' => 'INT'    , 'null' => false]
+			'nbAbsencesInjust' => ['type' => 'INT'    , 'null' => false],
+			'apprentissage'    => ['type' => 'BOOLEAN', 'null' => false, 'default' => false]
 		]);
 
 		$this->forge->addPrimaryKey(['idEtudiant', 'numeroSemestre']);
