@@ -83,8 +83,8 @@ class ScodocController extends BaseController
 							{
 								$db->query
 								(
-									"INSERT INTO \"Competence\" (\"idEtudiant\", \"numeroSemestre\", \"codeCompetence\", \"nomCompetence\", \"moyenneCompetence\", \"bonusCompetence\", \"rangCompetence\") VALUES (?, ?, ?, ?, ?, ?, ?)",
-									[$idEtudiant, $numeroSemestre, $colName, $colName, $moyenne, $bonus, 99]
+									"INSERT INTO \"Competence\" (\"idEtudiant\", \"numeroSemestre\", \"codeCompetence\", \"moyenneCompetence\", \"bonusCompetence\", \"rangCompetence\") VALUES (?, ?, ?, ?, ?, ?)",
+									[$idEtudiant, $numeroSemestre, $colName, $moyenne, $bonus, 1]
 								);
 							}
 						}
@@ -149,19 +149,25 @@ class ScodocController extends BaseController
 			->get()
 			->getResultArray();
 
-		// Regroupe par BUT
-		$but1 = 0; $but2 = 0; $but3 = 0;
-		foreach ($absences as $abs)
-		{
-			if (in_array($abs['numeroSemestre'], [1,2])) $but1 += $abs['nbAbsencesInjust'];
-			if (in_array($abs['numeroSemestre'], [3,4])) $but2 += $abs['nbAbsencesInjust'];
-			if (in_array($abs['numeroSemestre'], [5,6])) $but3 += $abs['nbAbsencesInjust'];
+		// Initialisé à null pour détecter l'absence de données
+		$but = [1 => null, 2 => null, 3 => null];
+		
+		foreach ($absences as $abs) {
+			if (in_array($abs['numeroSemestre'], [1,2])) {
+				$but[1] = ($but[1] ?? 0) + $abs['nbAbsencesInjust'];
+			}
+			if (in_array($abs['numeroSemestre'], [3,4])) {
+				$but[2] = ($but[2] ?? 0) + $abs['nbAbsencesInjust'];
+			}
+			if (in_array($abs['numeroSemestre'], [5,6])) {
+				$but[3] = ($but[3] ?? 0) + $abs['nbAbsencesInjust'];
+			}
 		}
-		return $this->response->setJSON
-		([
-			'but1' => $but1,
-			'but2' => $but2,
-			'but3' => $but3
+		
+		return $this->response->setJSON([
+			'but1' => $but[1] ?? '', // Affiche vide si aucun semestre S1/S2
+			'but2' => $but[2] ?? '', // Affiche vide si aucun semestre S3/S4
+			'but3' => $but[3] ?? ''  // Affiche vide si aucun semestre S5/S6
 		]);
 	}
 
