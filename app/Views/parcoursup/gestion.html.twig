@@ -95,6 +95,9 @@
 
     <!-- Boutons -->
     <div class="d-flex justify-content-center mt-4">
+		<a href="/parcoursup" class="btn btn-secondary mx-2">
+            <i class="fas fa-arrow-left"></i> Retour
+        </a>
         <a href="/filtres" class="btn btn-success mx-2">
             <i class="fas fa-filter"></i> Gérer les filtres
         </a>
@@ -104,9 +107,54 @@
             <span id="anneeInfo" class="d-none">pour {{ anneeSelectionnee|default('') }}</span>
             <span class="spinner-border spinner-border-sm d-none" id="loadingSpinner"></span>
         </button>
-        <button class="btn btn-primary mx-2">
+        <button class="btn btn-primary mx-2" data-bs-toggle="modal" data-bs-target="#examinateurModal">
             <i class="fas fa-upload"></i> Exporter les résultats
         </button>
+    </div>
+
+    <!-- Modal pour le code examinateur -->
+    <div class="modal fade" id="examinateurModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form id="exportForm" action="/evaluation" method="GET">
+                    <div class="modal-header">
+                        <h5 class="modal-title">
+                            <i class="fas fa-user-check"></i> Informations Examinateur
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <!-- Affichage des infos utilisateur automatiques -->
+                        <div class="alert alert-info">
+                            <h6><i class="fas fa-info-circle"></i> Utilisateur connecté :</h6>
+                            <strong>{{ userPrenom|default('Prénom') }} {{ userName|default('Nom') }}</strong>
+                            <br>
+                            <small class="text-muted">Ces informations seront automatiquement utilisées pour l'export</small>
+                        </div>
+                        
+                        <!-- Code examinateur à saisir -->
+                        <div class="mb-3">
+                            <label class="form-label">Code examinateur <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="codeExaminateur" required 
+                                   placeholder="Ex: EX001" maxlength="10">
+                            <div class="form-text">
+                                Saisissez votre code examinateur personnel pour l'évaluation.
+                            </div>
+                        </div>
+                        
+                        <input type="hidden" name="annee" value="{{ anneeSelectionnee }}">
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="fas fa-times"></i> Annuler
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-arrow-right"></i> Continuer vers l'export
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
 
     <!-- Zone pour les messages avec info sur l'année -->

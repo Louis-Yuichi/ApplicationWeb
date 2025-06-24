@@ -72,4 +72,18 @@ abstract class BaseController extends Controller
 
 		echo $twig->render($viewName,$data);
 	}
+
+	protected function getCurrentUser()
+	{
+		$session = session();
+		
+		// Utiliser les données déjà disponibles en session
+		$nom = $session->get('userName') ?? 'Nom Utilisateur';
+		$prenom = $session->get('userPrenom') ?? 'Prénom Utilisateur';
+		
+		return [
+			'nom' => $nom,
+			'prenom' => $prenom
+		];
+	}
 }

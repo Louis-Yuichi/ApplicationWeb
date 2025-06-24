@@ -6,6 +6,15 @@ use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class ParcourSupController extends BaseController
 {
+    private $noteCalculator;
+    private $importExportService;
+    
+    public function __construct()
+    {
+        $this->noteCalculator = new \App\Services\NoteCalculatorService();
+        $this->importExportService = new \App\Services\ImportExportService();
+    }
+
     public function menu()
     {
         $data = [
@@ -21,7 +30,6 @@ class ParcourSupController extends BaseController
         $filtreModel = new \App\Models\FiltreModel();
         $filtres = $filtreModel->findAll();
         
-        // Récupérer les colonnes disponibles pour les filtres
         $candidatModel = new \App\Models\CandidatModel();
         $colonnesDisponibles = $candidatModel->allowedFields;
         
@@ -64,7 +72,6 @@ class ParcourSupController extends BaseController
         if ($filtre) {
             $nouveauStatut = $filtre['actif'] ? 0 : 1;
             $filtreModel->update($idFiltre, ['actif' => $nouveauStatut]);
-            
             return redirect()->to('/filtres');
         }
         
@@ -82,185 +89,14 @@ class ParcourSupController extends BaseController
         }
     }
 
-    public function calculerNotes()
-    {
-        $filtreModel = new \App\Models\FiltreModel();
-        $candidatModel = new \App\Models\CandidatModel();
-        
-        $filtres = $filtreModel->where('actif', 1)->findAll();
-        
-        if (empty($filtres)) {
-            return redirect()->to('/filtres')->with('error', 'Aucun filtre actif trouvé');
-        }
-        
-        $candidats = $candidatModel->select('
-                Candidat.*,
-                Etablissement.*,
-                EtudierDans.noteLycee,
-                EtudierDans.noteFicheAvenir
-            ')
-            ->join('EtudierDans', 'EtudierDans.numCandidat = Candidat.numCandidat AND EtudierDans.anneeUniversitaire = Candidat.anneeUniversitaire')
-            ->join('Etablissement', 'Etablissement.idEtablissement = EtudierDans.idEtablissement')
-            ->findAll();
-        
-        foreach ($candidats as $candidat) {
-            $noteCalculee = $this->appliquerFiltres($candidat, $filtres);
-            
-            $candidatModel->update([
-                'numCandidat' => $candidat['numCandidat'],
-                'anneeUniversitaire' => $candidat['anneeUniversitaire']
-            ], [
-                'noteDossier' => $noteCalculee
-            ]);
-        }
-        
-        return redirect()->to('/filtres');
-    }
-
-    private function appliquerFiltres($candidat, $filtres)
-    {
-        // Utiliser noteLycee comme note de base, sinon 10
-        $noteBase = 10;
-        
-        if (isset($candidat['noteLycee']) && !empty($candidat['noteLycee']) && is_numeric($candidat['noteLycee'])) {
-            $noteBase = floatval($candidat['noteLycee']);
-        }
-        
-        $noteFinale = $noteBase;
-        
-        foreach ($filtres as $filtre) {
-            if ($this->evaluerCondition($candidat, $filtre)) {
-                switch ($filtre['typeAction']) {
-                    case 'bonus':
-                        $noteFinale += $filtre['valeurAction'];
-                        break;
-                    case 'malus':
-                        $noteFinale -= abs($filtre['valeurAction']);
-                        break;
-                    case 'coefficient':
-                        $noteFinale *= $filtre['valeurAction'];
-                        break;
-                    case 'note_directe':
-                        $noteFinale = $filtre['valeurAction'];
-                        break;
-                }
-            }
-        }
-        
-        // S'assurer que la note reste dans les limites (0-20)
-        $noteFinale = max(0, min(20, $noteFinale));
-        
-        return $noteFinale;
-    }
-
-    private function evaluerCondition($candidat, $filtre)
-    {
-        $valeurCandidat = $candidat[$filtre['colonneSource']] ?? '';
-        $valeurCondition = $filtre['valeurCondition'];
-        
-        switch ($filtre['conditionType']) {
-            case 'contient':
-                return stripos($valeurCandidat, $valeurCondition) !== false;
-            case 'egal':
-                return strcasecmp($valeurCandidat, $valeurCondition) === 0;
-            case 'different':
-                return strcasecmp($valeurCandidat, $valeurCondition) !== 0;
-            case 'commence_par':
-                return stripos($valeurCandidat, $valeurCondition) === 0;
-            case 'finit_par':
-                return strlen($valeurCondition) <= strlen($valeurCandidat) && 
-                       strcasecmp(substr($valeurCandidat, -strlen($valeurCondition)), $valeurCondition) === 0;
-            default:
-                return false;
-        }
-    }
-
-    private $columnMappings = [
-        'candidat' => [
-            'code' => 'numCandidat',
-            'nom' => 'nom',
-            'prénom' => 'prenom',
-            'civilité' => 'civilite',
-            'profil' => 'profil',
-            'boursier' => 'boursier',
-            'marqueur_dossier' => 'marqueurDossier',
-            'marqueurs dossier' => 'marqueurDossier'
-        ],
-        'filiere' => [
-            'libellé' => 'scolarite'
-        ],
-        'formation' => [
-            'libellé' => 'formation'
-        ],
-        'diplome' => [
-            'libellé' => 'diplome'
-        ],
-        'type diplôme' => [
-            'code' => 'typeDiplomeCode',
-            'libellé' => 'typeDiplome'
-        ],
-        'preparation' => [
-            'obtenu' => 'preparation_obtenu'
-        ],
-        'série diplôme' => [
-            'libellé' => 'serie',
-            'code' => 'serieCode'
-        ],
-        'série' => [
-            '' => 'serie'
-        ],
-        'scolarité' => [
-            '2022/2023' => 'scolarite'
-        ],
-        'en préparation' => [
-            'obtenu' => 'preparation_obtenu'
-        ],
-        'combinaison' => [
-            'enseignements' => 'specialitesTerminale',
-            'spécialité' => 'specialitesTerminale'
-        ],
-        'enseignement' => [
-            'spécialité abandonné' => 'specialiteAbandonne'
-        ],
-        'spécialité' => [
-            'terminale' => 'specialitesTerminale',
-            'abandonné' => 'specialiteAbandonne',
-            'mention' => 'specialiteMention',
-            'bac pro' => 'specialiteMention'
-        ],
-        'commentaire' => [
-            '' => 'commentaire'
-        ],
-        'commentaires' => [
-            '' => 'commentaire'
-        ],
-        'établissement' => [
-            'nom établissement origine' => 'nomEtablissement',
-            'commune etablissement origine - libellé' => 'villeEtablissement',
-            'commune etablissement origine - codepostal' => 'codePostalEtablissement',
-            'département etablissement origine' => 'departementEtablissement',
-            'pays etablissement origine' => 'paysEtablissement'
-        ],
-        'note' => [
-            'globale' => 'noteGlobale',
-            'fiche avenir' => 'noteFicheAvenir',
-            'lycée' => 'noteLycee',
-            'dossier' => 'noteDossier',
-            'globale calculée' => 'noteGlobale'
-        ]
-    ];
-
     public function gestion()
     {
-        // Récupération des modèles
         $candidatModel = new \App\Models\CandidatModel();
         $etablissementModel = new \App\Models\EtablissementModel();
         $etudierDansModel = new \App\Models\EtudierDansModel();
 
-        // Récupération de l'année sélectionnée
         $anneeSelectionnee = $this->request->getGet('annee');
         
-        // Récupération des champs dans l'ordre souhaité
         $columns = [
             'Candidat' => array_diff($candidatModel->allowedFields, ['noteGlobale', 'noteDossier', 'commentaire']),
             'Etablissement' => $etablissementModel->allowedFields,
@@ -269,7 +105,6 @@ class ParcourSupController extends BaseController
             'Candidat_fin' => ['noteDossier', 'commentaire']
         ];
 
-        // Récupération des données uniquement si une année est sélectionnée
         $candidats = [];
         if ($anneeSelectionnee) {
             try {
@@ -284,7 +119,7 @@ class ParcourSupController extends BaseController
                 ->where('Candidat.anneeUniversitaire', $anneeSelectionnee)
                 ->findAll();
             } catch (\Exception $e) {
-                // Silence - pas de log
+                // Silence
             }
         }
 
@@ -297,97 +132,77 @@ class ParcourSupController extends BaseController
 
     public function importer()
     {
-        if (!$this->request->getFile('fichier'))
-        {
+        if (!$this->request->getFile('fichier')) {
             return redirect()->back()->with('error', 'Aucun fichier sélectionné');
         }
 
         $file = $this->request->getFile('fichier');
         $annee = $this->request->getPost('annee');
 
-        try
-        {
+        try {
             $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
             $spreadsheet = $reader->load($file);
             $sheet = $spreadsheet->getActiveSheet();
 
             $header = [];
-            foreach ($sheet->getRowIterator(1, 1) as $row)
-            {
+            foreach ($sheet->getRowIterator(1, 1) as $row) {
                 $header = $sheet->rangeToArray('A1:' . $sheet->getHighestColumn() . '1')[0];
             }
 
-            // Création du mapping dynamique
-            $mapping = $this->mapColumns($header);
+            // Utiliser le service
+            $mapping = $this->importExportService->mapColumns($header);
 
-            // Vérification du mapping après la boucle
             $requiredFields = ['numCandidat', 'nom', 'prenom'];
             $missingFields = [];
-            foreach ($requiredFields as $field)
-            {
-                if (!isset($mapping[$field]))
-                {
+            foreach ($requiredFields as $field) {
+                if (!isset($mapping[$field])) {
                     $missingFields[] = $field;
                 }
             }
 
-            if (!empty($missingFields))
-            {
+            if (!empty($missingFields)) {
                 throw new \Exception('Champs obligatoires manquants : ' . implode(', ', $missingFields));
             }
 
-            // Initialisation des modèles
             $etablissementModel = new \App\Models\EtablissementModel();
             $candidatModel = new \App\Models\CandidatModel();
-            $etudierDansModel = new \App\Models\EtudierDansModel();
 
             $db = \Config\Database::connect();
             $db->transStart();
             
             $nbInserted = 0;
 
-            foreach ($sheet->getRowIterator(2) as $row)
-            {
+            foreach ($sheet->getRowIterator(2) as $row) {
                 $rowData = $sheet->rangeToArray('A' . $row->getRowIndex() . ':' . $sheet->getHighestColumn() . $row->getRowIndex())[0];
                 if (empty(array_filter($rowData))) continue;
 
                 try {
-                    // 1. Vérification et préparation du numCandidat
                     $numCandidat = strval($rowData[$mapping['numCandidat']] ?? '');
-                    if (empty($numCandidat))
-                    {
-                        continue;
-                    }
+                    if (empty($numCandidat)) continue;
                     
                     $numCandidat = trim($numCandidat);
 
-                    // 2. Préparation des données du candidat de base
+                    // Données candidat
                     $candidatData = [
                         'numCandidat' => strval($numCandidat),
                         'anneeUniversitaire' => strval($annee)
                     ];
 
-                    // Ajout des champs obligatoires
-                    if (isset($mapping['nom']))
-                    {
+                    if (isset($mapping['nom'])) {
                         $candidatData['nom'] = strval($rowData[$mapping['nom']] ?? '') ?: '-';
                     }
-                    if (isset($mapping['prenom']))
-                    {
+                    if (isset($mapping['prenom'])) {
                         $candidatData['prenom'] = strval($rowData[$mapping['prenom']] ?? '') ?: '-';
                     }
 
-                    // Traiter les champs textuels simples
                     $textFields = [
                         'civilite', 'profil', 'formation', 'scolarite', 'diplome', 
                         'typeDiplomeCode', 'preparation_obtenu', 'serie', 'serieCode', 
                         'specialitesTerminale', 'specialiteAbandonne', 'specialiteMention', 'commentaire'
                     ];
 
-                    foreach ($textFields as $field)
-                    {
-                        if (isset($mapping[$field]))
-                        {
+                    foreach ($textFields as $field) {
+                        if (isset($mapping[$field])) {
                             $value = strval($rowData[$mapping[$field]] ?? '');
                             $candidatData[$field] = empty($value) ? '-' : $value;
                         } else {
@@ -395,53 +210,38 @@ class ParcourSupController extends BaseController
                         }
                     }
 
-                    // Traiter le champ boursier séparément
+                    // Utiliser le service pour le boursier
                     $candidatData['boursier'] = isset($mapping['boursier']) ? 
-                        $this->formatBoursier($rowData[$mapping['boursier']] ?? '') : '0';
+                        $this->importExportService->formatBoursier($rowData[$mapping['boursier']] ?? '') : '0';
 
-                    // Traiter les champs numériques de Candidat uniquement
                     $numericFields = ['noteDossier', 'noteGlobale'];
-                    foreach ($numericFields as $field)
-                    {
+                    foreach ($numericFields as $field) {
                         $candidatData[$field] = 0;
                         if (isset($mapping[$field]) && 
                             isset($rowData[$mapping[$field]]) && 
                             !empty($rowData[$mapping[$field]]) && 
-                            is_numeric($rowData[$mapping[$field]]))
-                            {
+                            is_numeric($rowData[$mapping[$field]])) {
                             $candidatData[$field] = floatval($rowData[$mapping[$field]]);
                         }
                     }
 
-                    // Insertion ou mise à jour simplifiée
-                    try {
-                        $db = \Config\Database::connect();
-                        
-                        // Vérifier si le candidat existe pour cette année spécifique
-                        $existingCandidat = $db->table('Candidat')
+                    // Insertion/update candidat
+                    $existingCandidat = $db->table('Candidat')
+                        ->where('numCandidat', $numCandidat)
+                        ->where('anneeUniversitaire', $annee)
+                        ->get()
+                        ->getRow();
+
+                    if ($existingCandidat) {
+                        $db->table('Candidat')
                             ->where('numCandidat', $numCandidat)
                             ->where('anneeUniversitaire', $annee)
-                            ->get()
-                            ->getRow();
-
-                        if ($existingCandidat)
-                        {
-                            $db->table('Candidat')
-                                ->where('numCandidat', $numCandidat)
-                                ->where('anneeUniversitaire', $annee)
-                                ->update($candidatData);
-                        } else {
-                            $db->table('Candidat')->insert($candidatData);
-                        }
-                        
-                        $nbInserted++;
-
-                    } catch (\Exception $e)
-                    {
-                        continue;
+                            ->update($candidatData);
+                    } else {
+                        $db->table('Candidat')->insert($candidatData);
                     }
-
-                    // 4. Gestion de l'établissement
+                    
+                    // Gestion établissement avec le service
                     $etablissementData = [
                         'nomEtablissement' => isset($mapping['nomEtablissement']) ? strval($rowData[$mapping['nomEtablissement']] ?? '') : '',
                         'villeEtablissement' => isset($mapping['villeEtablissement']) ? strval($rowData[$mapping['villeEtablissement']] ?? '') : '',
@@ -450,12 +250,9 @@ class ParcourSupController extends BaseController
                         'paysEtablissement' => isset($mapping['paysEtablissement']) ? strval($rowData[$mapping['paysEtablissement']] ?? '') : ''
                     ];
 
-                    // Vérifier si au moins le nom et la ville sont présents
-                    if (!empty($etablissementData['nomEtablissement']) || !empty($etablissementData['villeEtablissement']))
-                    {
-                        $etablissement = $this->getOrCreateEtablissement($etablissementModel, $etablissementData);
+                    if (!empty($etablissementData['nomEtablissement']) || !empty($etablissementData['villeEtablissement'])) {
+                        $etablissement = $this->importExportService->getOrCreateEtablissement($etablissementModel, $etablissementData);
                     } else {
-                        // Créer un établissement par défaut si les données sont manquantes
                         $etablissementData = [
                             'nomEtablissement' => 'Non renseigné',
                             'villeEtablissement' => 'Non renseigné',
@@ -463,26 +260,22 @@ class ParcourSupController extends BaseController
                             'departementEtablissement' => '',
                             'paysEtablissement' => ''
                         ];
-                        $etablissement = $this->getOrCreateEtablissement($etablissementModel, $etablissementData);
+                        $etablissement = $this->importExportService->getOrCreateEtablissement($etablissementModel, $etablissementData);
                     }
 
-                    // 5. Création de la relation
-                    if ($etablissement && isset($etablissement['idEtablissement']))
-                    {
-                        // Préparer les données
+                    // Relation EtudierDans
+                    if ($etablissement && isset($etablissement['idEtablissement'])) {
                         $noteLycee = null;
                         if (isset($mapping['noteLycee']) && 
                             isset($rowData[$mapping['noteLycee']]) && 
-                            is_numeric($rowData[$mapping['noteLycee']]))
-                            {
+                            is_numeric($rowData[$mapping['noteLycee']])) {
                             $noteLycee = number_format(floatval($rowData[$mapping['noteLycee']]), 2, '.', '');
                         }
                         
                         $noteFicheAvenir = null;
                         if (isset($mapping['noteFicheAvenir']) && 
                             isset($rowData[$mapping['noteFicheAvenir']]) && 
-                            is_numeric($rowData[$mapping['noteFicheAvenir']]))
-                            {
+                            is_numeric($rowData[$mapping['noteFicheAvenir']])) {
                             $noteFicheAvenir = number_format(floatval($rowData[$mapping['noteFicheAvenir']]), 2, '.', '');
                         }
 
@@ -494,7 +287,6 @@ class ParcourSupController extends BaseController
                             'noteFicheAvenir' => $noteFicheAvenir
                         ];
 
-                        // Supprimer l'ancienne relation si elle existe
                         $db->table('EtudierDans')
                         ->where('numCandidat', $numCandidat)
                         ->where('anneeUniversitaire', $annee)
@@ -504,176 +296,38 @@ class ParcourSupController extends BaseController
                         $db->table('EtudierDans')->insert($etudierDansData);
                     }
 
-                } catch (\Exception $e)
-                {
+                    $nbInserted++;
+
+                } catch (\Exception $e) {
                     continue;
                 }
             }
 
             $db->transComplete();
 
-            if ($db->transStatus() === false)
-            {
+            if ($db->transStatus() === false) {
                 return redirect()->back()->with('error', 'Erreur lors de la transaction');
             }
 
-            if ($nbInserted === 0)
-            {
+            if ($nbInserted === 0) {
                 return redirect()->back()->with('error', 'Aucun candidat n\'a été importé');
             } else {
                 return redirect()->to('/parcoursup')->with('success', "$nbInserted candidat(s) importé(s) avec succès");
             }
 
-        }
-        catch (\Exception $e)
-        {
+        } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Une erreur est survenue pendant l\'import');
         }
     }
 
-    private function mapColumns($headers)
-    {
-        $mapping = [];
-        
-        foreach ($headers as $idx => $col)
-        {
-            if (empty($col)) continue;
-            
-            $colLower = mb_strtolower(trim($col));
-
-            // Cas spéciaux pour l'établissement
-            $etablissementCases = [
-                'nom etablissement origine' => 'nomEtablissement',
-                'commune etablissement origine - libellé' => 'villeEtablissement',
-                'commune etablissement origine - codepostal' => 'codePostalEtablissement', 
-                'département etablissement origine' => 'departementEtablissement',
-                'pays etablissement origine' => 'paysEtablissement'
-            ];
-
-            // Vérifier les colonnes d'établissement
-            foreach ($etablissementCases as $pattern => $field)
-            {
-                if (strpos($colLower, $pattern) !== false)
-                {
-                    $mapping[$field] = $idx;
-                    continue 2;
-                }
-            }
-
-            // Cas spéciaux qui nécessitent un traitement exact
-            $specialCases = [
-                'candidat - code' => 'numCandidat',
-                'numéro parcoursup' => 'numCandidat',
-                'candidat - nom' => 'nom',
-                'candidat - prénom' => 'prenom',
-                'nom' => 'nom',
-                'prénom' => 'prenom',
-                'profil' => 'profil',
-                'marqueurs dossier' => 'marqueurDossier',
-                'diplôme' => 'diplome',
-                'serie' => 'serie',
-                'commentaires' => 'commentaire',
-                'en préparation / obtenu' => 'preparation_obtenu',
-                'combinaison des enseignements de spécialité en terminale' => 'specialitesTerminale',
-                'civilité' => 'civilite',
-                'candidat boursier - code' => 'boursier'
-            ];
-
-            // Vérifier d'abord les cas spéciaux
-            foreach ($specialCases as $pattern => $field)
-            {
-                if ($colLower === $pattern)
-                {
-                    $mapping[$field] = $idx;
-                    continue 2;
-                }
-            }
-
-            // Pour les autres colonnes, on utilise une approche plus flexible
-            foreach ($this->columnMappings as $category => $fields)
-            {
-                $categoryLower = mb_strtolower($category);
-                
-                foreach ($fields as $search => $dbField)
-                {
-                    $searchLower = mb_strtolower($search);
-                    
-                    // Construire plusieurs patterns possibles
-                    $patterns = [
-                        $categoryLower . ' - ' . $searchLower,
-                        $categoryLower . ' ' . $searchLower,
-                        $searchLower . ' ' . $categoryLower,
-                        $categoryLower . '.*' . $searchLower
-                    ];
-
-                    foreach ($patterns as $pattern)
-                    {
-                        if (strpos($colLower, $pattern) !== false)
-                        {
-                            $mapping[$dbField] = $idx;
-                            continue 3;
-                        }
-                    }
-                }
-            }
-        }
-
-        return $mapping;
-    }
-
-    private function getOrCreateEtablissement($model, $data)
-    {
-        // Chercher l'établissement existant
-        $etablissement = $model->where('nomEtablissement', $data['nomEtablissement'])
-                            ->where('villeEtablissement', $data['villeEtablissement'])
-                            ->first();
-        
-        // Si non trouvé, on le crée
-        if (!$etablissement)
-        {
-            $model->insert($data);
-            $etablissement = $model->where('nomEtablissement', $data['nomEtablissement'])
-                                ->where('villeEtablissement', $data['villeEtablissement'])
-                                ->first();
-        }
-        
-        return $etablissement;
-    }
-
-    private function formatBoursier($value)
-    {
-        if (empty($value))
-        {
-            return '0';
-        }
-        
-        // Si c'est déjà un nombre
-        if (is_numeric($value))
-        {
-            $intValue = intval($value);
-            return (string)($intValue > 0 ? $intValue : 0);
-        }
-        
-        // Si c'est une chaîne
-        $value = strtolower(trim($value));
-        if ($value === 'oui' || $value === '1' || $value === 'true')
-        {
-            return '1';
-        }
-        
-        return '0';
-    }
-
     public function modifierCandidat()
     {
-        // Vérifier que c'est une requête AJAX
         if (!$this->request->isAJAX()) {
             return $this->response->setJSON(['success' => false, 'message' => 'Requête non autorisée']);
         }
         
         $json = $this->request->getJSON(true);
         
-        // Validation des données
         if (!isset($json['numCandidat'], $json['anneeUniversitaire'], $json['field'], $json['value'])) {
             return $this->response->setJSON(['success' => false, 'message' => 'Données manquantes']);
         }
@@ -683,7 +337,6 @@ class ParcourSupController extends BaseController
         $field = $json['field'];
         $value = $json['value'];
         
-        // Validation du champ
         $candidatModel = new \App\Models\CandidatModel();
         $allowedFields = array_diff($candidatModel->allowedFields, ['numCandidat', 'anneeUniversitaire']);
         
@@ -694,7 +347,6 @@ class ParcourSupController extends BaseController
         try {
             $db = \Config\Database::connect();
             
-            // Vérifier que le candidat existe
             $candidat = $db->table('Candidat')
                 ->where('numCandidat', $numCandidat)
                 ->where('anneeUniversitaire', $anneeUniversitaire)
@@ -705,10 +357,9 @@ class ParcourSupController extends BaseController
                 return $this->response->setJSON(['success' => false, 'message' => 'Candidat non trouvé']);
             }
             
-            // Traitement spécial selon le type de champ
-            $processedValue = $this->processFieldValue($field, $value);
+            // Utiliser le service
+            $processedValue = $this->importExportService->processFieldValue($field, $value);
             
-            // Mise à jour
             $result = $db->table('Candidat')
                 ->where('numCandidat', $numCandidat)
                 ->where('anneeUniversitaire', $anneeUniversitaire)
@@ -729,44 +380,6 @@ class ParcourSupController extends BaseController
         }
     }
 
-    private function processFieldValue($field, $value)
-    {
-        // Champs numériques
-        $numericFields = ['noteDossier', 'noteGlobale'];
-        if (in_array($field, $numericFields)) {
-            if (empty($value) || !is_numeric($value)) {
-                return 0;
-            }
-            return floatval($value);
-        }
-        
-        // Champ boursier
-        if ($field === 'boursier') {
-            return $this->formatBoursier($value);
-        }
-        
-        // Champs texte - nettoyer et limiter
-        $value = trim($value);
-        if (empty($value)) {
-            return '-';
-        }
-        
-        // Limiter la longueur selon le champ
-        $maxLengths = [
-            'nom' => 100,
-            'prenom' => 100,
-            'civilite' => 10,
-            'profil' => 50,
-            'commentaire' => 500
-        ];
-        
-        if (isset($maxLengths[$field])) {
-            $value = substr($value, 0, $maxLengths[$field]);
-        }
-        
-        return $value;
-    }
-
     public function calculerNotesAjax()
     {
         if (!$this->request->isAJAX()) {
@@ -784,14 +397,12 @@ class ParcourSupController extends BaseController
             $filtreModel = new \App\Models\FiltreModel();
             $candidatModel = new \App\Models\CandidatModel();
             
-            // Récupérer tous les filtres actifs
             $filtres = $filtreModel->where('actif', 1)->findAll();
             
             if (empty($filtres)) {
                 return $this->response->setJSON(['success' => false, 'message' => 'Aucun filtre actif trouvé']);
             }
             
-            // Récupérer les candidats avec jointures
             $candidats = $candidatModel->select('
                     Candidat.*,
                     Etablissement.*,
@@ -809,19 +420,30 @@ class ParcourSupController extends BaseController
             
             $nbMisAJour = 0;
             $notesCalculees = [];
+            $notesGlobales = [];
             $db = \Config\Database::connect();
             
             foreach ($candidats as $candidat) {
-                $noteCalculee = $this->appliquerFiltres($candidat, $filtres);
+                // Utiliser les services
+                $noteDossierCalculee = $this->noteCalculator->appliquerFiltres($candidat, $filtres);
+                $noteGlobaleCalculee = $this->noteCalculator->calculerNoteGlobale(
+                    $candidat['noteLycee'],
+                    $candidat['noteFicheAvenir'], 
+                    $noteDossierCalculee
+                );
                 
                 $result = $db->table('Candidat')
                     ->where('numCandidat', $candidat['numCandidat'])
                     ->where('anneeUniversitaire', $annee)
-                    ->update(['noteDossier' => $noteCalculee]);
+                    ->update([
+                        'noteDossier' => $noteDossierCalculee,
+                        'noteGlobale' => $noteGlobaleCalculee
+                    ]);
                 
                 if ($result) {
                     $nbMisAJour++;
-                    $notesCalculees[$candidat['numCandidat']] = number_format($noteCalculee, 2);
+                    $notesCalculees[$candidat['numCandidat']] = number_format($noteDossierCalculee, 2);
+                    $notesGlobales[$candidat['numCandidat']] = number_format($noteGlobaleCalculee, 2);
                 }
             }
             
@@ -830,11 +452,137 @@ class ParcourSupController extends BaseController
                 'message' => "Notes calculées avec succès pour l'année {$annee}",
                 'nbMisAJour' => $nbMisAJour,
                 'notes' => $notesCalculees,
+                'notesGlobales' => $notesGlobales,
                 'annee' => $annee
             ]);
             
         } catch (\Exception $e) {
             return $this->response->setJSON(['success' => false, 'message' => 'Erreur serveur lors du calcul']);
+        }
+    }
+
+    public function evaluation()
+    {
+        $codeExaminateur = $this->request->getGet('codeExaminateur');
+        $anneeSelectionnee = $this->request->getGet('annee');
+        
+        if (empty($codeExaminateur)) {
+            return redirect()->to('/gestionParcourSup')->with('error', 'Code examinateur manquant');
+        }
+        
+        if (empty($anneeSelectionnee)) {
+            return redirect()->to('/gestionParcourSup')->with('error', 'Année non sélectionnée');
+        }
+        
+        $utilisateur = $this->getCurrentUser();
+        $nomExaminateur = $utilisateur['nom'] ?? 'Nom';
+        $prenomExaminateur = $utilisateur['prenom'] ?? 'Prénom';
+        
+        $candidatModel = new \App\Models\CandidatModel();
+        
+        try {
+            $candidats = $candidatModel->select('
+                    Candidat.numCandidat,
+                    Candidat.nom,
+                    Candidat.prenom,
+                    Candidat.noteDossier,
+                    Candidat.commentaire,
+                    Candidat.profil as groupe
+                ')
+                ->join('EtudierDans', 'EtudierDans.numCandidat = Candidat.numCandidat AND EtudierDans.anneeUniversitaire = Candidat.anneeUniversitaire')
+                ->join('Etablissement', 'Etablissement.idEtablissement = EtudierDans.idEtablissement')
+                ->where('Candidat.anneeUniversitaire', $anneeSelectionnee)
+                ->orderBy('Candidat.nom', 'ASC')
+                ->orderBy('Candidat.prenom', 'ASC')
+                ->findAll();
+        } catch (\Exception $e) {
+            return redirect()->to('/gestionParcourSup')->with('error', 'Erreur lors de la récupération des données');
+        }
+        
+        $columns = [
+            'numCandidat' => 'Code Candidat',
+            'nom' => 'Nom candidat', 
+            'prenom' => 'Prénom candidat',
+            'groupe' => 'Groupe',
+            'codeExaminateur' => 'Code examinateur',
+            'nomExaminateur' => 'Nom examinateur',
+            'prenomExaminateur' => 'Prénom examinateur',
+            'noteDossier' => 'Note de Dossier',
+            'commentaire' => 'Commentaire'
+        ];
+        
+        foreach ($candidats as &$candidat) {
+            $candidat['codeExaminateur'] = $codeExaminateur;
+            $candidat['nomExaminateur'] = $nomExaminateur;
+            $candidat['prenomExaminateur'] = $prenomExaminateur;
+            
+            $candidat['noteDossier'] = number_format($candidat['noteDossier'], 2);
+            $candidat['commentaire'] = $candidat['commentaire'] ?: '-';
+            $candidat['groupe'] = $candidat['groupe'] ?: '-';
+        }
+        
+        return $this->view('parcoursup/evaluation.html.twig', [
+            'candidats' => $candidats,
+            'columns' => $columns,
+            'anneeSelectionnee' => $anneeSelectionnee,
+            'examinateur' => [
+                'code' => $codeExaminateur,
+                'nom' => $nomExaminateur,
+                'prenom' => $prenomExaminateur
+            ],
+            'nbCandidats' => count($candidats)
+        ]);
+    }
+
+    public function exporterEvaluationAvecModifications()
+    {
+        $exportDataJson = $this->request->getPost('exportData');
+        $codeExaminateur = $this->request->getPost('codeExaminateur');
+        $anneeSelectionnee = $this->request->getPost('annee');
+        
+        if (empty($exportDataJson) || empty($codeExaminateur) || empty($anneeSelectionnee)) {
+            return redirect()->back()->with('error', 'Données d\'export manquantes');
+        }
+        
+        $exportData = json_decode($exportDataJson, true);
+        
+        if (!$exportData) {
+            return redirect()->back()->with('error', 'Erreur lors du décodage des données');
+        }
+        
+        $utilisateur = $this->getCurrentUser();
+        $nomExaminateur = $utilisateur['nom'] ?? 'Nom Utilisateur';
+        $prenomExaminateur = $utilisateur['prenom'] ?? 'Prénom Utilisateur';
+        
+        try {
+            $csvData = [];
+            foreach ($exportData as $candidat) {
+                $csvData[] = [
+                    $candidat['numCandidat'] ?? '',
+                    $candidat['nom'] ?? '',
+                    $candidat['prenom'] ?? '',
+                    $candidat['groupe'] ?? '-',
+                    $codeExaminateur,
+                    $nomExaminateur,
+                    $prenomExaminateur,
+                    $candidat['noteDossier'] ?? '0.00',
+                    $candidat['commentaire'] ?? '-'
+                ];
+            }
+            
+            $headers = [
+                'Code Candidat', 'Nom candidat', 'Prénom candidat', 
+                'Groupe', 'Code examinateur', 'Nom examinateur', 
+                'Prénom examinateur', 'Note de Dossier', 'Commentaire'
+            ];
+            
+            $filename = "evaluation_modifiee_" . str_replace('/', '-', $anneeSelectionnee) . "_" . date('Y-m-d_H-i-s') . ".csv";
+            
+            // Utiliser le service
+            $this->importExportService->generateCSV($csvData, $headers, $filename);
+            
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Erreur lors de l\'export');
         }
     }
 }

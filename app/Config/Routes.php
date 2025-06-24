@@ -15,9 +15,11 @@ $routes->get  ('accueil' , 'Home::accueil' );
 // ParcourSupController routes
 $routes->get ('parcoursup'             , 'ParcourSupController::menu'    );
 $routes->get ('gestionParcourSup'      , 'ParcourSupController::gestion' );
+$routes->get ('evaluation'             , 'ParcourSupController::evaluation');
 $routes->post('importer'               , 'ParcourSupController::importer');
 $routes->post('modifierCandidat'       , 'ParcourSupController::modifierCandidat');
 $routes->post('calculerNotesAjax'      , 'ParcourSupController::calculerNotesAjax');
+$routes->post('exporterEvaluationAvecModifications', 'ParcourSupController::exporterEvaluationAvecModifications');
 
 // Filtres routes
 $routes->get ('filtres'                , 'ParcourSupController::filtres' );
