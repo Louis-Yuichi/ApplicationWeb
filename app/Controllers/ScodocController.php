@@ -6,12 +6,7 @@ use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class ScodocController extends BaseController
 {
-	public function menu()
-	{
-		$this->view('scodoc/scodoc.html.twig');
-	}
-
-	public function importerScodoc()
+	public function index()
 	{
 		if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['fichier'], $_POST['anneePromotion']))
 		{
@@ -24,7 +19,22 @@ class ScodocController extends BaseController
 			}
 		}
 
-		return $this->listeEtudiants();
+		$db = db_connect();
+
+		$annee = $this->request->getGet('anneePromotion');
+
+		$annees    = $db->query('SELECT DISTINCT "anneePromotion" FROM "Etudiant"
+								 ORDER BY "anneePromotion"')->getResultArray();
+
+		$etudiants = $annee ? $db->query('SELECT * FROM "Etudiant" WHERE "anneePromotion" = ?
+										  ORDER BY "nomEtudiant"', [$annee])->getResultArray() : [];
+
+		return $this->view('scodoc/scodoc.html.twig',
+		[
+			'etudiants'      => $etudiants,
+			'anneePromotion' => $annee,
+			'annees'         => array_column($annees, 'anneePromotion')
+		]);
 	}
 
 	private function traiterFichier($fichiers, $i, $anneePromotion)
@@ -37,7 +47,6 @@ class ScodocController extends BaseController
 		foreach (array_slice($data, 1) as $ligne)
 		{
 			if (empty($ligne[$indexColonnes['etudid']])) break;
-
 			$this->traiterEtudiant($ligne, $indexColonnes, $numeroSemestre, $anneePromotion);
 		}
 
@@ -76,32 +85,12 @@ class ScodocController extends BaseController
 		}
 	}
 
-	public function listeEtudiants()
-	{
-		$db = db_connect();
-
-		$annee = $this->request->getGet('anneePromotion');
-
-		$annees    = $db->query('SELECT DISTINCT "anneePromotion" FROM "Etudiant"
-								 ORDER BY "anneePromotion"')->getResultArray();
-
-		$etudiants = $annee ? $db->query('SELECT * FROM "Etudiant" WHERE "anneePromotion" = ?
-										  ORDER BY "nomEtudiant"', [$annee])->getResultArray() : [];
-
-		return $this->view('scodoc/scodoc.html.twig',
-		[
-			'etudiants'      => $etudiants,
-			'anneePromotion' => $annee,
-			'annees'         => array_column($annees, 'anneePromotion')
-		]);
-	}
-
 	public function etudiantsParAnnee($annee)
 	{
 		$db = db_connect();
 
 		$etudiants = $db->query('SELECT * FROM "Etudiant" WHERE "anneePromotion" = ? AND "parcoursEtudes"
-								LIKE \'%S6\' ORDER BY "nomEtudiant"', [$annee])->getResultArray();
+								 LIKE \'%S6\' ORDER BY "nomEtudiant"', [$annee])->getResultArray();
 
 		return $this->response->setJSON($etudiants);
 	}
