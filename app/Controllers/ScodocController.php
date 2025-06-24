@@ -18,7 +18,6 @@ class ScodocController extends BaseController
 			$anneePromotion = $_POST['anneePromotion'];
 			$files = $_FILES['fichier'];
 
-			// Gère l'import de plusieurs fichiers
 			for ($i = 0; $i < count($files['name']); $i++)
 			{
 				$file = $files['tmp_name'][$i];
@@ -35,7 +34,6 @@ class ScodocController extends BaseController
 
 				$header = $data[0];
 
-				// Associe chaque nom de colonne à son index
 				$index = [];
 				foreach ($header as $j => $colName)
 				{
@@ -44,7 +42,7 @@ class ScodocController extends BaseController
 
 				foreach ($data as $k => $row)
 				{
-					if ($k === 0) continue; // saute l'en-tête
+					if ($k === 0) continue;
 
 					if (empty($row[$index['etudid']])) break;
 
@@ -73,132 +71,94 @@ class ScodocController extends BaseController
 						if (preg_match('/^BIN\d+$/', $colName))
 						{
 							$moyenne = $row[$j];
-							// Bonus éventuel (ex: "Bonus BIN11")
 							$bonusCol = "Bonus $colName";
 							$bonus = isset($index[$bonusCol]) ? $row[$index[$bonusCol]] : null;
 							if ($bonus === null || $bonus === '') $bonus = 0.00;
 
-							// On ne stocke que si la case n'est pas vide ou ~
 							if ($moyenne !== null && $moyenne !== '' && $moyenne !== '~')
 							{
 								$db->query
 								(
 									"INSERT INTO \"Competence\" (\"idEtudiant\", \"numeroSemestre\", \"codeCompetence\", \"moyenneCompetence\", \"bonusCompetence\", \"rangCompetence\") VALUES (?, ?, ?, ?, ?, ?)",
-									[$idEtudiant, $numeroSemestre, $colName, $moyenne, $bonus, 1]
+									[$idEtudiant, $numeroSemestre, $colName, $moyenne, $bonus, 0]
 								);
 							}
 						}
 					}
 				}
+
+				$this->calculerTousLesRangs($numeroSemestre);
 			}
-			// Redirige vers la page de la liste après l'import
+
 			return redirect()->to('/scodoc');
 		}
+
+		return $this->listeEtudiants();
 	}
 
 	public function listeEtudiants()
 	{
 		$db = db_connect();
+		$annee = $this->request->getGet('anneePromotion');
+		
+		$annees = $db->query("SELECT DISTINCT \"anneePromotion\" FROM \"Etudiant\"
+							  ORDER BY \"anneePromotion\"")->getResultArray();
 
-		$annees = $db->table('Etudiant')
-			->select('anneePromotion')
-			->distinct()
-			->orderBy('anneePromotion', 'ASC')
-			->get()
-			->getResultArray();
-		$annees = array_column($annees, 'anneePromotion');
-
-		$annee  = $this->request->getGet('anneePromotion');
-
-		$etudiants = [];
-		if ($annee)
-		{
-			$etudiants = $db->table('Etudiant')
-				->where('anneePromotion', $annee)
-				->orderBy('nomEtudiant', 'ASC')
-				->get()
-				->getResultArray();
-		}
-
+		$etudiants = $annee ? $db->query("SELECT * FROM \"Etudiant\" WHERE \"anneePromotion\" = ?
+										  ORDER BY \"nomEtudiant\"", [$annee])->getResultArray() : [];
+		
 		return $this->view('scodoc/scodoc.html.twig',
 		[
 			'etudiants' => $etudiants,
 			'anneePromotion' => $annee,
-			'annees' => $annees
+			'annees' => array_column($annees, 'anneePromotion')
 		]);
 	}
 
 	public function etudiantsParAnnee($annee)
 	{
 		$db = db_connect();
-		$etudiants = $db->table('Etudiant')
-			->where('anneePromotion', $annee)
-			->like('parcoursEtudes', 'S6', 'right')
-			->orderBy('nomEtudiant', 'ASC')
-			->get()
-			->getResultArray();
+		$etudiants = $db->query(" SELECT * FROM \"Etudiant\"
+								  WHERE \"anneePromotion\" = ? AND \"parcoursEtudes\" LIKE '%S6'
+								  ORDER BY \"nomEtudiant\" ", [$annee])->getResultArray();
+
 		return $this->response->setJSON($etudiants);
 	}
 
 	public function absencesParEtudiant($idEtudiant)
 	{
 		$db = db_connect();
-		$absences = $db->table('Semestre')
-			->select('numeroSemestre, nbAbsencesInjust')
-			->where('idEtudiant', $idEtudiant)
-			->get()
-			->getResultArray();
 
-		// Initialisé à null pour détecter l'absence de données
-		$but = [1 => null, 2 => null, 3 => null];
+		$result = $db->query(" SELECT
+							   COALESCE(SUM(CASE WHEN \"numeroSemestre\" IN (1,2) THEN \"nbAbsencesInjust\" END), '') as but1,
+							   COALESCE(SUM(CASE WHEN \"numeroSemestre\" IN (3,4) THEN \"nbAbsencesInjust\" END), '') as but2,
+							   COALESCE(SUM(CASE WHEN \"numeroSemestre\" IN (5,6) THEN \"nbAbsencesInjust\" END), '') as but3
+							   FROM \"Semestre\" WHERE \"idEtudiant\" = ? ", [$idEtudiant])->getRow();
 		
-		foreach ($absences as $abs) {
-			if (in_array($abs['numeroSemestre'], [1,2])) {
-				$but[1] = ($but[1] ?? 0) + $abs['nbAbsencesInjust'];
-			}
-			if (in_array($abs['numeroSemestre'], [3,4])) {
-				$but[2] = ($but[2] ?? 0) + $abs['nbAbsencesInjust'];
-			}
-			if (in_array($abs['numeroSemestre'], [5,6])) {
-				$but[3] = ($but[3] ?? 0) + $abs['nbAbsencesInjust'];
-			}
-		}
-		
-		return $this->response->setJSON([
-			'but1' => $but[1] ?? '', // Affiche vide si aucun semestre S1/S2
-			'but2' => $but[2] ?? '', // Affiche vide si aucun semestre S3/S4
-			'but3' => $but[3] ?? ''  // Affiche vide si aucun semestre S5/S6
-		]);
+		return $this->response->setJSON($result);
 	}
 
 	public function apprentissageParEtudiant($idEtudiant)
 	{
-    $db = db_connect();
-    $semestres = $db->table('Semestre')
-        ->select('numeroSemestre, apprentissage')
-        ->where('idEtudiant', $idEtudiant)
-        ->get()
-        ->getResultArray();
+		$db = db_connect();
 
-    $but = [1 => null, 2 => null, 3 => null];
-    foreach ($semestres as $s) {
-        if (in_array($s['numeroSemestre'], [1, 2]) && $but[1] === null) {
-            $but[1] = $s['apprentissage'];
-        }
-        if (in_array($s['numeroSemestre'], [3, 4]) && $but[2] === null) {
-            $but[2] = $s['apprentissage'];
-        }
-        if (in_array($s['numeroSemestre'], [5, 6]) && $but[3] === null) {
-            $but[3] = $s['apprentissage'];
-        }
-    }
+		$result = $db->query(" SELECT 
+							   COALESCE(MAX(CASE WHEN \"numeroSemestre\" IN (1,2) THEN \"apprentissage\" END), '') as but1,
+							   COALESCE(MAX(CASE WHEN \"numeroSemestre\" IN (3,4) THEN \"apprentissage\" END), '') as but2,
+							   COALESCE(MAX(CASE WHEN \"numeroSemestre\" IN (5,6) THEN \"apprentissage\" END), '') as but3
+							   FROM \"Semestre\" WHERE \"idEtudiant\" = ? ", [$idEtudiant])->getRow();
 
-    return $this->response->setJSON([
-        'but1' => $but[1] ?? '',
-        'but2' => $but[2] ?? '',
-        'but3' => $but[3] ?? ''
-    ]);
-}
+		return $this->response->setJSON($result);
+	}
 
+	private function calculerTousLesRangs($numeroSemestre)
+	{
+		$db = db_connect();
 
+		$db->query(" UPDATE \"Competence\" SET \"rangCompetence\" = (
+					 SELECT COUNT(*) + 1 FROM \"Competence\" c2 WHERE c2.\"numeroSemestre\" = \"Competence\".\"numeroSemestre\"
+					 AND c2.\"codeCompetence\" = \"Competence\".\"codeCompetence\"
+					 AND c2.\"moyenneCompetence\" > \"Competence\".\"moyenneCompetence\")
+					 WHERE \"numeroSemestre\" = ? ", [$numeroSemestre]);
+	}
 }
