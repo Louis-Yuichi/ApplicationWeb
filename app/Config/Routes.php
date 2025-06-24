@@ -19,7 +19,7 @@ $routes->get ('evaluation'             , 'ParcourSupController::evaluation');
 $routes->post('importer'               , 'ParcourSupController::importer');
 $routes->post('modifierCandidat'       , 'ParcourSupController::modifierCandidat');
 $routes->post('calculerNotesAjax'      , 'ParcourSupController::calculerNotesAjax');
-$routes->post('exporterEvaluationAvecModifications', 'ParcourSupController::exporterEvaluationAvecModifications');
+$routes->post('exporterEvaluation'     , 'ParcourSupController::exporterEvaluation');
 
 // Filtres routes
 $routes->get ('filtres'                , 'ParcourSupController::filtres' );
