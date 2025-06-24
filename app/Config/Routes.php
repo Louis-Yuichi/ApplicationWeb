@@ -33,3 +33,4 @@ $routes->match(['GET', 'POST'], 'scodoc' , 'ScodocController::index'            
 $routes->get  ('api/etudiants/(:num)'    , 'ScodocController::etudiantsParAnnee/$1'       );
 $routes->get  ('api/absences/(:num)'     , 'ScodocController::absencesParEtudiant/$1'     );
 $routes->get  ('api/apprentissage/(:num)', 'ScodocController::apprentissageParEtudiant/$1');
+$routes->get  ('api/competences/(:num)'  , 'ScodocController::competencesParEtudiant/$1'  );

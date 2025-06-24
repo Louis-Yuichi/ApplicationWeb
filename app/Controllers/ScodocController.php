@@ -24,10 +24,10 @@ class ScodocController extends BaseController
 		$annee = $this->request->getGet('anneePromotion');
 
 		$annees    = $db->query('SELECT DISTINCT "anneePromotion" FROM "Etudiant"
-								 ORDER BY "anneePromotion"')->getResultArray();
+								ORDER BY "anneePromotion"')->getResultArray();
 
 		$etudiants = $annee ? $db->query('SELECT * FROM "Etudiant" WHERE "anneePromotion" = ?
-										  ORDER BY "nomEtudiant"', [$annee])->getResultArray() : [];
+										ORDER BY "nomEtudiant"', [$annee])->getResultArray() : [];
 
 		return $this->view('scodoc/scodoc.html.twig',
 		[
@@ -49,8 +49,6 @@ class ScodocController extends BaseController
 			if (empty($ligne[$indexColonnes['etudid']])) break;
 			$this->traiterEtudiant($ligne, $indexColonnes, $numeroSemestre, $anneePromotion);
 		}
-
-		$this->calculerTousLesRangs($numeroSemestre);
 	}
 
 	private function traiterEtudiant($ligne, $indexColonnes, $numeroSemestre, $anneePromotion)
@@ -76,11 +74,10 @@ class ScodocController extends BaseController
 			if (preg_match('/^BIN\d+$/', $nomColonne) && !empty($ligne[$j]) && $ligne[$j] !== '~')
 			{
 				$moyenne = $ligne[$j];
-				$bonus   = $ligne[$indexColonnes["Bonus $nomColonne"] ?? null] ?? 0.00;
 
-				$db->query('INSERT INTO "Competence" ("idEtudiant", "numeroSemestre", "codeCompetence", "moyenneCompetence", "bonusCompetence", "rangCompetence")
-							VALUES (?, ?, ?, ?, ?, 0) ON CONFLICT("idEtudiant", "numeroSemestre", "codeCompetence") DO UPDATE SET "moyenneCompetence" = ?, "bonusCompetence" = ?',
-							[$idEtudiant, $numeroSemestre, $nomColonne, $moyenne, $bonus, $moyenne, $bonus]);
+				$db->query('INSERT INTO "Competence" ("idEtudiant", "numeroSemestre", "codeCompetence", "moyenneCompetence")
+							VALUES (?, ?, ?, ?) ON CONFLICT("idEtudiant", "numeroSemestre", "codeCompetence") DO UPDATE SET "moyenneCompetence" = ?',
+							[$idEtudiant, $numeroSemestre, $nomColonne, $moyenne, $moyenne]);
 			}
 		}
 	}
@@ -90,7 +87,7 @@ class ScodocController extends BaseController
 		$db = db_connect();
 
 		$etudiants = $db->query('SELECT * FROM "Etudiant" WHERE "anneePromotion" = ? AND "parcoursEtudes"
-								 LIKE \'%S6\' ORDER BY "nomEtudiant"', [$annee])->getResultArray();
+								LIKE \'%S6\' ORDER BY "nomEtudiant"', [$annee])->getResultArray();
 
 		return $this->response->setJSON($etudiants);
 	}
@@ -100,10 +97,10 @@ class ScodocController extends BaseController
 		$db = db_connect();
 
 		$resultat = $db->query('SELECT
-								COALESCE(SUM(CASE WHEN "numeroSemestre" IN (1,2) THEN "nbAbsencesInjust" END), 0) as but1,
-								COALESCE(SUM(CASE WHEN "numeroSemestre" IN (3,4) THEN "nbAbsencesInjust" END), 0) as but2,
-								COALESCE(SUM(CASE WHEN "numeroSemestre" IN (5,6) THEN "nbAbsencesInjust" END), 0) as but3
-								FROM "Semestre" WHERE "idEtudiant" = ?', [$idEtudiant])->getRow();
+							COALESCE(SUM(CASE WHEN "numeroSemestre" IN (1,2) THEN "nbAbsencesInjust" END), 0) as but1,
+							COALESCE(SUM(CASE WHEN "numeroSemestre" IN (3,4) THEN "nbAbsencesInjust" END), 0) as but2,
+							COALESCE(SUM(CASE WHEN "numeroSemestre" IN (5,6) THEN "nbAbsencesInjust" END), 0) as but3
+							FROM "Semestre" WHERE "idEtudiant" = ?', [$idEtudiant])->getRow();
 
 		return $this->response->setJSON
 		([
@@ -126,15 +123,17 @@ class ScodocController extends BaseController
 		return $this->response->setJSON($resultat);
 	}
 
-	private function calculerTousLesRangs($numeroSemestre)
+	public function competencesParEtudiant($idEtudiant)
 	{
 		$db = db_connect();
 
-		$db->query('UPDATE "Competence" SET "rangCompetence" = (
-					SELECT COUNT(*) + 1 FROM "Competence" c2
-					WHERE  c2."numeroSemestre"    = "Competence"."numeroSemestre"
-					AND    c2."codeCompetence"    = "Competence"."codeCompetence"
-					AND    c2."moyenneCompetence" > "Competence"."moyenneCompetence")
-					WHERE  "numeroSemestre"       = ?', [$numeroSemestre]);
+		$resultat = $db->query('SELECT "numeroSemestre", "codeCompetence", "moyenneCompetence",
+							  ( SELECT COUNT(*) + 1 FROM "Competence" c2 WHERE c2."numeroSemestre" = c1."numeroSemestre"
+								AND c2."codeCompetence" = c1."codeCompetence"
+								AND CAST(c2."moyenneCompetence" AS FLOAT) > CAST(c1."moyenneCompetence" AS FLOAT)
+							  ) as "rangCompetence" FROM "Competence" c1 WHERE c1."idEtudiant" = ? 
+								ORDER BY c1."numeroSemestre", c1."codeCompetence"', [$idEtudiant])->getResultArray();
+
+		return $this->response->setJSON($resultat);
 	}
 }

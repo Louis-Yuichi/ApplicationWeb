@@ -59,21 +59,19 @@ document.getElementById('anneePromotion').addEventListener('change', function()
 
 	if (annee)
 	{
-		fetch('/api/etudiants/' + annee)
-			.then(reponse => reponse.json())
-			.then(data =>
+		fetch('/api/etudiants/' + annee).then(reponse => reponse.json()).then(data =>
+		{
+			tabEtudiants = data;
+			data.forEach(etudiant =>
 			{
-				tabEtudiants = data;
-				data.forEach(etudiant =>
-				{
-					const option = document.createElement('option');
-					option.value = etudiant.idEtudiant;
-					option.textContent = `${etudiant.nomEtudiant} ${etudiant.prenomEtudiant}`;
-					selectEtu.appendChild(option);
-				});
-
-				document.getElementById('nbAvisPromo').textContent = data.length;
+				const option = document.createElement('option');
+				option.value = etudiant.idEtudiant;
+				option.textContent = `${etudiant.nomEtudiant} ${etudiant.prenomEtudiant}`;
+				selectEtu.appendChild(option);
 			});
+
+			document.getElementById('nbAvisPromo').textContent = data.length;
+		});
 	}
 });
 
@@ -108,39 +106,89 @@ document.getElementById('nomEtudiant').addEventListener('change', function()
 
 	if (id)
 	{
-		fetch('/api/absences/' + id)
-			.then(reponse => reponse.json())
-			.then(absences =>
-			{
-				document.getElementById('abs_but1').textContent = absences.but1;
-				document.getElementById('abs_but2').textContent = absences.but2;
-				document.getElementById('abs_but3').textContent = absences.but3;
-			});
-	}
-	else
-	{
-		['abs_but1', 'abs_but2', 'abs_but3'].forEach
-		(
-			champ => document.getElementById(champ).textContent = ''
-		);
-	}
+		fetch('/api/absences/' + id).then(reponse => reponse.json()).then(absences =>
+		{
+			document.getElementById('abs_but1').textContent = absences.but1;
+			document.getElementById('abs_but2').textContent = absences.but2;
+			document.getElementById('abs_but3').textContent = absences.but3;
+		});
 
-	if (id)
-	{
-		fetch('/api/apprentissage/' + id)
-			.then(reponse => reponse.json())
-			.then(apprentissage =>
-			{
-				document.getElementById('apprentissage_but1').textContent = apprentissage.but1;
-				document.getElementById('apprentissage_but2').textContent = apprentissage.but2;
-				document.getElementById('apprentissage_but3').textContent = apprentissage.but3;
-			});
+		fetch('/api/apprentissage/' + id).then(reponse => reponse.json()).then(apprentissage =>
+		{
+			document.getElementById('apprentissage_but1').textContent = apprentissage.but1;
+			document.getElementById('apprentissage_but2').textContent = apprentissage.but2;
+			document.getElementById('apprentissage_but3').textContent = apprentissage.but3;
+		});
+
+		fetch('/api/competences/' + id).then(reponse => reponse.json()).then(competences =>
+		{
+			viderCompetences();
+			afficherCompetences(competences);
+		});
 	}
 	else
 	{
-		['apprentissage_but1', 'apprentissage_but2', 'apprentissage_but3'].forEach
+		['abs_but1', 'abs_but2', 'abs_but3', 'apprentissage_but1', 'apprentissage_but2', 'apprentissage_but3'].forEach
 		(
 			champ => document.getElementById(champ).textContent = ''
 		);
+
+		viderCompetences();
 	}
 });
+
+function viderCompetences()
+{
+	const ids =
+	[
+		'BIN1_but1_moy'   , 'BIN1_but1_rang'   , 'BIN1_but2_moy'   , 'BIN1_but2_rang' , 'BIN1_but3_moy', 'BIN1_but3_rang',
+		'BIN2_but1_moy'   , 'BIN2_but1_rang'   , 'BIN2_but2_moy'   , 'BIN2_but2_rang' , 'BIN2_but3_moy', 'BIN2_but3_rang',
+		'BIN3_but1_moy'   , 'BIN3_but1_rang'   , 'BIN3_but2_moy'   , 'BIN3_but2_rang' ,
+		'BIN4_but1_moy'   , 'BIN4_but1_rang'   , 'BIN4_but2_moy'   , 'BIN4_but2_rang' ,
+		'BIN5_but1_moy'   , 'BIN5_but1_rang'   , 'BIN5_but2_moy'   , 'BIN5_but2_rang' ,
+		'BIN6_but1_moy'   , 'BIN6_but1_rang'   , 'BIN6_but2_moy'   , 'BIN6_but2_rang' , 'BIN6_but3_moy', 'BIN6_but3_rang',
+		'maths_but1_moy'  , 'maths_but1_rang'  , 'maths_but2_moy'  , 'maths_but2_rang', 'maths_but3_moy', 'maths_but3_rang',
+		'anglais_but1_moy', 'anglais_but1_rang', 'anglais_but2_moy', 'anglais_but2_rang'
+	];
+
+	ids.forEach(id => document.getElementById(id).textContent = '');
+}
+
+function afficherCompetences(competences)
+{
+	const moyennesParBUT = {};
+
+	competences.forEach(comp =>
+	{
+		const semestre         = parseInt(comp.numeroSemestre);
+		const codeComp         = comp.codeCompetence;
+		const moyenne          = parseFloat(comp.moyenneCompetence);
+		const rang             = parseInt(comp.rangCompetence);
+		const numeroCompetence = parseInt(codeComp.slice(-1));
+
+		let but;
+		if      (semestre <= 2) but = 1;
+		else if (semestre <= 4) but = 2;
+		else but = 3;
+
+		const cle = `BIN${numeroCompetence}_but${but}`;
+
+		if (!moyennesParBUT[cle])
+		{
+			moyennesParBUT[cle] = { moyennes: [], rangs: [] };
+		}
+
+		moyennesParBUT[cle].moyennes.push(moyenne);
+		moyennesParBUT[cle].rangs.push(rang);
+	});
+
+	for (let cle in moyennesParBUT)
+	{
+		const donnees       = moyennesParBUT[cle];
+		const moyenneFinale = (donnees.moyennes.reduce((a, b) => a + b, 0) / donnees.moyennes.length).toFixed(2);
+		const rangMoyen     = Math.round(donnees.rangs.reduce((a, b) => a + b, 0) / donnees.rangs.length);
+
+		document.getElementById(cle + '_moy' ).textContent = moyenneFinale;
+		document.getElementById(cle + '_rang').textContent = rangMoyen;
+	}
+}
