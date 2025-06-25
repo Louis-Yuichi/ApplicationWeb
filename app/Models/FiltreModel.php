@@ -31,8 +31,8 @@ class FiltreModel extends Model
         'typeAction' => 'required|in_list[bonus,malus,coefficient,note_directe]',
         'valeurAction' => 'required|numeric',
         'colonneSource' => 'required|string',
-        'conditionType' => 'required|in_list[contient,egal,different,commence_par,finit_par]',
-        'valeurCondition' => 'required|string',
+        'conditionType' => 'required|in_list[contient,egal,different,commence_par,finit_par,superieur,inferieur,vide,non_vide]',
+        'valeurCondition' => 'string',
         'actif' => 'in_list[0,1]'
     ];
 }

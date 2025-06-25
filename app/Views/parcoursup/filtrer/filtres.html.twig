@@ -140,8 +140,8 @@
                                 <label class="form-label">Colonne à analyser</label>
                                 <select class="form-select" name="colonneSource" required>
                                     <option value="">Choisir une colonne</option>
-                                    {% for colonne in colonnesDisponibles %}
-                                        <option value="{{ colonne }}">{{ colonne|replace({'_': ' '})|title }}</option>
+                                    {% for colonne, label in colonnesDisponibles %}
+                                        <option value="{{ colonne }}">{{ label }}</option>
                                     {% endfor %}
                                 </select>
                             </div>
@@ -152,19 +152,45 @@
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label class="form-label">Condition</label>
-                                <select class="form-select" name="conditionType" required>
-                                    <option value="contient">Contient</option>
-                                    <option value="egal">Égal à</option>
-                                    <option value="different">Différent de</option>
-                                    <option value="commence_par">Commence par</option>
-                                    <option value="finit_par">Finit par</option>
+                                <select class="form-select" name="conditionType" required onchange="toggleValeurCondition(this)">
+                                    <option value="">Choisir une condition</option>
+                                    
+                                    <!-- Conditions textuelles -->
+                                    <optgroup label="Conditions textuelles">
+                                        <option value="contient">Contient</option>
+                                        <option value="egal">Égal à</option>
+                                        <option value="different">Différent de</option>
+                                        <option value="commence_par">Commence par</option>
+                                        <option value="finit_par">Finit par</option>
+                                    </optgroup>
+                                    
+                                    <!-- Conditions numériques -->
+                                    <optgroup label="Conditions numériques">
+                                        <option value="superieur">Supérieur à</option>
+                                        <option value="inferieur">Inférieur à</option>
+                                    </optgroup>
+                                    
+                                    <!-- Conditions d'existence -->
+                                    <optgroup label="Conditions d'existence">
+                                        <option value="vide">Est vide</option>
+                                        <option value="non_vide">N'est pas vide</option>
+                                    </optgroup>
                                 </select>
                             </div>
                         </div>
                         <div class="col-md-6">
-                            <div class="mb-3">
+                            <div class="mb-3" id="valeurConditionDiv">
                                 <label class="form-label">Valeur à chercher</label>
-                                <input type="text" class="form-control" name="valeurCondition" required>
+                                <input type="text" class="form-control" name="valeurCondition" id="valeurConditionInput">
+                                <div class="form-text">
+                                    <small>
+                                        • <strong>Contient/Commence par/Finit par :</strong> texte à chercher<br>
+                                        • <strong>Supérieur/Inférieur :</strong> valeurs numériques (ex: 12.5)<br>
+                                        • <strong>Est vide :</strong> détecte les champs vides, avec "-", ou "Non renseigné"<br>
+                                        • <strong>N'est pas vide :</strong> détecte les champs avec vraies données<br>
+                                        • <strong>Égal/Différent :</strong> comparaison exacte (sensible à la casse)
+                                    </small>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -202,4 +228,20 @@
         </div>
     </div>
 </div>
+
+<script>
+function toggleValeurCondition(select) {
+    const valeurDiv = document.getElementById('valeurConditionDiv');
+    const valeurInput = document.getElementById('valeurConditionInput');
+    
+    if (select.value === 'vide' || select.value === 'non_vide') {
+        valeurDiv.style.display = 'none';
+        valeurInput.required = false;
+        valeurInput.value = '';
+    } else {
+        valeurDiv.style.display = 'block';
+        valeurInput.required = true;
+    }
+}
+</script>
 {% endblock %}

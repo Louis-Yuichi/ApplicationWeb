@@ -30,8 +30,29 @@ class ParcourSupController extends BaseController
         $filtreModel = new \App\Models\FiltreModel();
         $filtres = $filtreModel->findAll();
         
+        // RÉCUPÉRER TOUTES LES COLONNES DISPONIBLES pour les filtres
         $candidatModel = new \App\Models\CandidatModel();
-        $colonnesDisponibles = $candidatModel->allowedFields;
+        $etablissementModel = new \App\Models\EtablissementModel();
+        $etudierDansModel = new \App\Models\EtudierDansModel();
+        
+        // Construire la liste complète des colonnes avec préfixes pour éviter les conflits
+        $colonnesDisponibles = [];
+        
+        // Colonnes du candidat (sans préfixe car c'est la table principale)
+        foreach ($candidatModel->allowedFields as $field) {
+            $colonnesDisponibles[$field] = "Candidat - " . ucfirst(str_replace('_', ' ', $field));
+        }
+        
+        // Colonnes de l'établissement (avec préfixe)
+        foreach ($etablissementModel->allowedFields as $field) {
+            $colonnesDisponibles[$field] = "Établissement - " . ucfirst(str_replace('_', ' ', $field));
+        }
+        
+        // Colonnes d'EtudierDans (avec préfixe, en excluant les clés)
+        $etudierDansFields = array_diff($etudierDansModel->allowedFields, ['numCandidat', 'idEtablissement', 'anneeUniversitaire']);
+        foreach ($etudierDansFields as $field) {
+            $colonnesDisponibles[$field] = "Notes - " . ucfirst(str_replace('_', ' ', $field));
+        }
         
         $data = [
             'filtres' => $filtres,
@@ -196,7 +217,7 @@ class ParcourSupController extends BaseController
                     }
 
                     $textFields = [
-                        'civilite', 'profil', 'formation', 'scolarite', 'diplome', 
+                        'civilite', 'profil', 'scolarite', 'diplome', 
                         'typeDiplomeCode', 'preparation_obtenu', 'serie', 'serieCode', 
                         'specialitesTerminale', 'specialiteAbandonne', 'specialiteMention', 'commentaire'
                     ];
@@ -210,7 +231,24 @@ class ParcourSupController extends BaseController
                         }
                     }
 
-                    // Utiliser le service pour le boursier
+                    // TRAITEMENT SPÉCIAL POUR FORMATION - choisir la colonne avec données
+                    $formationColumnIndex = $this->importExportService->chooseFormationColumn($header, $mapping, $rowData);
+                    if ($formationColumnIndex !== null) {
+                        $formationValue = strval($rowData[$formationColumnIndex] ?? '');
+                        $candidatData['formation'] = empty($formationValue) ? '-' : $formationValue;
+                    } else {
+                        $candidatData['formation'] = '-';
+                    }
+
+                    // TRAITEMENT SPÉCIAL POUR MARQUEURS DOSSIER
+                    if (isset($mapping['marqueurDossier'])) {
+                        $value = strval($rowData[$mapping['marqueurDossier']] ?? '');
+                        $candidatData['marqueurDossier'] = empty($value) ? '-' : $value;
+                    } else {
+                        $candidatData['marqueurDossier'] = '-';
+                    }
+
+                    // Traiter le champ boursier séparément
                     $candidatData['boursier'] = isset($mapping['boursier']) ? 
                         $this->importExportService->formatBoursier($rowData[$mapping['boursier']] ?? '') : '0';
 
@@ -288,10 +326,10 @@ class ParcourSupController extends BaseController
                         ];
 
                         $db->table('EtudierDans')
-                        ->where('numCandidat', $numCandidat)
-                        ->where('anneeUniversitaire', $annee)
-                        ->where('idEtablissement', $etablissement['idEtablissement'])
-                        ->delete();
+                            ->where('numCandidat', $numCandidat)
+                            ->where('anneeUniversitaire', $annee)
+                            ->where('idEtablissement', $etablissement['idEtablissement'])
+                            ->delete();
 
                         $db->table('EtudierDans')->insert($etudierDansData);
                     }
