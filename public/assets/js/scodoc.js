@@ -55,6 +55,8 @@ document.getElementById('anneePromotion').addEventListener('change', function()
 	champsVide.forEach(champ => document.getElementById(champ).textContent = '');
 	document.getElementById('nbAvisPromo').textContent = '0';
 
+	viderCompetences();
+
 	tabEtudiants = [];
 
 	if (annee)
@@ -151,7 +153,11 @@ function viderCompetences()
 		'anglais_but1_moy', 'anglais_but1_rang', 'anglais_but2_moy', 'anglais_but2_rang'
 	];
 
-	ids.forEach(id => document.getElementById(id).textContent = '');
+	ids.forEach(id =>
+	{
+		const element = document.getElementById(id);
+		if (element) element.textContent = '';
+	});
 }
 
 function afficherCompetences(competences)
@@ -167,9 +173,11 @@ function afficherCompetences(competences)
 		const numeroCompetence = parseInt(codeComp.slice(-1));
 
 		let but;
-		if      (semestre <= 2) but = 1;
-		else if (semestre <= 4) but = 2;
-		else but = 3;
+		if      (semestre <=  2) but = 1;
+		else if (semestre <=  4) but = 2;
+		else if (semestre === 5) but = 3;
+
+		if (semestre === 6) return;
 
 		const cle = `BIN${numeroCompetence}_but${but}`;
 
@@ -184,11 +192,24 @@ function afficherCompetences(competences)
 
 	for (let cle in moyennesParBUT)
 	{
-		const donnees       = moyennesParBUT[cle];
-		const moyenneFinale = (donnees.moyennes.reduce((a, b) => a + b, 0) / donnees.moyennes.length).toFixed(2);
-		const rangMoyen     = Math.round(donnees.rangs.reduce((a, b) => a + b, 0) / donnees.rangs.length);
+		const donnees = moyennesParBUT[cle];
 
-		document.getElementById(cle + '_moy' ).textContent = moyenneFinale;
-		document.getElementById(cle + '_rang').textContent = rangMoyen;
+		if (cle.includes('_but3'))
+		{
+
+			const moyenneFinale = donnees.moyennes[0].toFixed(2);
+			const rangFinal     = donnees.rangs[0];
+			
+			document.getElementById(cle + '_moy' ).textContent = moyenneFinale;
+			document.getElementById(cle + '_rang').textContent = rangFinal;
+		}
+		else
+		{
+			const moyenneFinale = (donnees.moyennes.reduce((a, b) => a + b, 0) / donnees.moyennes.length).toFixed(2);
+			const rangMoyen     = Math.round(donnees.rangs.reduce((a, b) => a + b, 0) / donnees.rangs.length);
+
+			document.getElementById(cle + '_moy' ).textContent = moyenneFinale;
+			document.getElementById(cle + '_rang').textContent = rangMoyen;
+		}
 	}
 }

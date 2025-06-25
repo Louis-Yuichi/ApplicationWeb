@@ -86,8 +86,10 @@ class ScodocController extends BaseController
 	{
 		$db = db_connect();
 
-		$etudiants = $db->query('SELECT * FROM "Etudiant" WHERE "anneePromotion" = ? AND "parcoursEtudes"
-								LIKE \'%S6\' ORDER BY "nomEtudiant"', [$annee])->getResultArray();
+		$etudiants = $db->query('SELECT DISTINCT e.* FROM "Etudiant" e 
+								 INNER JOIN "Semestre" s ON e."idEtudiant" = s."idEtudiant" 
+								 WHERE e."anneePromotion" = ? AND s."numeroSemestre" IN (5,6)
+								 ORDER BY e."nomEtudiant"', [$annee])->getResultArray();
 
 		return $this->response->setJSON($etudiants);
 	}
@@ -99,7 +101,7 @@ class ScodocController extends BaseController
 		$resultat = $db->query('SELECT
 							COALESCE(SUM(CASE WHEN "numeroSemestre" IN (1,2) THEN "nbAbsencesInjust" END), 0) as but1,
 							COALESCE(SUM(CASE WHEN "numeroSemestre" IN (3,4) THEN "nbAbsencesInjust" END), 0) as but2,
-							COALESCE(SUM(CASE WHEN "numeroSemestre" IN (5,6) THEN "nbAbsencesInjust" END), 0) as but3
+							COALESCE(SUM(CASE WHEN "numeroSemestre" IN (  5) THEN "nbAbsencesInjust" END), 0) as but3
 							FROM "Semestre" WHERE "idEtudiant" = ?', [$idEtudiant])->getRow();
 
 		return $this->response->setJSON
@@ -117,7 +119,7 @@ class ScodocController extends BaseController
 		$resultat = $db->query('SELECT
 								COALESCE(MAX(CASE WHEN "numeroSemestre" IN (1,2) THEN "apprentissage" END), \'\') as but1,
 								COALESCE(MAX(CASE WHEN "numeroSemestre" IN (3,4) THEN "apprentissage" END), \'\') as but2,
-								COALESCE(MAX(CASE WHEN "numeroSemestre" IN (5,6) THEN "apprentissage" END), \'\') as but3
+								COALESCE(MAX(CASE WHEN "numeroSemestre" IN (  5) THEN "apprentissage" END), \'\') as but3
 								FROM "Semestre" WHERE "idEtudiant" = ?', [$idEtudiant])->getRow();
 
 		return $this->response->setJSON($resultat);
