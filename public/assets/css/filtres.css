@@ -1,54 +1,54 @@
 /* Container principal avec hauteur adaptée */
 .main-container {
-    min-height: calc(100vh - 200px); /* Hauteur écran - header - footer */
+	min-height: calc(100vh - 200px); /* Hauteur écran - header - footer */
 }
 
 .filtre-card {
-    border-left: 4px solid #007bff;
-    transition: all 0.3s ease;
-    margin-bottom: 1rem; /* Espacement entre les cartes */
+	border-left: 4px solid #007bff;
+	transition: all 0.3s ease;
+	margin-bottom: 1rem; /* Espacement entre les cartes */
 }
 
 .filtre-card.inactif {
-    border-left-color: #dc3545;
-    opacity: 0.7;
+	border-left-color: #dc3545;
+	opacity: 0.7;
 }
 
 .badge-type {
-    font-size: 0.9em;
+	font-size: 0.9em;
 }
 
 .btn-action {
-    margin: 2px;
+	margin: 2px;
 }
 
 /* Assurer que les colonnes ont la bonne hauteur */
 .row {
-    margin-bottom: 2rem;
+	margin-bottom: 2rem;
 }
 
 /* Scrolling amélioré pour la liste des filtres */
 .filtres-list {
-    max-height: calc(100vh - 380px);
-    overflow-y: auto;
-    padding-right: 10px; /* Espace pour la scrollbar */
+	max-height: calc(100vh - 380px);
+	overflow-y: auto;
+	padding-right: 10px; /* Espace pour la scrollbar */
 }
 
 /* Personnaliser la scrollbar */
 .filtres-list::-webkit-scrollbar {
-    width: 8px;
+	width: 8px;
 }
 
 .filtres-list::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 4px;
+	background: #f1f1f1;
+	border-radius: 4px;
 }
 
 .filtres-list::-webkit-scrollbar-thumb {
-    background: #888;
-    border-radius: 4px;
+	background: #888;
+	border-radius: 4px;
 }
 
 .filtres-list::-webkit-scrollbar-thumb:hover {
-    background: #555;
+	background: #555;
 }

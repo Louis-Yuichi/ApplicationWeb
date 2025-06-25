@@ -240,9 +240,9 @@ function updateNotesInTable(notes, notesGlobales)
 
 function calculerNotesAjax()
 {
-	const btn = document.getElementById('calculerNotesBtn');
-	const spinner = document.getElementById('loadingSpinner');
-	const messageArea = document.getElementById('messageArea');
+	const btn               = document.getElementById('calculerNotesBtn');
+	const spinner           = document.getElementById('loadingSpinner');
+	const messageArea       = document.getElementById('messageArea');
 	const anneeSelectionnee = getSelectedAnnee();
 	
 	// Vérifier qu'une année est sélectionnée
@@ -308,8 +308,8 @@ function getSelectedAnnee()
 function showMessage(type, message)
 {
 	const messageArea = document.getElementById('messageArea');
-	const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
-	const icon = type === 'success' ? 'check-circle' : 'exclamation-triangle';
+	const alertClass  = type === 'success' ? 'alert-success' : 'alert-danger';
+	const icon        = type === 'success' ? 'check-circle'  : 'exclamation-triangle';
 	
 	messageArea.innerHTML = `
 		<div class="alert ${alertClass} alert-dismissible fade show" role="alert">
@@ -331,8 +331,8 @@ function showMessage(type, message)
 
 function updateCalculerButtonText()
 {
-	const annee = getSelectedAnnee();
-	const btnText = document.getElementById('btnText');
+	const annee     = getSelectedAnnee();
+	const btnText   = document.getElementById('btnText');
 	const anneeInfo = document.getElementById('anneeInfo');
 	
 	if (btnText && anneeInfo)

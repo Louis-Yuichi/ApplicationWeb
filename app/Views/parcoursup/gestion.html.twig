@@ -10,162 +10,162 @@
 
 {% block body %}
 <div class="container-fluid">
-    <img class="mb-4 d-block mx-auto" style="height:50px;" src="assets/images/parcoursup.png" alt="Importer" class="img-fluid">
+	<img class="mb-4 d-block mx-auto" style="height:50px;" src="assets/images/parcoursup.png" alt="Importer" class="img-fluid">
 
-    <!-- Barre de recherche + filtre année -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div class="input-group" style="max-width: 300px;">
-            <input type="text" 
-                id="searchInput" 
-                class="form-control" 
-                placeholder="Numéro du candidat" 
-                aria-label="Rechercher"
-                oninput="this.value = this.value.replace(/[^0-9]/g, '')">
-            <button class="btn btn-outline-secondary" type="button">
-                <i class="fas fa-search"></i>
-            </button>
-        </div>
-        
-        <!-- Select d'année fonctionnel -->
-        {% set annee_actuelle = "now"|date("Y") %}
-        <form method="GET" class="d-inline">
-            <select class="form-select" style="width: auto;" name="annee" required>
-                <option value="">Choisissez une année</option>
-                {% for i in 0..20 %}
-                    {% set debut = annee_actuelle + i %}
-                    {% set fin = debut + 1 %}
-                    {% set valeur_annee = debut ~ "/" ~ fin %}
-                    <option value="{{ valeur_annee }}" 
-                        {% if anneeSelectionnee == valeur_annee %}selected{% endif %}>
-                        {{ debut }}/{{ fin }}
-                    </option>
-                {% endfor %}
-            </select>
-        </form>
-    </div>
+	<!-- Barre de recherche + filtre année -->
+	<div class="d-flex justify-content-between align-items-center mb-4">
+		<div class="input-group" style="max-width: 300px;">
+			<input type="text" 
+				id="searchInput" 
+				class="form-control" 
+				placeholder="Numéro du candidat" 
+				aria-label="Rechercher"
+				oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+			<button class="btn btn-outline-secondary" type="button">
+				<i class="fas fa-search"></i>
+			</button>
+		</div>
+		
+		<!-- Select d'année fonctionnel -->
+		{% set annee_actuelle = "now"|date("Y") %}
+		<form method="GET" class="d-inline">
+			<select class="form-select" style="width: auto;" name="annee" required>
+				<option value="">Choisissez une année</option>
+				{% for i in 0..20 %}
+					{% set debut = annee_actuelle + i %}
+					{% set fin = debut + 1 %}
+					{% set valeur_annee = debut ~ "/" ~ fin %}
+					<option value="{{ valeur_annee }}" 
+						{% if anneeSelectionnee == valeur_annee %}selected{% endif %}>
+						{{ debut }}/{{ fin }}
+					</option>
+				{% endfor %}
+			</select>
+		</form>
+	</div>
 
-    <!-- Tableau des candidats -->
-    <div class="table-container">
-        <div class="table-responsive">
-            <table class="table table-hover table-bordered align-middle">
-                <thead class="table-dark text-center">
-                    <tr>
-                        {% for group, fields in columns %}
-                            {% for field in fields %}
-                                <th>{{ field|replace({'_': ' '})|title }}</th>
-                            {% endfor %}
-                        {% endfor %}
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for candidat in candidats %}
-                        <tr>
-                            {% for group, fields in columns %}
-                                {% for field in fields %}
-                                    {% set readonly_fields = ['numCandidat', 'anneeUniversitaire'] %}
-                                    {% set value = attribute(candidat, field)|default('') %}
-                                    <td {% if field not in readonly_fields %}
-                                            class="editable-cell" 
-                                            data-field="{{ field }}"
-                                            data-candidat="{{ candidat.numCandidat }}"
-                                            data-annee="{{ candidat.anneeUniversitaire }}"
-                                        {% else %}
-                                            class="readonly-cell"
-                                        {% endif %}>
-                                        {{ value }}
-                                    </td>
-                                {% endfor %}
-                            {% endfor %}
-                        </tr>
-                    {% else %}
-                        <tr>
-                            <td colspan="{{ columns|reduce((carry, fields) => carry + fields|length, 0) }}">
-                                {% if anneeSelectionnee %}
-                                    Aucun candidat trouvé pour l'année {{ anneeSelectionnee }}
-                                {% else %}
-                                    Sélectionnez une année pour afficher les candidats
-                                {% endif %}
-                            </td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </div>
+	<!-- Tableau des candidats -->
+	<div class="table-container">
+		<div class="table-responsive">
+			<table class="table table-hover table-bordered align-middle">
+				<thead class="table-dark text-center">
+					<tr>
+						{% for group, fields in columns %}
+							{% for field in fields %}
+								<th>{{ field|replace({'_': ' '})|title }}</th>
+							{% endfor %}
+						{% endfor %}
+					</tr>
+				</thead>
+				<tbody>
+					{% for candidat in candidats %}
+						<tr>
+							{% for group, fields in columns %}
+								{% for field in fields %}
+									{% set readonly_fields = ['numCandidat', 'anneeUniversitaire'] %}
+									{% set value = attribute(candidat, field)|default('') %}
+									<td {% if field not in readonly_fields %}
+											class="editable-cell" 
+											data-field="{{ field }}"
+											data-candidat="{{ candidat.numCandidat }}"
+											data-annee="{{ candidat.anneeUniversitaire }}"
+										{% else %}
+											class="readonly-cell"
+										{% endif %}>
+										{{ value }}
+									</td>
+								{% endfor %}
+							{% endfor %}
+						</tr>
+					{% else %}
+						<tr>
+							<td colspan="{{ columns|reduce((carry, fields) => carry + fields|length, 0) }}">
+								{% if anneeSelectionnee %}
+									Aucun candidat trouvé pour l'année {{ anneeSelectionnee }}
+								{% else %}
+									Sélectionnez une année pour afficher les candidats
+								{% endif %}
+							</td>
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+	</div>
 
-    <!-- Boutons -->
-    <div class="d-flex justify-content-center mt-4">
+	<!-- Boutons -->
+	<div class="d-flex justify-content-center mt-4">
 		<a href="/parcoursup" class="btn btn-secondary mx-2">
-            <i class="fas fa-arrow-left"></i> Retour
-        </a>
-        <a href="/filtres" class="btn btn-success mx-2">
-            <i class="fas fa-filter"></i> Gérer les filtres
-        </a>
-        <button class="btn btn-primary mx-2" id="calculerNotesBtn" onclick="calculerNotesAjax()">
-            <i class="fas fa-calculator"></i> 
-            <span id="btnText">Calculer les résultats</span>
-            <span id="anneeInfo" class="d-none">pour {{ anneeSelectionnee|default('') }}</span>
-            <span class="spinner-border spinner-border-sm d-none" id="loadingSpinner"></span>
-        </button>
-        <button class="btn btn-primary mx-2" data-bs-toggle="modal" data-bs-target="#examinateurModal">
-            <i class="fas fa-upload"></i> Exporter les résultats
-        </button>
-    </div>
+			<i class="fas fa-arrow-left"></i> Retour
+		</a>
+		<a href="/filtres" class="btn btn-success mx-2">
+			<i class="fas fa-filter"></i> Gérer les filtres
+		</a>
+		<button class="btn btn-primary mx-2" id="calculerNotesBtn" onclick="calculerNotesAjax()">
+			<i class="fas fa-calculator"></i> 
+			<span id="btnText">Calculer les résultats</span>
+			<span id="anneeInfo" class="d-none">pour {{ anneeSelectionnee|default('') }}</span>
+			<span class="spinner-border spinner-border-sm d-none" id="loadingSpinner"></span>
+		</button>
+		<button class="btn btn-primary mx-2" data-bs-toggle="modal" data-bs-target="#examinateurModal">
+			<i class="fas fa-upload"></i> Exporter les résultats
+		</button>
+	</div>
 
-    <!-- Modal pour le code examinateur -->
-    <div class="modal fade" id="examinateurModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <form id="exportForm" action="/evaluation" method="GET">
-                    <div class="modal-header">
-                        <h5 class="modal-title">
-                            <i class="fas fa-user-check"></i> Informations Examinateur
-                        </h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                    </div>
-                    <div class="modal-body">
-                        <!-- Affichage des infos utilisateur automatiques -->
-                        <div class="alert alert-info">
-                            <h6><i class="fas fa-info-circle"></i> Utilisateur connecté :</h6>
-                            <strong>{{ userPrenom|default('Prénom') }} {{ userName|default('Nom') }}</strong>
-                            <br>
-                            <small class="text-muted">Ces informations seront automatiquement utilisées pour l'export</small>
-                        </div>
-                        
-                        <!-- Code examinateur à saisir -->
-                        <div class="mb-3">
-                            <label class="form-label">Code examinateur <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" name="codeExaminateur" required 
-                                   placeholder="Ex: EX001" maxlength="10">
-                            <div class="form-text">
-                                Saisissez votre code examinateur personnel pour l'évaluation.
-                            </div>
-                        </div>
-                        
-                        <input type="hidden" name="annee" value="{{ anneeSelectionnee }}">
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                            <i class="fas fa-times"></i> Annuler
-                        </button>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-arrow-right"></i> Continuer vers l'export
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
+	<!-- Modal pour le code examinateur -->
+	<div class="modal fade" id="examinateurModal" tabindex="-1">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<form id="exportForm" action="/evaluation" method="GET">
+					<div class="modal-header">
+						<h5 class="modal-title">
+							<i class="fas fa-user-check"></i> Informations Examinateur
+						</h5>
+						<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+					</div>
+					<div class="modal-body">
+						<!-- Affichage des infos utilisateur automatiques -->
+						<div class="alert alert-info">
+							<h6><i class="fas fa-info-circle"></i> Utilisateur connecté :</h6>
+							<strong>{{ userPrenom|default('Prénom') }} {{ userName|default('Nom') }}</strong>
+							<br>
+							<small class="text-muted">Ces informations seront automatiquement utilisées pour l'export</small>
+						</div>
+						
+						<!-- Code examinateur à saisir -->
+						<div class="mb-3">
+							<label class="form-label">Code examinateur <span class="text-danger">*</span></label>
+							<input type="text" class="form-control" name="codeExaminateur" required 
+								placeholder="Ex: EX001" maxlength="10">
+							<div class="form-text">
+								Saisissez votre code examinateur personnel pour l'évaluation.
+							</div>
+						</div>
+						
+						<input type="hidden" name="annee" value="{{ anneeSelectionnee }}">
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+							<i class="fas fa-times"></i> Annuler
+						</button>
+						<button type="submit" class="btn btn-primary">
+							<i class="fas fa-arrow-right"></i> Continuer vers l'export
+						</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
 
-    <!-- Zone pour les messages avec info sur l'année -->
-    <div id="messageArea" class="mt-3"></div>
+	<!-- Zone pour les messages avec info sur l'année -->
+	<div id="messageArea" class="mt-3"></div>
 </div>
 
 <!-- Footer -->
 <footer class="text-center mt-5 text-white bg-dark py-3">
-    <div>
-        <img src="assets/images/logo-univ.png" style="height: 30px;" alt="Logo Univ">
-        <span class="ms-2">BUT Informatique - Le Havre © 2025</span>
-    </div>
+	<div>
+		<img src="assets/images/logo-univ.png" style="height: 30px;" alt="Logo Univ">
+		<span class="ms-2">BUT Informatique - Le Havre © 2025</span>
+	</div>
 </footer>
 {% endblock %}

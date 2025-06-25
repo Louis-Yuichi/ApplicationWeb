@@ -10,238 +10,222 @@
 
 {% block body %}
 <div class="container-fluid main-container">
-    <img class="mb-4 d-block mx-auto" style="height:50px;" src="assets/images/parcoursup.png" alt="Filtres" class="img-fluid">
+	<img class="mb-4 d-block mx-auto" style="height:50px;" src="assets/images/parcoursup.png" alt="Filtres" class="img-fluid">
 
-    <div class="row">
-        <!-- Liste des filtres avec scroll -->
-        <div class="col-md-8">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2>Gestion des filtres</h2>
-                <div>
-                    <a class="btn btn-success" href="/gestionParcourSup">
-                        <i class="fas fa-database"></i> Gerer les candidats
-                    </a>
-                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#nouveauFiltreModal">
-                        <i class="fas fa-plus"></i> Nouveau filtre
-                    </button>
-                </div>
-            </div>
+	<div class="row">
+		<!-- Liste des filtres avec scroll -->
+		<div class="col-md-8">
+			<div class="d-flex justify-content-between align-items-center mb-4">
+				<h2>Gestion des filtres</h2>
+				<div>
+					<a class="btn btn-success" href="/gestionParcourSup">
+						<i class="fas fa-database"></i> Gerer les candidats
+					</a>
+					<button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#nouveauFiltreModal">
+						<i class="fas fa-plus"></i> Nouveau filtre
+					</button>
+				</div>
+			</div>
 
-            {% if filtres is empty %}
-                <div class="alert alert-info">
-                    <i class="fas fa-info-circle"></i> Aucun filtre créé pour le moment.
-                </div>
-            {% else %}
-                <!-- Zone scrollable pour les filtres -->
-                <div class="filtres-list">
-                    {% for filtre in filtres %}
-                        <div class="card filtre-card {% if not filtre.actif %}inactif{% endif %}">
-                            <div class="card-body">
-                                <div class="d-flex justify-content-between align-items-start">
-                                    <div>
-                                        <h5 class="card-title">
-                                            {{ filtre.nomFiltre }}
-                                            {% if filtre.actif %}
-                                                <span class="badge bg-success">Actif</span>
-                                            {% else %}
-                                                <span class="badge bg-danger">Inactif</span>
-                                            {% endif %}
-                                        </h5>
-                                        
-                                        <div class="mb-2">
-                                            <span class="badge badge-type bg-primary">{{ filtre.typeAction|title }}</span>
-                                            <strong>{{ filtre.valeurAction }}</strong>
-                                        </div>
-                                        
-                                        <p class="card-text">
-                                            <strong>Condition :</strong> 
-                                            Si <code>{{ filtre.colonneSource }}</code> 
-                                            {{ filtre.conditionType|replace({'_': ' '}) }} 
-                                            "<em>{{ filtre.valeurCondition }}</em>"
-                                        </p>
-                                    </div>
-                                    
-                                    <div class="btn-group-vertical" role="group">
-                                        <button class="btn btn-sm btn-outline-primary btn-action" 
-                                                onclick="toggleFiltre({{ filtre.idFiltre }})">
-                                            {% if filtre.actif %}
-                                                <i class="fas fa-pause"></i>
-                                            {% else %}
-                                                <i class="fas fa-play"></i>
-                                            {% endif %}
-                                        </button>
-                                        <button class="btn btn-sm btn-outline-danger btn-action" 
-                                                onclick="supprimerFiltre({{ filtre.idFiltre }})">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    {% endfor %}
-                </div>
-            {% endif %}
-        </div>
+			{% if filtres is empty %}
+				<div class="alert alert-info">
+					<i class="fas fa-info-circle"></i> Aucun filtre créé pour le moment.
+				</div>
+			{% else %}
+				<!-- Zone scrollable pour les filtres -->
+				<div class="filtres-list">
+					{% for filtre in filtres %}
+						<div class="card filtre-card {% if not filtre.actif %}inactif{% endif %}">
+							<div class="card-body">
+								<div class="d-flex justify-content-between align-items-start">
+									<div>
+										<h5 class="card-title">
+											{{ filtre.nomFiltre }}
+											{% if filtre.actif %}
+												<span class="badge bg-success">Actif</span>
+											{% else %}
+												<span class="badge bg-danger">Inactif</span>
+											{% endif %}
+										</h5>
+										
+										<div class="mb-2">
+											<span class="badge badge-type bg-primary">{{ filtre.typeAction|title }}</span>
+											<strong>{{ filtre.valeurAction }}</strong>
+										</div>
+										
+										<p class="card-text">
+											<strong>Condition :</strong> 
+											Si <code>{{ filtre.colonneSource }}</code> 
+											{{ filtre.conditionType|replace({'_': ' '}) }} 
+											"<em>{{ filtre.valeurCondition }}</em>"
+										</p>
+									</div>
+									
+									<div class="btn-group-vertical" role="group">
+										<button class="btn btn-sm btn-outline-primary btn-action" 
+												onclick="toggleFiltre({{ filtre.idFiltre }})">
+											{% if filtre.actif %}
+												<i class="fas fa-pause"></i>
+											{% else %}
+												<i class="fas fa-play"></i>
+											{% endif %}
+										</button>
+										<button class="btn btn-sm btn-outline-danger btn-action" 
+												onclick="supprimerFiltre({{ filtre.idFiltre }})">
+											<i class="fas fa-trash"></i>
+										</button>
+									</div>
+								</div>
+							</div>
+						</div>
+					{% endfor %}
+				</div>
+			{% endif %}
+		</div>
 
-        <!-- Panneau d'aide - fixe -->
-        <div class="col-md-4">
-            <div class="card sticky-top" style="top: 20px;">
-                <div class="card-header">
-                    <h5><i class="fas fa-question-circle"></i> Types d'actions</h5>
-                </div>
-                <div class="card-body">
-                    <dl>
-                        <dt>Bonus</dt>
-                        <dd>Ajoute des points à la note (ex: +2)</dd>
-                        
-                        <dt>Malus</dt>
-                        <dd>Retire des points à la note (ex: -1)</dd>
-                        
-                        <dt>Coefficient</dt>
-                        <dd>Multiplie la note (ex: 1.2 ou 0.8)</dd>
-                        
-                        <dt>Note directe</dt>
-                        <dd>Attribue directement une note (ex: 15)</dd>
-                    </dl>
-                    
-                    <hr>
-                    
-                    <div class="text-muted">
-                        <small>
-                            <i class="fas fa-info-circle"></i>
-                            <strong>{{ filtres|length }}</strong> filtre(s) créé(s)
-                        </small>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+		<!-- Panneau d'aide - fixe -->
+		<div class="col-md-4">
+			<div class="card sticky-top" style="top: 20px;">
+				<div class="card-header">
+					<h5><i class="fas fa-question-circle"></i> Types d'actions</h5>
+				</div>
+				<div class="card-body">
+					<dl>
+						<dt>Bonus</dt>
+						<dd>Ajoute des points à la note (ex: +2)</dd>
+						
+						<dt>Malus</dt>
+						<dd>Retire des points à la note (ex: -1)</dd>
+						
+						<dt>Coefficient</dt>
+						<dd>Multiplie la note (ex: 1.2 ou 0.8)</dd>
+						
+						<dt>Note directe</dt>
+						<dd>Attribue directement une note (ex: 15)</dd>
+					</dl>
+					
+					<hr>
+					
+					<div class="text-muted">
+						<small>
+							<i class="fas fa-info-circle"></i>
+							<strong>{{ filtres|length }}</strong> filtre(s) créé(s)
+						</small>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
 </div>
 
 <!-- Modal nouveau filtre -->
 <div class="modal fade" id="nouveauFiltreModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <form action="/creerFiltre" method="post">
-                <div class="modal-header">
-                    <h5 class="modal-title">Créer un nouveau filtre</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label">Nom du filtre</label>
-                                <input type="text" class="form-control" name="nomFiltre" required>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label">Colonne à analyser</label>
-                                <select class="form-select" name="colonneSource" required>
-                                    <option value="">Choisir une colonne</option>
-                                    {% for colonne, label in colonnesDisponibles %}
-                                        <option value="{{ colonne }}">{{ label }}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label">Condition</label>
-                                <select class="form-select" name="conditionType" required onchange="toggleValeurCondition(this)">
-                                    <option value="">Choisir une condition</option>
-                                    
-                                    <!-- Conditions textuelles -->
-                                    <optgroup label="Conditions textuelles">
-                                        <option value="contient">Contient</option>
-                                        <option value="egal">Égal à</option>
-                                        <option value="different">Différent de</option>
-                                        <option value="commence_par">Commence par</option>
-                                        <option value="finit_par">Finit par</option>
-                                    </optgroup>
-                                    
-                                    <!-- Conditions numériques -->
-                                    <optgroup label="Conditions numériques">
-                                        <option value="superieur">Supérieur à</option>
-                                        <option value="inferieur">Inférieur à</option>
-                                    </optgroup>
-                                    
-                                    <!-- Conditions d'existence -->
-                                    <optgroup label="Conditions d'existence">
-                                        <option value="vide">Est vide</option>
-                                        <option value="non_vide">N'est pas vide</option>
-                                    </optgroup>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3" id="valeurConditionDiv">
-                                <label class="form-label">Valeur à chercher</label>
-                                <input type="text" class="form-control" name="valeurCondition" id="valeurConditionInput">
-                                <div class="form-text">
-                                    <small>
-                                        • <strong>Contient/Commence par/Finit par :</strong> texte à chercher<br>
-                                        • <strong>Supérieur/Inférieur :</strong> valeurs numériques (ex: 12.5)<br>
-                                        • <strong>Est vide :</strong> détecte les champs vides, avec "-", ou "Non renseigné"<br>
-                                        • <strong>N'est pas vide :</strong> détecte les champs avec vraies données<br>
-                                        • <strong>Égal/Différent :</strong> comparaison exacte (sensible à la casse)
-                                    </small>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label">Type d'action</label>
-                                <select class="form-select" name="typeAction" required>
-                                    <option value="bonus">Bonus (+)</option>
-                                    <option value="malus">Malus (-)</option>
-                                    <option value="coefficient">Coefficient (×)</option>
-                                    <option value="note_directe">Note directe</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label">Valeur</label>
-                                <input type="number" step="0.01" class="form-control" name="valeurAction" required>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" name="actif" checked>
-                        <label class="form-check-label">Filtre actif</label>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                    <button type="submit" class="btn btn-primary">Créer le filtre</button>
-                </div>
-            </form>
-        </div>
-    </div>
+	<div class="modal-dialog modal-lg">
+		<div class="modal-content">
+			<form action="/creerFiltre" method="post">
+				<div class="modal-header">
+					<h5 class="modal-title">Créer un nouveau filtre</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+				</div>
+				<div class="modal-body">
+					<div class="row">
+						<div class="col-md-6">
+							<div class="mb-3">
+								<label class="form-label">Nom du filtre</label>
+								<input type="text" class="form-control" name="nomFiltre" required>
+							</div>
+						</div>
+						<div class="col-md-6">
+							<div class="mb-3">
+								<label class="form-label">Colonne à analyser</label>
+								<select class="form-select" name="colonneSource" required>
+									<option value="">Choisir une colonne</option>
+									{% for colonne, label in colonnesDisponibles %}
+										<option value="{{ colonne }}">{{ label }}</option>
+									{% endfor %}
+								</select>
+							</div>
+						</div>
+					</div>
+					
+					<div class="row">
+						<div class="col-md-6">
+							<div class="mb-3">
+								<label class="form-label">Condition</label>
+								<select class="form-select" name="conditionType" required onchange="toggleValeurCondition(this)">
+									<option value="">Choisir une condition</option>
+									
+									<!-- Conditions textuelles -->
+									<optgroup label="Conditions textuelles">
+										<option value="contient">Contient</option>
+										<option value="egal">Égal à</option>
+										<option value="different">Différent de</option>
+										<option value="commence_par">Commence par</option>
+										<option value="finit_par">Finit par</option>
+									</optgroup>
+									
+									<!-- Conditions numériques -->
+									<optgroup label="Conditions numériques">
+										<option value="superieur">Supérieur à</option>
+										<option value="inferieur">Inférieur à</option>
+									</optgroup>
+									
+									<!-- Conditions d'existence -->
+									<optgroup label="Conditions d'existence">
+										<option value="vide">Est vide</option>
+										<option value="non_vide">N'est pas vide</option>
+									</optgroup>
+								</select>
+							</div>
+						</div>
+						<div class="col-md-6">
+							<div class="mb-3" id="valeurConditionDiv">
+								<label class="form-label">Valeur à chercher</label>
+								<input type="text" class="form-control" name="valeurCondition" id="valeurConditionInput">
+								<div class="form-text">
+									<small>
+										• <strong>Contient/Commence par/Finit par :</strong> texte à chercher<br>
+										• <strong>Supérieur/Inférieur :</strong> valeurs numériques (ex: 12.5)<br>
+										• <strong>Est vide :</strong> détecte les champs vides, avec "-", ou "Non renseigné"<br>
+										• <strong>N'est pas vide :</strong> détecte les champs avec vraies données<br>
+										• <strong>Égal/Différent :</strong> comparaison exacte (sensible à la casse)
+									</small>
+								</div>
+							</div>
+						</div>
+					</div>
+					
+					<div class="row">
+						<div class="col-md-6">
+							<div class="mb-3">
+								<label class="form-label">Type d'action</label>
+								<select class="form-select" name="typeAction" required>
+									<option value="bonus">Bonus (+)</option>
+									<option value="malus">Malus (-)</option>
+									<option value="coefficient">Coefficient (×)</option>
+									<option value="note_directe">Note directe</option>
+								</select>
+							</div>
+						</div>
+						<div class="col-md-6">
+							<div class="mb-3">
+								<label class="form-label">Valeur</label>
+								<input type="number" step="0.01" class="form-control" name="valeurAction" required>
+							</div>
+						</div>
+					</div>
+					
+					<div class="form-check">
+						<input class="form-check-input" type="checkbox" name="actif" checked>
+						<label class="form-check-label">Filtre actif</label>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+					<button type="submit" class="btn btn-primary">Créer le filtre</button>
+				</div>
+			</form>
+		</div>
+	</div>
 </div>
-
-<script>
-function toggleValeurCondition(select) {
-    const valeurDiv = document.getElementById('valeurConditionDiv');
-    const valeurInput = document.getElementById('valeurConditionInput');
-    
-    if (select.value === 'vide' || select.value === 'non_vide') {
-        valeurDiv.style.display = 'none';
-        valeurInput.required = false;
-        valeurInput.value = '';
-    } else {
-        valeurDiv.style.display = 'block';
-        valeurInput.required = true;
-    }
-}
-</script>
 {% endblock %}
