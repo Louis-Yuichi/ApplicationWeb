@@ -10,17 +10,15 @@ class CreateAvis extends Migration
 	{
 		$this->forge->addField
 		([
-			'idEtudiant'    => ['type' => 'INT'    ,                           'null' => false],
-			'idAvis'        => ['type' => 'INT'    , 'auto_increment' => true, 'null' => false],
-			'typePoursuite' => ['type' => 'VARCHAR', 'constraint'     =>   20, 'null' => false],
-			'typeAvis'      => ['type' => 'VARCHAR', 'constraint'     =>   20, 'null' => false],
-			'nbAvis'        => ['type' => 'INT'    ,                           'null' => false],
-			'commentaire'   => ['type' => 'TEXT'   ,                           'null' => true]
+			'idEtudiant'    => ['type' => 'INT'                        , 'null' => false],
+			'typePoursuite' => ['type' => 'VARCHAR', 'constraint' => 20, 'null' => false],
+			'typeAvis'      => ['type' => 'VARCHAR', 'constraint' => 20, 'null' => false],
+			'commentaire'   => ['type' => 'TEXT'                       , 'null' => true ]
 		]);
 
-		$this->forge->addPrimaryKey('idAvis');
+		$this->forge->addPrimaryKey(['idEtudiant', 'typePoursuite']);
 
-		$this->forge->addForeignKey('idEtudiant', 'Etudiant', 'idEtudiant', 'CASCADE', 'CASCADE');
+		$this->forge->addForeignKey( 'idEtudiant', 'Etudiant', 'idEtudiant', 'CASCADE', 'CASCADE');
 
 		$this->forge->createTable('Avis', true);
 	}

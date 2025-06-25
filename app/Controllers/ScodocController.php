@@ -69,14 +69,44 @@ class ScodocController extends BaseController
 					VALUES (?, ?, ?) ON CONFLICT ("idEtudiant", "numeroSemestre") DO UPDATE SET "nbAbsencesInjust" = ?',
 					[$idEtudiant, $numeroSemestre, $nbAbsencesInjust, $nbAbsencesInjust]);
 
+		// Debug: afficher les colonnes disponibles
+		if ($idEtudiant == '8820') { // Remplacez par un ID test
+			error_log("Semestre $numeroSemestre - Colonnes disponibles: " . implode(', ', array_keys($indexColonnes)));
+		}
+
+		// Définir les ressources par semestre (maths et anglais)
+		$ressourcesVoulues = [
+			1 => ['BINR106', 'BINR107', 'BINR110'],
+			2 => ['BINR207', 'BINR208', 'BINR209', 'BINR212'],
+			3 => ['BINR308', 'BINR309', 'BINR312'],
+			4 => ['BINR403', 'BINR404', 'BINR412'],
+			5 => ['BINR504', 'BINR511', 'BINR512']
+		];
+
 		foreach ($indexColonnes as $nomColonne => $j)
 		{
+			// Traitement des compétences
 			if (preg_match('/^BIN\d+$/', $nomColonne) && !empty($ligne[$j]) && $ligne[$j] !== '~')
 			{
 				$moyenne = $ligne[$j];
 
 				$db->query('INSERT INTO "Competence" ("idEtudiant", "numeroSemestre", "codeCompetence", "moyenneCompetence")
 							VALUES (?, ?, ?, ?) ON CONFLICT("idEtudiant", "numeroSemestre", "codeCompetence") DO UPDATE SET "moyenneCompetence" = ?',
+							[$idEtudiant, $numeroSemestre, $nomColonne, $moyenne, $moyenne]);
+			}
+
+			// Traitement des ressources (maths et anglais seulement)
+			if (isset($ressourcesVoulues[$numeroSemestre]) && 
+				in_array($nomColonne, $ressourcesVoulues[$numeroSemestre]) && 
+				!empty($ligne[$j]) && $ligne[$j] !== '~')
+			{
+				$moyenne = $ligne[$j];
+
+				// Debug: confirmer l'insertion
+				error_log("Ressource trouvée: $nomColonne = $moyenne pour étudiant $idEtudiant, semestre $numeroSemestre");
+
+				$db->query('INSERT INTO "Ressource" ("idEtudiant", "numeroSemestre", "codeRessource", "moyenneRessource")
+							VALUES (?, ?, ?, ?) ON CONFLICT("idEtudiant", "numeroSemestre", "codeRessource") DO UPDATE SET "moyenneRessource" = ?',
 							[$idEtudiant, $numeroSemestre, $nomColonne, $moyenne, $moyenne]);
 			}
 		}
@@ -135,6 +165,20 @@ class ScodocController extends BaseController
 								AND CAST(c2."moyenneCompetence" AS FLOAT) > CAST(c1."moyenneCompetence" AS FLOAT)
 							  ) as "rangCompetence" FROM "Competence" c1 WHERE c1."idEtudiant" = ? 
 								ORDER BY c1."numeroSemestre", c1."codeCompetence"', [$idEtudiant])->getResultArray();
+
+		return $this->response->setJSON($resultat);
+	}
+
+	public function ressourcesParEtudiant($idEtudiant)
+	{
+		$db = db_connect();
+
+		$resultat = $db->query('SELECT "numeroSemestre", "codeRessource", "moyenneRessource",
+						  ( SELECT COUNT(*) + 1 FROM "Ressource" r2 WHERE r2."numeroSemestre" = r1."numeroSemestre"
+							AND r2."codeRessource" = r1."codeRessource"
+							AND CAST(r2."moyenneRessource" AS FLOAT) > CAST(r1."moyenneRessource" AS FLOAT)
+						  ) as "rangRessource" FROM "Ressource" r1 WHERE r1."idEtudiant" = ? 
+							ORDER BY r1."numeroSemestre", r1."codeRessource"', [$idEtudiant])->getResultArray();
 
 		return $this->response->setJSON($resultat);
 	}

@@ -29,8 +29,9 @@ $routes->get ('supprimerFiltre/(:num)' , 'ParcourSupController::supprimerFiltre/
 $routes->get ('calculerNotes'          , 'ParcourSupController::calculerNotes'     );
 
 // ScodocController routes
-$routes->match(['GET', 'POST'], 'scodoc' , 'ScodocController::index'               );
+$routes->match(['GET', 'POST'], 'scodoc' , 'ScodocController::index'                      );
 $routes->get  ('api/etudiants/(:num)'    , 'ScodocController::etudiantsParAnnee/$1'       );
 $routes->get  ('api/absences/(:num)'     , 'ScodocController::absencesParEtudiant/$1'     );
 $routes->get  ('api/apprentissage/(:num)', 'ScodocController::apprentissageParEtudiant/$1');
 $routes->get  ('api/competences/(:num)'  , 'ScodocController::competencesParEtudiant/$1'  );
+$routes->get  ('api/ressources/(:num)'   , 'ScodocController::ressourcesParEtudiant/$1'   );
