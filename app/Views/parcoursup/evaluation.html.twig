@@ -10,108 +10,108 @@
 
 {% block body %}
 <div class="container-fluid">
-    <img class="mb-4 d-block mx-auto" style="height:50px;" src="assets/images/parcoursup.png" alt="Évaluation" class="img-fluid">
+	<img class="mb-4 d-block mx-auto" style="height:50px;" src="assets/images/parcoursup.png" alt="Évaluation" class="img-fluid">
 
-    <!-- Informations de l'évaluation -->
-    <div class="info-card">
-        <div class="row">
-            <div class="col-md-8">
-                <h4><i class="fas fa-clipboard-check"></i> Évaluation - {{ anneeSelectionnee }}</h4>
-                <p class="mb-2">
-                    <strong>Examinateur :</strong> {{ examinateur.nom }} {{ examinateur.prenom }} 
-                    <span class="badge bg-light text-dark ms-2">{{ examinateur.code }}</span>
-                </p>
-                <p class="mb-0">
-                    <strong>{{ nbCandidats }}</strong> candidat(s) à évaluer
-                </p>
-            </div>
-            <div class="col-md-4 text-end">
-                <button type="button" class="btn btn-light btn-lg" onclick="exportWithModifications()">
-                    <i class="fas fa-download"></i> Télécharger CSV
-                </button>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Info sur les modifications -->
-    <div class="alert alert-info d-none" id="modificationsInfo">
-        <i class="fas fa-info-circle"></i> 
-        <span id="modificationsCount">0</span> modification(s) locale(s) en attente d'export
-    </div>
+	<!-- Informations de l'évaluation -->
+	<div class="info-card">
+		<div class="row">
+			<div class="col-md-8">
+				<h4><i class="fas fa-clipboard-check"></i> Évaluation - {{ anneeSelectionnee }}</h4>
+				<p class="mb-2">
+					<strong>Examinateur :</strong> {{ examinateur.nom }} {{ examinateur.prenom }} 
+					<span class="badge bg-light text-dark ms-2">{{ examinateur.code }}</span>
+				</p>
+				<p class="mb-0">
+					<strong>{{ nbCandidats }}</strong> candidat(s) à évaluer
+				</p>
+			</div>
+			<div class="col-md-4 text-end">
+				<button type="button" class="btn btn-light btn-lg" onclick="exportWithModifications()">
+					<i class="fas fa-download"></i> Télécharger CSV
+				</button>
+			</div>
+		</div>
+	</div>
+	
+	<!-- Info sur les modifications -->
+	<div class="alert alert-info d-none" id="modificationsInfo">
+		<i class="fas fa-info-circle"></i> 
+		<span id="modificationsCount">0</span> modification(s) locale(s) en attente d'export
+	</div>
 
-    <!-- Barre de recherche -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div class="input-group" style="max-width: 350px;">
-            <input type="text" 
-                id="searchInput" 
-                class="form-control" 
-                placeholder="Rechercher par numéro de candidat" 
-                aria-label="Rechercher">
-            <button class="btn btn-outline-secondary" type="button">
-                <i class="fas fa-search"></i>
-            </button>
-        </div>
-        
-        <a href="/gestionParcourSup?annee={{ anneeSelectionnee|url_encode }}" class="btn btn-secondary">
-            <i class="fas fa-arrow-left"></i> Retour à la gestion
-        </a>
-    </div>
+	<!-- Barre de recherche -->
+	<div class="d-flex justify-content-between align-items-center mb-4">
+		<div class="input-group" style="max-width: 350px;">
+			<input type="text" 
+				id="searchInput" 
+				class="form-control" 
+				placeholder="Rechercher par numéro de candidat" 
+				aria-label="Rechercher">
+			<button class="btn btn-outline-secondary" type="button">
+				<i class="fas fa-search"></i>
+			</button>
+		</div>
+		
+		<a href="/gestionParcourSup?annee={{ anneeSelectionnee|url_encode }}" class="btn btn-secondary">
+			<i class="fas fa-arrow-left"></i> Retour à la gestion
+		</a>
+	</div>
 
-    <!-- Tableau des candidats -->
-    <div class="table-container">
-        <div class="table-responsive">
-            <table class="table table-hover table-bordered align-middle">
-                <thead class="table-dark text-center">
-                    <tr>
-                        {% for field, label in columns %}
-                            <th>{{ label }}</th>
-                        {% endfor %}
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for candidat in candidats %}
-                        <tr>
-                            {% for field, label in columns %}
-                                {% set readonly_fields = ['numCandidat', 'nom', 'prenom', 'groupe', 'codeExaminateur', 'nomExaminateur', 'prenomExaminateur'] %}
-                                {% set editable_fields = ['noteDossier', 'commentaire'] %}
-                                {% set value = attribute(candidat, field)|default('-') %}
-                                
-                                <td {% if field in editable_fields %}
-                                        class="editable-cell" 
-                                        data-field="{{ field }}"
-                                        data-candidat="{{ candidat.numCandidat }}"
-                                        title="Cliquez pour modifier (modification locale uniquement)"
-                                    {% else %}
-                                        class="readonly-cell"
-                                    {% endif %}>
-                                    {{ value }}
-                                </td>
-                            {% endfor %}
-                        </tr>
-                    {% else %}
-                        <tr>
-                            <td colspan="{{ columns|length }}" class="text-center">
-                                Aucun candidat trouvé pour l'année {{ anneeSelectionnee }}
-                            </td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </div>
+	<!-- Tableau des candidats -->
+	<div class="table-container">
+		<div class="table-responsive">
+			<table class="table table-hover table-bordered align-middle">
+				<thead class="table-dark text-center">
+					<tr>
+						{% for field, label in columns %}
+							<th>{{ label }}</th>
+						{% endfor %}
+					</tr>
+				</thead>
+				<tbody>
+					{% for candidat in candidats %}
+						<tr>
+							{% for field, label in columns %}
+								{% set readonly_fields = ['numCandidat', 'nom', 'prenom', 'groupe', 'codeExaminateur', 'nomExaminateur', 'prenomExaminateur'] %}
+								{% set editable_fields = ['noteDossier', 'commentaire'] %}
+								{% set value = attribute(candidat, field)|default('-') %}
+								
+								<td {% if field in editable_fields %}
+										class="editable-cell" 
+										data-field="{{ field }}"
+										data-candidat="{{ candidat.numCandidat }}"
+										title="Cliquez pour modifier (modification locale uniquement)"
+									{% else %}
+										class="readonly-cell"
+									{% endif %}>
+									{{ value }}
+								</td>
+							{% endfor %}
+						</tr>
+					{% else %}
+						<tr>
+							<td colspan="{{ columns|length }}" class="text-center">
+								Aucun candidat trouvé pour l'année {{ anneeSelectionnee }}
+							</td>
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+	</div>
 </div>
 
 <!-- Données cachées pour le JavaScript -->
 <div id="exportInfo" style="display: none;" 
-     data-code="{{ examinateur.code }}" 
-     data-annee="{{ anneeSelectionnee }}">
+	data-code="{{ examinateur.code }}" 
+	data-annee="{{ anneeSelectionnee }}">
 </div>
 
 <!-- Footer -->
 <footer class="text-center mt-5 text-white bg-dark py-3">
-    <div>
-        <img src="assets/images/logo-univ.png" style="height: 30px;" alt="Logo Univ">
-        <span class="ms-2">BUT Informatique - Le Havre © 2025</span>
-    </div>
+	<div>
+		<img src="assets/images/logo-univ.png" style="height: 30px;" alt="Logo Univ">
+		<span class="ms-2">BUT Informatique - Le Havre © 2025</span>
+	</div>
 </footer>
 {% endblock %}

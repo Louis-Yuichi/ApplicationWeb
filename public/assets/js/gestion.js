@@ -6,8 +6,8 @@ document.addEventListener('DOMContentLoaded', function()
 	// Auto-redirection vers l'année actuelle si aucune année n'est sélectionnée
 	if (anneeSelect && !anneeSelect.value && !window.location.search.includes('annee='))
 	{
-		const anneeActuelle = new Date().getFullYear();
-		const anneeDefaut = anneeActuelle + '/' + (anneeActuelle + 1);
+		const anneeActuelle  = new Date().getFullYear();
+		const anneeDefaut    = anneeActuelle + '/' + (anneeActuelle + 1);
 		window.location.href = '/gestionParcourSup?annee=' + encodeURIComponent(anneeDefaut);
 		return;
 	}
@@ -206,8 +206,8 @@ function updateNotesInTable(notes, notesGlobales)
 				if (noteDossierCell)
 				{
 					noteDossierCell.style.backgroundColor = '#d4edda';
-					noteDossierCell.style.transition = 'background-color 0.5s ease';
-					noteDossierCell.textContent = notes[numCandidat];
+					noteDossierCell.style.transition      = 'background-color 0.5s ease';
+					noteDossierCell.textContent           = notes[numCandidat];
 					notesUpdated++;
 					
 					// Remettre la couleur normale après 3 secondes
@@ -222,8 +222,8 @@ function updateNotesInTable(notes, notesGlobales)
 				if (noteGlobaleCell && notesGlobales && notesGlobales[numCandidat] !== undefined)
 				{
 					noteGlobaleCell.style.backgroundColor = '#cce5ff';
-					noteGlobaleCell.style.transition = 'background-color 0.5s ease';
-					noteGlobaleCell.textContent = notesGlobales[numCandidat];
+					noteGlobaleCell.style.transition      = 'background-color 0.5s ease';
+					noteGlobaleCell.textContent           = notesGlobales[numCandidat];
 					
 					// Remettre la couleur normale après 3 secondes
 					setTimeout(() =>
