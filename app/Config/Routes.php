@@ -13,12 +13,12 @@ $routes->get  ('logout'                   , 'Home::logout'  );
 $routes->get  ('accueil'                  , 'Home::accueil' );
 
 // ParcourSupController routes
-$routes->get ('parcoursup'             , 'ParcourSupController::menu'             );
-$routes->get ('gestionParcourSup'      , 'ParcourSupController::gestion'          );
-$routes->get ('evaluation'             , 'ParcourSupController::evaluation'       );
-$routes->post('importer'               , 'ParcourSupController::importer'         );
-$routes->post('modifierCandidat'       , 'ParcourSupController::modifierCandidat' );
-$routes->post('calculerNotesAjax'      , 'ParcourSupController::calculerNotesAjax');
+$routes->get ('parcoursup'                         , 'ParcourSupController::menu'                               );
+$routes->get ('gestionParcourSup'                  , 'ParcourSupController::gestion'                            );
+$routes->get ('evaluation'                         , 'ParcourSupController::evaluation'                         );
+$routes->post('importer'                           , 'ParcourSupController::importer'                           );
+$routes->post('modifierCandidat'                   , 'ParcourSupController::modifierCandidat'                   );
+$routes->post('calculerNotesAjax'                  , 'ParcourSupController::calculerNotesAjax'                  );
 $routes->post('exporterEvaluationAvecModifications', 'ParcourSupController::exporterEvaluationAvecModifications');
 
 // Filtres routes
@@ -29,7 +29,7 @@ $routes->get ('supprimerFiltre/(:num)' , 'ParcourSupController::supprimerFiltre/
 $routes->get ('calculerNotes'          , 'ParcourSupController::calculerNotes'     );
 
 // ScodocController routes
-$routes->match(['GET', 'POST'], 'scodoc' , 'ScodocController::index'                      );
+$routes->match(['GET', 'POST'], 'scodoc' , 'ScodocController::index'               );
 $routes->get  ('api/etudiants/(:num)'    , 'ScodocController::etudiantsParAnnee/$1'       );
 $routes->get  ('api/absences/(:num)'     , 'ScodocController::absencesParEtudiant/$1'     );
 $routes->get  ('api/apprentissage/(:num)', 'ScodocController::apprentissageParEtudiant/$1');

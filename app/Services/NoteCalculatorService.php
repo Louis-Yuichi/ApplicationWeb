@@ -1,5 +1,4 @@
 <?php
-// filepath: /home/etudiant/dt231159/STAGE/ApplicationWeb/app/Services/NoteCalculatorService.php
 
 namespace App\Services;
 
@@ -18,15 +17,15 @@ class NoteCalculatorService
 		$noteLycee = $noteLycee ?? 0;
 		$noteFicheAvenir = $noteFicheAvenir ?? 0;
 		$noteDossier = $noteDossier ?? 0;
-		
+
 		// Calcul de la moyenne pondérée
 		$totalPoints = ( $noteLycee       * $this->coeffLycee       ) + 
-					( $noteFicheAvenir * $this->coeffFicheAvenir ) + 
-					( $noteDossier     * $this->coeffDossier     );
+					   ( $noteFicheAvenir * $this->coeffFicheAvenir ) + 
+					   ( $noteDossier     * $this->coeffDossier     );
 		$totalCoeff = $this->coeffLycee + $this->coeffFicheAvenir + $this->coeffDossier;
-		
+
 		$noteGlobale = $totalPoints / $totalCoeff;
-		
+
 		// S'assurer que la note reste dans les limites (0-20)
 		return max(0, min(20, $noteGlobale));
 	}
@@ -38,14 +37,14 @@ class NoteCalculatorService
 	{
 		// Utiliser noteLycee comme note de base, sinon 10
 		$noteBase = 10;
-		
+
 		if (isset($candidat['noteLycee']) && !empty($candidat['noteLycee']) && is_numeric($candidat['noteLycee']))
 		{
 			$noteBase = floatval($candidat['noteLycee']);
 		}
-		
+
 		$noteFinale = $noteBase;
-		
+
 		foreach ($filtres as $filtre)
 		{
 			if ($this->evaluerCondition($candidat, $filtre))
@@ -67,7 +66,7 @@ class NoteCalculatorService
 				}
 			}
 		}
-		
+
 		// S'assurer que la note reste dans les limites (0-20)
 		return max(0, min(20, $noteFinale));
 	}
@@ -79,14 +78,14 @@ class NoteCalculatorService
 	{
 		$colonneSource = $filtre['colonneSource'];
 		$valeurCondition = $filtre['valeurCondition'];
-		
+
 		// Récupérer la valeur du candidat (peut venir de différentes tables grâce aux jointures)
 		$valeurCandidat = $candidat[$colonneSource] ?? '';
 		
 		// Convertir en string pour la comparaison
 		$valeurCandidat = strval($valeurCandidat);
 		$valeurCondition = strval($valeurCondition);
-		
+
 		switch ($filtre['conditionType'])
 		{
 			case 'contient':
@@ -96,13 +95,13 @@ class NoteCalculatorService
 					return false;
 				}
 				return stripos($valeurCandidat, $valeurCondition) !== false;
-				
+
 			case 'egal':
 				return strcasecmp($valeurCandidat, $valeurCondition) === 0;
 				
 			case 'different':
 				return strcasecmp($valeurCandidat, $valeurCondition) !== 0;
-				
+
 			case 'commence_par':
 				// Ne pas chercher dans les valeurs "vides"
 				if ($this->isEmptyValue($valeurCandidat))
@@ -110,7 +109,7 @@ class NoteCalculatorService
 					return false;
 				}
 				return stripos($valeurCandidat, $valeurCondition) === 0;
-				
+
 			case 'finit_par':
 				// Ne pas chercher dans les valeurs "vides"
 				if ($this->isEmptyValue($valeurCandidat))
@@ -119,7 +118,7 @@ class NoteCalculatorService
 				}
 				return strlen($valeurCondition) <= strlen($valeurCandidat) && 
 					strcasecmp(substr($valeurCandidat, -strlen($valeurCondition)), $valeurCondition) === 0;
-					
+
 			case 'superieur':
 				// Ignorer les valeurs non numériques et les "vides"
 				if ($this->isEmptyValue($valeurCandidat) || !is_numeric($valeurCandidat) || !is_numeric($valeurCondition))
@@ -127,7 +126,7 @@ class NoteCalculatorService
 					return false;
 				}
 				return floatval($valeurCandidat) > floatval($valeurCondition);
-				
+
 			case 'inferieur':
 				// Ignorer les valeurs non numériques et les "vides"
 				if ($this->isEmptyValue($valeurCandidat) || !is_numeric($valeurCandidat) || !is_numeric($valeurCondition))
@@ -135,15 +134,14 @@ class NoteCalculatorService
 					return false;
 				}
 				return floatval($valeurCandidat) < floatval($valeurCondition);
-				
+
 			case 'vide':
-				// CONSIDÉRER COMME VIDE : '', null, '-', ou whitespace seulement
 				return $this->isEmptyValue($valeurCandidat);
-				
+
 			case 'non_vide':
-				// CONSIDÉRER COMME NON-VIDE : tout sauf '', null, '-', ou whitespace seulement
+				// CONSIDÉRER COMME NON-VIDE : tout sauf '', null, '-'
 				return !$this->isEmptyValue($valeurCandidat);
-				
+
 			default:
 				return false;
 		}
@@ -160,22 +158,22 @@ class NoteCalculatorService
 		{
 			return true;
 		}
-		
+
 		// Convertir en string et nettoyer
 		$value = trim(strval($value));
-		
+
 		// Chaîne vide après nettoyage
 		if ($value === '')
 		{
 			return true;
 		}
-		
+
 		// Le tiret par défaut du système
 		if ($value === '-')
 		{
 			return true;
 		}
-		
+
 		// Variantes possibles du "vide"
 		$emptyVariants = [
 			'N/A', 'n/a', 'NA', 'na',
@@ -184,7 +182,7 @@ class NoteCalculatorService
 			'-', '--', '---',
 			'Non renseigné', 'non renseigné'
 		];
-		
+
 		foreach ($emptyVariants as $variant)
 		{
 			if (strcasecmp($value, $variant) === 0)
@@ -192,7 +190,7 @@ class NoteCalculatorService
 				return true;
 			}
 		}
-		
+
 		return false;
 	}
 }
