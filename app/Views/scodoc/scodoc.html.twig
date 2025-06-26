@@ -44,13 +44,20 @@
 							<td style="width: 70%;" colspan="6" id="ficheNomPrenom"></td>
 						</tr>
 						<tr>
-							<td>Apprentissage : (oui/non)</td>
-							<td style="width: 10%;">BUT 1</td>
-							<td id="apprentissage_but1"></td>
-							<td style="width: 10%;">BUT 2</td>
-							<td id="apprentissage_but2"></td>
-							<td style="width: 10%;">BUT 3</td>
-							<td id="apprentissage_but3"></td>
+							<td>Apprentissage</td>
+							<td>BUT 1</td>
+                            <td>
+                                <span id="apprentissage_but1"></span>
+                            </td>
+                            <td>BUT 2</td>
+                            <td>
+                                <span id="apprentissage_but2"></span>
+                            </td>
+                            <td>BUT 3</td>
+                            <td>
+                                <span id="apprentissage_but3"></span>
+                                <input type="text" id="apprentissage_but3_edit" class="form-control form-control-sm edit-field d-none" placeholder="Apprentissage BUT3">
+                            </td>
 						</tr>
 						<tr>
 							<td>Parcours d’études :</td>
@@ -66,9 +73,12 @@
 							<td colspan="6" id="parcours_but"></td>
 						</tr>
 						<tr>
-							<td>Si mobilité à l’étranger (lieu, durée)</td>
-							<td colspan="6" id="mobilite_etranger"></td>
-						</tr>
+							<td>Mobilité à l'étranger</td>
+							<td colspan="6">
+                                <span id="mobilite_etranger"></span>
+                                <input type="text" id="mobilite_etranger_edit" class="form-control edit-field d-none" placeholder="Mobilité à l'étranger">
+                            </td>
+                        </tr>
 					</tbody>
 				</table>
 			</div>
@@ -212,36 +222,46 @@
 					</thead>
 					<tbody>
 						<tr>
-							<td rowspan="2">Pour l’étudiant</td>
+							<td rowspan="2">Pour l'étudiant</td>
 							<td>En école d'ingénieurs</td>
-							<td><input type="checkbox"></td>
-							<td><input type="checkbox"></td>
-							<td><input type="checkbox"></td>
-							<td><input type="checkbox"></td>
-							<td><input type="checkbox"></td>
+							<td><input type="radio" name="avis_ecole_ingenieur" value="tres_favorable" data-type="ecole_ingenieur" class="edit-field" disabled></td>
+							<td><input type="radio" name="avis_ecole_ingenieur" value="favorable" data-type="ecole_ingenieur" class="edit-field" disabled></td>
+							<td><input type="radio" name="avis_ecole_ingenieur" value="assez_favorable" data-type="ecole_ingenieur" class="edit-field" disabled></td>
+							<td><input type="radio" name="avis_ecole_ingenieur" value="sans_avis" data-type="ecole_ingenieur" class="edit-field" disabled></td>
+							<td><input type="radio" name="avis_ecole_ingenieur" value="reserve" data-type="ecole_ingenieur" class="edit-field" disabled></td>
 						</tr>
 						<tr>
 							<td>En master</td>
-							<td><input type="checkbox"></td>
-							<td><input type="checkbox"></td>
-							<td><input type="checkbox"></td>
-							<td><input type="checkbox"></td>
-							<td><input type="checkbox"></td>
+							<td><input type="radio" name="avis_master" value="tres_favorable" data-type="master" class="edit-field" disabled></td>
+							<td><input type="radio" name="avis_master" value="favorable" data-type="master" class="edit-field" disabled></td>
+							<td><input type="radio" name="avis_master" value="assez_favorable" data-type="master" class="edit-field" disabled></td>
+							<td><input type="radio" name="avis_master" value="sans_avis" data-type="master" class="edit-field" disabled></td>
+							<td><input type="radio" name="avis_master" value="reserve" data-type="master" class="edit-field" disabled></td>
 						</tr>
 						<tr>
 							<td style="width: 15%;" rowspan="2">
-								Nombre d’avis pour la promotion (total : <span id="nbAvisPromo">0</span>)
+								Nombre d'avis pour la promotion (total : <span id="nbAvisPromo">0</span>)
 							</td>
 							<td style="width: 15%;">En école d'ingénieurs</td>
-							<td></td><td></td><td></td><td></td><td></td>
+							<td id="stats_ecole_tres_favorable">0</td>
+							<td id="stats_ecole_favorable">0</td>
+							<td id="stats_ecole_assez_favorable">0</td>
+							<td id="stats_ecole_sans_avis">0</td>
+							<td id="stats_ecole_reserve">0</td>
 						</tr>
 						<tr>
 							<td>En master</td>
-							<td></td><td></td><td></td><td></td><td></td>
+							<td id="stats_master_tres_favorable">0</td>
+							<td id="stats_master_favorable">0</td>
+							<td id="stats_master_assez_favorable">0</td>
+							<td id="stats_master_sans_avis">0</td>
+							<td id="stats_master_reserve">0</td>
 						</tr>
 						<tr>
 							<td>Commentaire</td>
-							<td colspan="6"></td>
+							<td colspan="6">
+                                <textarea id="commentaireAvis" class="form-control edit-field" rows="3" placeholder="Commentaire général sur l'étudiant..." disabled></textarea>
+                            </td>
 						</tr>
 					</tbody>
 				</table>
@@ -297,13 +317,9 @@
 						</label>
 
 						<div class="mb-3">
-							{% set annee_actuelle = "now"|date("Y") %}
-							<select class="form-select" name="anneePromotion" required>
-								<option value="" selected>Année de la promotion</option>
-								{% for anneePromotion in 2022..2035 %}
-									<option value="{{ anneePromotion }}">{{ anneePromotion }}</option>
-								{% endfor %}
-							</select>
+							<select class="form-select" name="anneePromotion" id="anneeImport" required>
+                                <option value="" selected>Année de la promotion</option>
+                            </select>
 						</div>
 
 						<button type="submit" class="btn btn-primary rounded-pill">Confirmer</button>

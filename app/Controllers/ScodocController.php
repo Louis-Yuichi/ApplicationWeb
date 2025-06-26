@@ -182,4 +182,188 @@ class ScodocController extends BaseController
 
 		return $this->response->setJSON($resultat);
 	}
+
+	public function sauvegarderAvis()
+	{
+		if (!$this->request->isAJAX()) {
+			return $this->response->setJSON(['success' => false, 'message' => 'Requête non autorisée']);
+		}
+		
+		$json = $this->request->getJSON(true);
+		
+		if (!isset($json['idEtudiant'], $json['typePoursuite'], $json['typeAvis'])) {
+			return $this->response->setJSON(['success' => false, 'message' => 'Données manquantes']);
+		}
+		
+		$db = db_connect();
+		
+		try {
+			// Utiliser votre structure existante
+			$db->query('INSERT INTO "Avis" ("idEtudiant", "typePoursuite", "typeAvis") 
+						VALUES (?, ?, ?) 
+						ON CONFLICT ("idEtudiant", "typePoursuite") 
+						DO UPDATE SET "typeAvis" = ?',
+				[$json['idEtudiant'], $json['typePoursuite'], $json['typeAvis'], $json['typeAvis']]);
+			
+			return $this->response->setJSON(['success' => true, 'message' => 'Avis sauvegardé']);
+			
+		} catch (\Exception $e) {
+			return $this->response->setJSON(['success' => false, 'message' => 'Erreur lors de la sauvegarde']);
+		}
+	}
+
+	public function sauvegarderCommentaire()
+	{
+		if (!$this->request->isAJAX()) {
+			return $this->response->setJSON(['success' => false, 'message' => 'Requête non autorisée']);
+		}
+		
+		$json = $this->request->getJSON(true);
+		
+		if (!isset($json['idEtudiant'], $json['commentaire'])) {
+			return $this->response->setJSON(['success' => false, 'message' => 'Données manquantes']);
+		}
+		
+		$db = db_connect();
+		
+		try {
+			// Sauvegarder le commentaire avec un type spécial
+			$db->query('INSERT INTO "Avis" ("idEtudiant", "typePoursuite", "typeAvis", "commentaire") 
+						VALUES (?, ?, ?, ?) 
+						ON CONFLICT ("idEtudiant", "typePoursuite") 
+						DO UPDATE SET "commentaire" = ?',
+				[$json['idEtudiant'], 'commentaire_general', 'sans_avis', $json['commentaire'], $json['commentaire']]);
+			
+			return $this->response->setJSON(['success' => true, 'message' => 'Commentaire sauvegardé']);
+			
+		} catch (\Exception $e) {
+			return $this->response->setJSON(['success' => false, 'message' => 'Erreur lors de la sauvegarde']);
+		}
+	}
+
+	public function avisParEtudiant($idEtudiant)
+	{
+		$db = db_connect();
+		
+		$resultat = $db->query('SELECT "typePoursuite", "typeAvis", "commentaire" FROM "Avis" WHERE "idEtudiant" = ?', 
+						 [$idEtudiant])->getResultArray();
+		
+		// Convertir en format plus pratique
+		$avis = [];
+		foreach ($resultat as $row) {
+			if ($row['typePoursuite'] === 'commentaire_general') {
+				$avis['commentaire'] = $row['commentaire'];
+			} else {
+				$avis[$row['typePoursuite']] = $row['typeAvis'];
+			}
+		}
+		
+		return $this->response->setJSON($avis);
+	}
+
+	public function statistiquesAvisPromotion($anneePromotion)
+	{
+		$db = db_connect();
+		
+		$resultat = $db->query('SELECT a."typePoursuite", a."typeAvis", COUNT(*) as "nombre"
+							   FROM "Avis" a
+							   INNER JOIN "Etudiant" e ON a."idEtudiant" = e."idEtudiant"
+							   WHERE e."anneePromotion" = ? AND a."typePoursuite" IN (?, ?)
+							   GROUP BY a."typePoursuite", a."typeAvis"', 
+							  [$anneePromotion, 'ecole_ingenieur', 'master'])->getResultArray();
+		
+		// Organiser les données
+		$stats = [
+			'ecole_ingenieur' => [
+				'tres_favorable' => 0, 'favorable' => 0, 'assez_favorable' => 0, 
+				'sans_avis' => 0, 'reserve' => 0
+			],
+			'master' => [
+				'tres_favorable' => 0, 'favorable' => 0, 'assez_favorable' => 0, 
+				'sans_avis' => 0, 'reserve' => 0
+			]
+		];
+		
+		foreach ($resultat as $row) {
+			if (isset($stats[$row['typePoursuite']][$row['typeAvis']])) {
+				$stats[$row['typePoursuite']][$row['typeAvis']] = intval($row['nombre']);
+			}
+		}
+		
+		return $this->response->setJSON($stats);
+	}
+
+	public function modifierEtudiant()
+	{
+		if (!$this->request->isAJAX()) {
+			return $this->response->setJSON(['success' => false, 'message' => 'Requête non autorisée']);
+		}
+		
+		$json = $this->request->getJSON(true);
+		log_message('info', 'Données reçues pour modification: ' . json_encode($json));
+		
+		if (!isset($json['idEtudiant'])) {
+			return $this->response->setJSON(['success' => false, 'message' => 'ID étudiant manquant']);
+		}
+		
+		$db = db_connect();
+		
+		try {
+			// Mettre à jour la mobilité dans la table Etudiant
+			if (isset($json['mobilite_etranger'])) {
+				log_message('info', 'Mise à jour mobilité: ' . $json['mobilite_etranger']);
+				$db->query('UPDATE "Etudiant" SET "mobiliteEtranger" = ? WHERE "idEtudiant" = ?',
+						  [$json['mobilite_etranger'], $json['idEtudiant']]);
+			}
+			
+			// Mettre à jour seulement l'apprentissage BUT 3 (semestre 5)
+			if (isset($json['apprentissage_but3'])) {
+				log_message('info', 'Mise à jour apprentissage BUT3: ' . $json['apprentissage_but3']);
+				$db->query('UPDATE "Semestre" SET "apprentissage" = ? WHERE "idEtudiant" = ? AND "numeroSemestre" = 5',
+						  [$json['apprentissage_but3'], $json['idEtudiant']]);
+			}
+			
+			return $this->response->setJSON(['success' => true, 'message' => 'Données mises à jour']);
+			
+		} catch (\Exception $e) {
+			log_message('error', 'Erreur modifierEtudiant: ' . $e->getMessage());
+			return $this->response->setJSON(['success' => false, 'message' => 'Erreur lors de la mise à jour: ' . $e->getMessage()]);
+		}
+	}
+
+	public function importerDonnees()
+	{
+		if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['fichier']))
+		{
+			$fichiers = $_FILES['fichier'];
+
+			for ($i = 0; $i < count($fichiers['name']); $i++)
+			{
+				$spreadsheet = IOFactory::load($fichiers['tmp_name'][$i]);
+				$donnees     = $spreadsheet->getActiveSheet()->toArray(null, true, false);
+
+				// Vérification de la structure
+				$indexColonnes = array_flip($donnees[0]);
+				if (!isset($indexColonnes['etudid'], $indexColonnes['Nom'], $indexColonnes['Prénom'], $indexColonnes['Cursus'])) {
+					return $this->response->setJSON(['success' => false, 'message' => 'Fichier invalide (structure)']);
+				}
+
+				// Lors du traitement des données, filtrer les semestres
+				foreach ($donnees as $ligne) {
+					$numeroSemestre = intval($ligne['numeroSemestre']);
+					
+					// Ignorer les semestres supérieurs à 5
+					if ($numeroSemestre > 5) {
+						log_message('info', 'Semestre ' . $numeroSemestre . ' ignoré (supérieur à 5)');
+						continue;
+					}
+					
+					// Traiter seulement les semestres 1 à 5
+					$this->traiterEtudiant($ligne, $indexColonnes, $numeroSemestre, $anneePromotion);
+				}
+			}
+		}
+
+		return $this->response->setJSON(['success' => true, 'message' => 'Importation terminée']);
+	}
 }
