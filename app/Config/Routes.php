@@ -40,3 +40,4 @@ $routes->post('/api/avis/commentaire', 'ScodocController::sauvegarderCommentaire
 $routes->get('/api/avis/etudiant/(:segment)', 'ScodocController::avisParEtudiant/$1');
 $routes->get('/api/avis/stats/(:segment)', 'ScodocController::statistiquesAvisPromotion/$1');
 $routes->post('/api/etudiant/modifier', 'ScodocController::modifierEtudiant');
+$routes->match(['GET', 'POST'], '/export/pdf/(:segment)', 'ExportController::exporterPDF/$1');

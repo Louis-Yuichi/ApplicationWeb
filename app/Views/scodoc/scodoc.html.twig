@@ -73,10 +73,10 @@
 							<td colspan="6" id="parcours_but"></td>
 						</tr>
 						<tr>
-							<td>Mobilité à l'étranger</td>
+							<td>Si mobilité à l'étranger (lieu, durée)</td>
 							<td colspan="6">
                                 <span id="mobilite_etranger"></span>
-                                <input type="text" id="mobilite_etranger_edit" class="form-control edit-field d-none" placeholder="Mobilité à l'étranger">
+                                <input type="text" id="mobilite_etranger_edit" class="form-control edit-field d-none" placeholder="Si mobilité à l'étranger (lieu, durée)">
                             </td>
                         </tr>
 					</tbody>
@@ -283,24 +283,16 @@
 		<i class="fas fa-ellipsis-v"></i>
 	</div>
 	<div class="floating-menu" id="floatingMenu">
-		<a href="#" class="menu-item" data-action="import" data-bs-toggle="modal" data-bs-target="#importModal">
-			<i class="fas fa-file-import"></i>
-			Importer
-		</a>
-		<div class="menu-separator"></div>
-		<a href="#" class="menu-item" data-format="pdf">
-			<i class="fas fa-file-pdf"></i>
-			Export PDF
-		</a>
-		<a href="#" class="menu-item" data-format="word">
-			<i class="fas fa-file-word"></i>
-			Export Word
-		</a>
-		<a href="#" class="menu-item" data-format="html">
-			<i class="fas fa-file-code"></i>
-			Export HTML
-		</a>
-	</div>
+        <a href="#" class="menu-item" data-action="import" data-bs-toggle="modal" data-bs-target="#importModal">
+            <i class="fas fa-file-import"></i>
+            Importer
+        </a>
+        <div class="menu-separator"></div>
+        <a href="#" class="menu-item" onclick="exporterPDF()">
+            <i class="fas fa-file-pdf"></i>
+            Export PDF
+        </a>
+    </div>
 
 	<!-- Modal Importer (copié depuis parcoursup.html.twig) -->
 	<div class="modal fade" id="importModal" tabindex="-1" aria-labelledby="importModalLabel" aria-hidden="true">

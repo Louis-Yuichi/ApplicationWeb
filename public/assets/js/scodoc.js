@@ -133,6 +133,7 @@ document.getElementById('nomEtudiant').addEventListener('change', function()
     {
         console.log('Chargement des données pour étudiant:', id);
         
+        // Charger absences
         fetch('/api/absences/' + id)
             .then(reponse => reponse.json())
             .then(absences => {
@@ -143,6 +144,7 @@ document.getElementById('nomEtudiant').addEventListener('change', function()
             })
             .catch(error => console.error('Erreur absences:', error));
 
+        // Charger apprentissage
         fetch('/api/apprentissage/' + id)
             .then(reponse => reponse.json())
             .then(apprentissage => {
@@ -153,6 +155,7 @@ document.getElementById('nomEtudiant').addEventListener('change', function()
             })
             .catch(error => console.error('Erreur apprentissage:', error));
 
+        // Charger compétences
         fetch('/api/competences/' + id)
             .then(reponse => reponse.json())
             .then(competences => {
@@ -162,6 +165,7 @@ document.getElementById('nomEtudiant').addEventListener('change', function()
             })
             .catch(error => console.error('Erreur compétences:', error));
 
+        // Charger ressources
         fetch('/api/ressources/' + id)
             .then(reponse => reponse.json())
             .then(ressources => {
@@ -199,11 +203,19 @@ document.getElementById('nomEtudiant').addEventListener('change', function()
                 }
             })
             .catch(error => console.error('Erreur avis:', error));
+            
+        // DÉSACTIVER LES CHAMPS PAR DÉFAUT
+        setTimeout(() => {
+            document.querySelectorAll('input[type="radio"][name^="avis_"]').forEach(radio => {
+                radio.disabled = true;
+            });
+            
+            document.getElementById('commentaireAvis').disabled = true;
+        }, 100);
     }
     else
     {
-        ['abs_but1', 'abs_but2', 'abs_but3', 'apprentissage_but1', 'apprentissage_but2', 'apprentissage_but3'].forEach
-        (
+        ['abs_but1', 'abs_but2', 'abs_but3', 'apprentissage_but1', 'apprentissage_but2', 'apprentissage_but3'].forEach(
             champ => document.getElementById(champ).textContent = ''
         );
 
@@ -232,7 +244,7 @@ function viderCompetences()
 		'BIN5_but1_moy'   , 'BIN5_but1_rang'   , 'BIN5_but2_moy'   , 'BIN5_but2_rang' ,
 		'BIN6_but1_moy'   , 'BIN6_but1_rang'   , 'BIN6_but2_moy'   , 'BIN6_but2_rang' , 'BIN6_but3_moy', 'BIN6_but3_rang',
 		'maths_but1_moy'  , 'maths_but1_rang'  , 'maths_but2_moy'  , 'maths_but2_rang', 'maths_but3_moy', 'maths_but3_rang',
-		'anglais_but1_moy', 'anglais_but1_rang', 'anglais_but2_moy', 'anglais_but2_rang'
+		'anglais_but1_moy', 'anglais_but1_rang' , 'anglais_but2_moy' , 'anglais_but2_rang'
 	];
 
 	ids.forEach(id =>
@@ -982,7 +994,7 @@ function remplirAnneesImport() {
         option.textContent = annee;
         selectAnneeImport.appendChild(option);
     }
-}
+};
 
 // Ajouter une validation avant l'import
 document.getElementById('importForm').addEventListener('submit', function(e) {
@@ -1007,3 +1019,122 @@ document.getElementById('importForm').addEventListener('submit', function(e) {
         }
     }
 });
+
+function exporterPDF() {
+    console.log('=== DEBUG EXPORT PDF ===');
+    
+    const idEtudiant = document.getElementById('nomEtudiant').value;
+    const anneePromotion = document.getElementById('anneePromotion').value;
+    console.log('ID Étudiant:', idEtudiant);
+    
+    if (!idEtudiant) {
+        alert('Veuillez sélectionner un étudiant pour exporter sa fiche');
+        return;
+    }
+    
+    // Récupérer les statistiques actuelles affichées
+    const statsAvis = {
+        ecole_ingenieur: {
+            tres_favorable: document.getElementById('stats_ecole_tres_favorable').textContent || '0',
+            favorable: document.getElementById('stats_ecole_favorable').textContent || '0',
+            assez_favorable: document.getElementById('stats_ecole_assez_favorable').textContent || '0',
+            sans_avis: document.getElementById('stats_ecole_sans_avis').textContent || '0',
+            reserve: document.getElementById('stats_ecole_reserve').textContent || '0'
+        },
+        master: {
+            tres_favorable: document.getElementById('stats_master_tres_favorable').textContent || '0',
+            favorable: document.getElementById('stats_master_favorable').textContent || '0',
+            assez_favorable: document.getElementById('stats_master_assez_favorable').textContent || '0',
+            sans_avis: document.getElementById('stats_master_sans_avis').textContent || '0',
+            reserve: document.getElementById('stats_master_reserve').textContent || '0'
+        }
+    };
+    
+    // Récupérer toutes les données visibles sur la page avec les VRAIS IDs
+    const donneesPDF = {
+        idEtudiant: idEtudiant,
+        nomEtudiant: document.getElementById('nomEtudiant').selectedOptions[0].text,
+        anneePromotion: anneePromotion,
+        totalPromotion: document.getElementById('nbAvisPromo').textContent || '0',
+        
+        // Informations étudiant
+        parcoursN2: document.getElementById('parcours_n2').textContent || '',
+        parcoursN1: document.getElementById('parcours_n1').textContent || '',
+        parcoursN: document.getElementById('parcours_n').textContent || '',
+        parcoursBUT: document.getElementById('parcours_but').textContent || '',
+        mobiliteEtranger: document.getElementById('mobilite_etranger').textContent || '',
+        apprentissageBUT1: document.getElementById('apprentissage_but1').textContent || '',
+        apprentissageBUT2: document.getElementById('apprentissage_but2').textContent || '',
+        apprentissageBUT3: document.getElementById('apprentissage_but3').textContent || '',
+        
+        // Compétences - récupérer avec les VRAIS IDs
+        competences: {},
+        ressources: {},
+        absences: {
+            but1: document.getElementById('abs_but1').textContent || '',
+            but2: document.getElementById('abs_but2').textContent || '',
+            but3: document.getElementById('abs_but3').textContent || ''
+        },
+        
+        // Avis
+        avis: {
+            ecole_ingenieur: document.querySelector('input[name="avis_ecole_ingenieur"]:checked')?.value || '',
+            master: document.querySelector('input[name="avis_master"]:checked')?.value || '',
+            commentaire: document.getElementById('commentaireAvis').value || ''
+        },
+        
+        // Statistiques
+        stats: statsAvis
+    };
+    
+    // Récupérer les compétences avec les VRAIS IDs
+    const competenceIds = [
+        'BIN1_but1_moy', 'BIN1_but1_rang', 'BIN1_but2_moy', 'BIN1_but2_rang', 'BIN1_but3_moy', 'BIN1_but3_rang',
+        'BIN2_but1_moy', 'BIN2_but1_rang', 'BIN2_but2_moy', 'BIN2_but2_rang', 'BIN2_but3_moy', 'BIN2_but3_rang',
+        'BIN3_but1_moy'   , 'BIN3_but1_rang'   , 'BIN3_but2_moy'   , 'BIN3_but2_rang' ,
+        'BIN4_but1_moy'   , 'BIN4_but1_rang'   , 'BIN4_but2_moy'   , 'BIN4_but2_rang' ,
+        'BIN5_but1_moy'   , 'BIN5_but1_rang'   , 'BIN5_but2_moy'   , 'BIN5_but2_rang' ,
+        'BIN6_but1_moy'   , 'BIN6_but1_rang'   , 'BIN6_but2_moy'   , 'BIN6_but2_rang' , 'BIN6_but3_moy', 'BIN6_but3_rang'
+    ];
+    
+    competenceIds.forEach(id => {
+        const element = document.getElementById(id);
+        if (element && element.textContent.trim() && element.textContent.trim() !== '') {
+            donneesPDF.competences[id] = element.textContent.trim();
+        }
+    });
+    
+    // Récupérer les ressources (maths et anglais) avec les VRAIS IDs
+    const ressourceIds = [
+        'maths_but1_moy', 'maths_but1_rang', 'maths_but2_moy', 'maths_but2_rang', 'maths_but3_moy', 'maths_but3_rang',
+        'anglais_but1_moy', 'anglais_but1_rang', 'anglais_but2_moy', 'anglais_but2_rang'
+    ];
+    
+    ressourceIds.forEach(id => {
+        const element = document.getElementById(id);
+        if (element && element.textContent.trim() && element.textContent.trim() !== '') {
+            donneesPDF.ressources[id] = element.textContent.trim();
+        }
+    });
+    
+    console.log('Données récupérées:', donneesPDF);
+    
+    // Envoyer les données au contrôleur PDF via POST
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '/export/pdf/' + idEtudiant;
+    form.target = '_blank';
+    
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = 'donneesPDF';
+    input.value = JSON.stringify(donneesPDF);
+    
+    form.appendChild(input);
+    document.body.appendChild(form);
+    form.submit();
+    document.body.removeChild(form);
+    
+    // Fermer le menu flottant
+    document.getElementById('floatingMenu').style.display = 'none';
+}
