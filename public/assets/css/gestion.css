@@ -9,10 +9,12 @@ body {
 	border-radius: 8px;
 	margin-bottom: 2rem;
 	box-shadow: 0 0 10px rgba(0,0,0,0.1);
+	position: relative; /* Ajouté */
 }
 
 .table-responsive {
 	margin: 0;
+	overflow: visible; /* Modifié pour permettre le sticky */
 }
 
 table {
@@ -22,14 +24,22 @@ table {
 	margin-bottom: 0 !important;
 }
 
+/* L'en-tête sticky - partie la plus importante */
 thead {
 	position: sticky;
 	top: 0;
-	z-index: 1;
+	z-index: 10; /* Augmenté pour être sûr qu'il reste au-dessus */
+	background-color: #212529; /* Assurez-vous que l'arrière-plan est opaque */
 }
 
 .table-dark th {
-	background-color: #212529;
+	background-color: #212529 !important; /* Renforcé avec !important */
+	border-bottom: 2px solid #454d55; /* Ajouté pour une meilleure séparation */
+}
+
+/* Pour éviter que le contenu ne passe sous l'en-tête */
+tbody tr:first-child td {
+	border-top: none;
 }
 
 tbody tr:last-child td {
