@@ -326,11 +326,11 @@ function afficherRessources(ressources)
 
         if (semestre === 6) return;
 
-        // Mapping des codes ressources vers les matières
+        // Mapping des codes ressources vers les matières - CORRIGÉ
         let matiere;
-        if (['BINR106', 'BINR107', 'BINR207', 'BINR208', 'BINR209', 'BINR308', 'BINR309', 'BINR403', 'BINR404', 'BINR504', 'BINR511', 'BINR512'].includes(codeRes)) {
+        if (['BINR106', 'BINR107', 'BINR207', 'BINR208', 'BINR209', 'BINR308', 'BINR309', 'BINR404', 'BINR511', 'BINR512'].includes(codeRes)) {
             matiere = 'maths';
-        } else if (['BINR110', 'BINR212', 'BINR312', 'BINR412'].includes(codeRes)) {
+        } else if (['BINR110', 'BINR212', 'BINR312', 'BINR412', 'BINR514'].includes(codeRes)) {
             matiere = 'anglais';
         }
 
@@ -477,6 +477,10 @@ function actualiserStatistiquesAvis() {
             document.getElementById('stats_master_assez_favorable').textContent = stats.master.assez_favorable;
             document.getElementById('stats_master_sans_avis').textContent = stats.master.sans_avis;
             document.getElementById('stats_master_reserve').textContent = stats.master.reserve;
+            
+            // NOUVEAU : Mettre à jour le nombre total d'avis de la promotion
+            const totalAvis = stats.totalAvisPromotion || 0;
+            document.getElementById('nbAvisPromo').textContent = totalAvis;
         })
         .catch(error => console.error('Erreur statistiques:', error));
 }
@@ -1021,77 +1025,76 @@ document.getElementById('importForm').addEventListener('submit', function(e) {
 });
 
 function exporterPDF() {
-    console.log('=== DEBUG EXPORT PDF ===');
-    
-    const idEtudiant = document.getElementById('nomEtudiant').value;
+    const idEtudiant = document.getElementById('nomEtudiant').value; // CORRIGÉ : utiliser nomEtudiant au lieu de idEtudiant
     const anneePromotion = document.getElementById('anneePromotion').value;
-    console.log('ID Étudiant:', idEtudiant);
     
     if (!idEtudiant) {
-        alert('Veuillez sélectionner un étudiant pour exporter sa fiche');
+        alert('Veuillez sélectionner un étudiant');
         return;
     }
-    
-    // Récupérer les statistiques actuelles affichées
-    const statsAvis = {
-        ecole_ingenieur: {
-            tres_favorable: document.getElementById('stats_ecole_tres_favorable').textContent || '0',
-            favorable: document.getElementById('stats_ecole_favorable').textContent || '0',
-            assez_favorable: document.getElementById('stats_ecole_assez_favorable').textContent || '0',
-            sans_avis: document.getElementById('stats_ecole_sans_avis').textContent || '0',
-            reserve: document.getElementById('stats_ecole_reserve').textContent || '0'
-        },
-        master: {
-            tres_favorable: document.getElementById('stats_master_tres_favorable').textContent || '0',
-            favorable: document.getElementById('stats_master_favorable').textContent || '0',
-            assez_favorable: document.getElementById('stats_master_assez_favorable').textContent || '0',
-            sans_avis: document.getElementById('stats_master_sans_avis').textContent || '0',
-            reserve: document.getElementById('stats_master_reserve').textContent || '0'
-        }
-    };
-    
-    // Récupérer toutes les données visibles sur la page avec les VRAIS IDs
+
+    // Récupérer toutes les données affichées
     const donneesPDF = {
-        idEtudiant: idEtudiant,
-        nomEtudiant: document.getElementById('nomEtudiant').selectedOptions[0].text,
+        nomEtudiant: document.getElementById('ficheNomPrenom').textContent, // CORRIGÉ : utiliser ficheNomPrenom
         anneePromotion: anneePromotion,
-        totalPromotion: document.getElementById('nbAvisPromo').textContent || '0',
+        parcoursBUT: document.getElementById('parcours_but').textContent, // CORRIGÉ : utiliser parcours_but
+        mobiliteEtranger: document.getElementById('mobilite_etranger').textContent || '', // CORRIGÉ : utiliser mobilite_etranger
         
-        // Informations étudiant
-        parcoursN2: document.getElementById('parcours_n2').textContent || '',
-        parcoursN1: document.getElementById('parcours_n1').textContent || '',
-        parcoursN: document.getElementById('parcours_n').textContent || '',
-        parcoursBUT: document.getElementById('parcours_but').textContent || '',
-        mobiliteEtranger: document.getElementById('mobilite_etranger').textContent || '',
-        apprentissageBUT1: document.getElementById('apprentissage_but1').textContent || '',
-        apprentissageBUT2: document.getElementById('apprentissage_but2').textContent || '',
-        apprentissageBUT3: document.getElementById('apprentissage_but3').textContent || '',
+        // Apprentissage - CORRIGÉ : utiliser les bons IDs et textContent
+        apprentissageBUT1: document.getElementById('apprentissage_but1').textContent,
+        apprentissageBUT2: document.getElementById('apprentissage_but2').textContent,
+        apprentissageBUT3: document.getElementById('apprentissage_but3').textContent,
         
-        // Compétences - récupérer avec les VRAIS IDs
-        competences: {},
-        ressources: {},
+        // Parcours d'études
+        parcoursN2: document.getElementById('parcours_n2').textContent,
+        parcoursN1: document.getElementById('parcours_n1').textContent,
+        parcoursN: document.getElementById('parcours_n').textContent,
+        
+        // Absences - CORRIGÉ : utiliser les bons IDs
         absences: {
             but1: document.getElementById('abs_but1').textContent || '',
             but2: document.getElementById('abs_but2').textContent || '',
             but3: document.getElementById('abs_but3').textContent || ''
         },
         
-        // Avis
+        // Compétences
+        competences: {},
+        
+        // Ressources
+        ressources: {},
+        
+        // Avis - CORRIGÉ : utiliser le bon ID pour le commentaire
         avis: {
             ecole_ingenieur: document.querySelector('input[name="avis_ecole_ingenieur"]:checked')?.value || '',
             master: document.querySelector('input[name="avis_master"]:checked')?.value || '',
-            commentaire: document.getElementById('commentaireAvis').value || ''
+            commentaire: document.getElementById('commentaireAvis').value || '' // CORRIGÉ : commentaireAvis au lieu de commentaire
         },
         
         // Statistiques
-        stats: statsAvis
+        stats: {
+            ecole_ingenieur: {
+                tres_favorable: document.getElementById('stats_ecole_tres_favorable').textContent || '0',
+                favorable: document.getElementById('stats_ecole_favorable').textContent || '0',
+                assez_favorable: document.getElementById('stats_ecole_assez_favorable').textContent || '0',
+                sans_avis: document.getElementById('stats_ecole_sans_avis').textContent || '0',
+                reserve: document.getElementById('stats_ecole_reserve').textContent || '0'
+            },
+            master: {
+                tres_favorable: document.getElementById('stats_master_tres_favorable').textContent || '0',
+                favorable: document.getElementById('stats_master_favorable').textContent || '0',
+                assez_favorable: document.getElementById('stats_master_assez_favorable').textContent || '0',
+                sans_avis: document.getElementById('stats_master_sans_avis').textContent || '0',
+                reserve: document.getElementById('stats_master_reserve').textContent || '0'
+            },
+            totalAvisPromotion: document.getElementById('nbAvisPromo').textContent || '0'
+        }
     };
     
-    // Récupérer les compétences avec les VRAIS IDs
+    // Récupérer les compétences
     const competenceIds = [
         'BIN1_but1_moy', 'BIN1_but1_rang', 'BIN1_but2_moy', 'BIN1_but2_rang', 'BIN1_but3_moy', 'BIN1_but3_rang',
         'BIN2_but1_moy', 'BIN2_but1_rang', 'BIN2_but2_moy', 'BIN2_but2_rang', 'BIN2_but3_moy', 'BIN2_but3_rang',
-        'BIN3_but1_moy'   , 'BIN3_but1_rang'   , 'BIN3_but2_moy'   , 'BIN3_but2_rang' ,
+        'BIN3_but1_moy', 'BIN3_but1_rang', 'BIN3_but2_moy', 'BIN3_but2_rang',
         'BIN4_but1_moy'   , 'BIN4_but1_rang'   , 'BIN4_but2_moy'   , 'BIN4_but2_rang' ,
         'BIN5_but1_moy'   , 'BIN5_but1_rang'   , 'BIN5_but2_moy'   , 'BIN5_but2_rang' ,
         'BIN6_but1_moy'   , 'BIN6_but1_rang'   , 'BIN6_but2_moy'   , 'BIN6_but2_rang' , 'BIN6_but3_moy', 'BIN6_but3_rang'
@@ -1099,12 +1102,12 @@ function exporterPDF() {
     
     competenceIds.forEach(id => {
         const element = document.getElementById(id);
-        if (element && element.textContent.trim() && element.textContent.trim() !== '') {
-            donneesPDF.competences[id] = element.textContent.trim();
+        if (element) {
+            donneesPDF.competences[id] = element.textContent || '';
         }
     });
     
-    // Récupérer les ressources (maths et anglais) avec les VRAIS IDs
+    // Récupérer les ressources (maths et anglais)
     const ressourceIds = [
         'maths_but1_moy', 'maths_but1_rang', 'maths_but2_moy', 'maths_but2_rang', 'maths_but3_moy', 'maths_but3_rang',
         'anglais_but1_moy', 'anglais_but1_rang', 'anglais_but2_moy', 'anglais_but2_rang'
@@ -1112,14 +1115,14 @@ function exporterPDF() {
     
     ressourceIds.forEach(id => {
         const element = document.getElementById(id);
-        if (element && element.textContent.trim() && element.textContent.trim() !== '') {
-            donneesPDF.ressources[id] = element.textContent.trim();
+        if (element) {
+            donneesPDF.ressources[id] = element.textContent || '';
         }
     });
+
+    console.log('Données PDF envoyées:', donneesPDF); // Pour debug
     
-    console.log('Données récupérées:', donneesPDF);
-    
-    // Envoyer les données au contrôleur PDF via POST
+    // Envoyer les données au contrôleur
     const form = document.createElement('form');
     form.method = 'POST';
     form.action = '/export/pdf/' + idEtudiant;

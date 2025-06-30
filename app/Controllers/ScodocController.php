@@ -75,12 +75,13 @@ class ScodocController extends BaseController
 		}
 
 		// Définir les ressources par semestre (maths et anglais)
-		$ressourcesVoulues = [
+		$ressourcesVoulues =
+		[
 			1 => ['BINR106', 'BINR107', 'BINR110'],
 			2 => ['BINR207', 'BINR208', 'BINR209', 'BINR212'],
 			3 => ['BINR308', 'BINR309', 'BINR312'],
-			4 => ['BINR403', 'BINR404', 'BINR412'],
-			5 => ['BINR504', 'BINR511', 'BINR512']
+			4 => ['BINR404', 'BINR412', 'BINR405'],
+			5 => ['BINR511', 'BINR512', 'BINR514']
 		];
 
 		foreach ($indexColonnes as $nomColonne => $j)
@@ -272,17 +273,25 @@ class ScodocController extends BaseController
 							   GROUP BY a."typePoursuite", a."typeAvis"', 
 							  [$anneePromotion, 'ecole_ingenieur', 'master'])->getResultArray();
 		
-		// Organiser les données
-		$stats = [
-			'ecole_ingenieur' => [
-				'tres_favorable' => 0, 'favorable' => 0, 'assez_favorable' => 0, 
-				'sans_avis' => 0, 'reserve' => 0
-			],
-			'master' => [
-				'tres_favorable' => 0, 'favorable' => 0, 'assez_favorable' => 0, 
-				'sans_avis' => 0, 'reserve' => 0
-			]
-		];
+		// Compter le nombre total d'étudiants avec au moins un avis
+        $totalAvis = $db->query('SELECT COUNT(DISTINCT a."idEtudiant") as "total"
+                                FROM "Avis" a
+                                INNER JOIN "Etudiant" e ON a."idEtudiant" = e."idEtudiant"
+                                WHERE e."anneePromotion" = ? AND a."typePoursuite" IN (?, ?)',
+                                [$anneePromotion, 'ecole_ingenieur', 'master'])->getRow();
+        
+        // Organiser les données
+        $stats = [
+            'ecole_ingenieur' => [
+                'tres_favorable' => 0, 'favorable' => 0, 'assez_favorable' => 0, 
+                'sans_avis' => 0, 'reserve' => 0
+            ],
+            'master' => [
+                'tres_favorable' => 0, 'favorable' => 0, 'assez_favorable' => 0, 
+                'sans_avis' => 0, 'reserve' => 0
+            ],
+            'totalAvisPromotion' => intval($totalAvis->total ?? 0)
+        ];
 		
 		foreach ($resultat as $row) {
 			if (isset($stats[$row['typePoursuite']][$row['typeAvis']])) {
