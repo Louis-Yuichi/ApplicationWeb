@@ -1,3 +1,34 @@
+// Fonction pour afficher les messages d'erreur
+function afficherErreur(message) {
+    // Supprimer les anciens messages
+    const ancienMessage = document.querySelector('.message-erreur');
+    if (ancienMessage) {
+        ancienMessage.remove();
+    }
+    
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'alert alert-danger message-erreur';
+    messageDiv.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+    messageDiv.innerHTML = `
+        <strong>Erreur !</strong> ${message}
+        <button type="button" class="btn-close" aria-label="Close"></button>
+    `;
+    
+    document.body.appendChild(messageDiv);
+    
+    // Fermer le message automatiquement après 5 secondes
+    setTimeout(() => {
+        if (messageDiv.parentNode) {
+            messageDiv.remove();
+        }
+    }, 5000);
+    
+    // Permettre la fermeture manuelle
+    messageDiv.querySelector('.btn-close').addEventListener('click', () => {
+        messageDiv.remove();
+    });
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     const btnModifier = document.getElementById('btnModifier');
     const btnGroup = document.getElementById('btnGroup');
@@ -8,7 +39,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
     btnModifier.addEventListener('click', function() {
         const idEtudiant = document.getElementById('nomEtudiant').value;
-        if (!idEtudiant) return;
+        if (!idEtudiant) {
+            afficherErreur('Veuillez sélectionner un étudiant avant de modifier ses informations.');
+            return;
+        }
         toggleModeEdition(true);
     });
 
@@ -473,6 +507,43 @@ function remplirAnneesImport() {
     }
 }
 
+// Fonction pour valider les fichiers d'import
+function validerFichiersSemestre(fichiers) {
+    for (let i = 0; i < fichiers.length; i++) {
+        const nomFichier = fichiers[i].name.toLowerCase();
+        
+        // Extraire le numéro de semestre du nom de fichier
+        let numeroSemestre = null;
+        
+        // Chercher s1, s2, s3, s4, s5 ou semestre1, semestre2, etc.
+        const matchS = nomFichier.match(/s(\d)/);
+        const matchSemestre = nomFichier.match(/semestre(\d)/);
+        const matchSem = nomFichier.match(/sem(\d)/);
+        
+        if (matchS) {
+            numeroSemestre = parseInt(matchS[1]);
+        } else if (matchSemestre) {
+            numeroSemestre = parseInt(matchSemestre[1]);
+        } else if (matchSem) {
+            numeroSemestre = parseInt(matchSem[1]);
+        }
+        
+        // Vérifier si on a trouvé un numéro de semestre
+        if (numeroSemestre === null) {
+            afficherErreur(`Impossible de déterminer le semestre pour le fichier "${fichiers[i].name}". Le nom doit contenir "s1", "s2", "s3", "s4", "s5" ou "semestre1", etc.`);
+            return false;
+        }
+        
+        // Vérifier que le semestre est valide (1 à 5)
+        if (numeroSemestre < 1 || numeroSemestre > 5) {
+            afficherErreur(`Le semestre ${numeroSemestre} du fichier "${fichiers[i].name}" n'est pas valide. Seuls les semestres 1 à 5 sont acceptés.`);
+            return false;
+        }
+    }
+    
+    return true;
+}
+
 document.getElementById('importForm').addEventListener('submit', function(e) {
     const fichiers = this.querySelector('input[type="file"]').files;
     
@@ -481,12 +552,10 @@ document.getElementById('importForm').addEventListener('submit', function(e) {
         return;
     }
     
-    for (let i = 0; i < fichiers.length; i++) {
-        const nomFichier = fichiers[i].name.toLowerCase();
-        if (nomFichier.includes('s6') || nomFichier.includes('semestre6') || nomFichier.includes('sem6')) {
-            e.preventDefault();
-            return;
-        }
+    // Valider les fichiers selon les critères spécifiés
+    if (!validerFichiersSemestre(fichiers)) {
+        e.preventDefault();
+        return;
     }
 });
 
@@ -494,7 +563,10 @@ function exporterPDF() {
     const idEtudiant = document.getElementById('nomEtudiant').value;
     const anneePromotion = document.getElementById('anneePromotion').value;
     
-    if (!idEtudiant) return;
+    if (!idEtudiant) {
+        afficherErreur('Veuillez sélectionner un étudiant avant d\'exporter le PDF.');
+        return;
+    }
 
     const donneesPDF = {
         nomEtudiant: document.getElementById('ficheNomPrenom').textContent,
