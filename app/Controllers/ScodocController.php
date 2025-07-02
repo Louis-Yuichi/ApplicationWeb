@@ -273,22 +273,31 @@ class ScodocController extends BaseController
             return $this->response->setJSON(['success' => false, 'message' => 'ID étudiant manquant']);
         }
         
+        // Validation des limites de caractères
+        if (isset($json['apprentissage_but3']) && strlen($json['apprentissage_but3']) > 3) {
+            return $this->response->setJSON(['success' => false, 'message' => 'L\'apprentissage ne peut pas dépasser 3 caractères']);
+        }
+        
+        if (isset($json['mobilite_etranger']) && strlen($json['mobilite_etranger']) > 80) {
+            return $this->response->setJSON(['success' => false, 'message' => 'La mobilité à l\'étranger ne peut pas dépasser 80 caractères']);
+        }
+        
         $db = db_connect();
         
         try {
             if (isset($json['mobilite_etranger'])) {
-                $db->query('UPDATE "Etudiant" SET "mobiliteEtranger" = ? WHERE "idEtudiant" = ?',
+                $result = $db->query('UPDATE "Etudiant" SET "mobiliteEtranger" = ? WHERE "idEtudiant" = ?',
                           [$json['mobilite_etranger'], $json['idEtudiant']]);
             }
             
             if (isset($json['apprentissage_but3'])) {
-                $db->query('UPDATE "Semestre" SET "apprentissage" = ? WHERE "idEtudiant" = ? AND "numeroSemestre" = 5',
+                $result = $db->query('UPDATE "Semestre" SET "apprentissage" = ? WHERE "idEtudiant" = ? AND "numeroSemestre" = 5',
                           [$json['apprentissage_but3'], $json['idEtudiant']]);
             }
             
             return $this->response->setJSON(['success' => true, 'message' => 'Données mises à jour']);
         } catch (\Exception $e) {
-            return $this->response->setJSON(['success' => false, 'message' => 'Erreur lors de la mise à jour: ' . $e->getMessage()]);
+            return $this->response->setJSON(['success' => false, 'message' => 'Erreur lors de la sauvegarde']);
         }
     }
 }

@@ -274,7 +274,8 @@ function afficherRessources(ressources) {
         let matiere;
         if (['BINR106', 'BINR107', 'BINR207', 'BINR208', 'BINR209', 'BINR308', 'BINR309', 'BINR404', 'BINR511', 'BINR512'].includes(codeRes)) {
             matiere = 'maths';
-        } else if (['BINR110', 'BINR212', 'BINR312', 'BINR412', 'BINR514'].includes(codeRes)) {
+        } else if (['BINR110', 'BINR212', 'BINR312', 'BINR412'].includes(codeRes)) {
+            // Suppression de BINR514 car pas d'anglais en BUT 3 (S5)
             matiere = 'anglais';
         }
 
@@ -338,6 +339,32 @@ function activerChamps() {
     document.getElementById('mobilite_etranger_edit').classList.remove('d-none');
     document.getElementById('mobilite_etranger_edit').value = valeurs_originales.mobilite_etranger;
     
+    // Ajouter validation en temps réel
+    const apprentissageField = document.getElementById('apprentissage_but3_edit');
+    const mobiliteField = document.getElementById('mobilite_etranger_edit');
+    
+    // Validation apprentissage (3 caractères max)
+    apprentissageField.addEventListener('input', function() {
+        if (this.value.length > 3) {
+            this.value = this.value.substring(0, 3);
+            this.style.borderColor = 'red';
+            setTimeout(() => {
+                this.style.borderColor = '';
+            }, 1500);
+        }
+    });
+    
+    // Validation mobilité (80 caractères max)
+    mobiliteField.addEventListener('input', function() {
+        if (this.value.length > 80) {
+            this.value = this.value.substring(0, 80);
+            this.style.borderColor = 'red';
+            setTimeout(() => {
+                this.style.borderColor = '';
+            }, 1500);
+        }
+    });
+    
     document.querySelectorAll('input[type="radio"][name^="avis_"]').forEach(radio => radio.disabled = false);
     document.getElementById('commentaireAvis').disabled = false;
 }
@@ -386,6 +413,17 @@ function enregistrerModifications() {
         avis_ecole: document.querySelector('input[name="avis_ecole_ingenieur"]:checked')?.value || '',
         avis_master: document.querySelector('input[name="avis_master"]:checked')?.value || ''
     };
+    
+    // Validation des limites de caractères
+    if (nouvelles_valeurs.apprentissage_but3.length > 3) {
+        alert('Erreur: L\'apprentissage ne peut pas dépasser 3 caractères');
+        return;
+    }
+    
+    if (nouvelles_valeurs.mobilite_etranger.length > 80) {
+        alert('Erreur: La mobilité à l\'étranger ne peut pas dépasser 80 caractères');
+        return;
+    }
     
     // Sauvegarder données
     sauvegarderApprentissageEtMobilite(idEtudiant, nouvelles_valeurs);
