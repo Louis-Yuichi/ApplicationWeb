@@ -17,7 +17,8 @@ class CreateEtudiant extends Migration
 			'parcoursBUT'      => ['type' => 'VARCHAR' , 'constraint' =>     80, 'null' => false,
 								   'default' => 'A « Réalisation d\'applications : conception, développement, validation »'],
 			'mobiliteEtranger' => ['type' => 'VARCHAR' , 'constraint' =>     80, 'null' => false, 'default' => 'Non'],
-			'anneePromotion'   => ['type' => 'INT'     ,                         'null' => false]
+			'anneePromotion'   => ['type' => 'INT'     ,                         'null' => false],
+			'commentaire'      => ['type' => 'TEXT'    ,                         'null' => true ]
 		]);
 
 		$this->forge->addPrimaryKey('idEtudiant');

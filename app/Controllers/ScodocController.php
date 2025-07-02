@@ -56,17 +56,14 @@ class ScodocController extends BaseController
         $parcoursEtudes = $ligne[$indexColonnes['Cursus']];
         $nbAbsencesInjust = $ligne[$indexColonnes['Abs']] - $ligne[$indexColonnes['Just.']];
 
-        // Insertion étudiant
         $db->query('INSERT INTO "Etudiant" ("idEtudiant", "nomEtudiant", "prenomEtudiant", "parcoursEtudes", "anneePromotion")
                     VALUES (?, ?, ?, ?, ?) ON CONFLICT ("idEtudiant") DO NOTHING',
                     [$idEtudiant, $nomEtudiant, $prenomEtudiant, $parcoursEtudes, $anneePromotion]);
 
-        // Insertion semestre
         $db->query('INSERT INTO "Semestre" ("idEtudiant", "numeroSemestre", "nbAbsencesInjust") 
                     VALUES (?, ?, ?) ON CONFLICT ("idEtudiant", "numeroSemestre") DO UPDATE SET "nbAbsencesInjust" = ?',
                     [$idEtudiant, $numeroSemestre, $nbAbsencesInjust, $nbAbsencesInjust]);
 
-        // Ressources par semestre
         $ressourcesVoulues = [
             1 => ['BINR106', 'BINR107', 'BINR110'],
             2 => ['BINR207', 'BINR208', 'BINR209', 'BINR212'],
@@ -79,7 +76,6 @@ class ScodocController extends BaseController
         {
             if (empty($ligne[$j]) || $ligne[$j] === '~') continue;
 
-            // Compétences
             if (preg_match('/^BIN\d+$/', $nomColonne))
             {
                 $db->query('INSERT INTO "Competence" ("idEtudiant", "numeroSemestre", "codeCompetence", "moyenneCompetence")
@@ -87,7 +83,6 @@ class ScodocController extends BaseController
                             [$idEtudiant, $numeroSemestre, $nomColonne, $ligne[$j], $ligne[$j]]);
             }
 
-            // Ressources
             if (isset($ressourcesVoulues[$numeroSemestre]) && in_array($nomColonne, $ressourcesVoulues[$numeroSemestre]))
             {
                 $db->query('INSERT INTO "Ressource" ("idEtudiant", "numeroSemestre", "codeRessource", "moyenneRessource")
@@ -158,73 +153,43 @@ class ScodocController extends BaseController
         return $this->response->setJSON($resultat);
     }
 
-    private function sauvegarderAvisCommentaire($type, $idEtudiant, $data)
-    {
-        $db = db_connect();
-        
-        if ($type === 'avis') {
-            $db->query('INSERT INTO "Avis" ("idEtudiant", "typePoursuite", "typeAvis") 
-                        VALUES (?, ?, ?) ON CONFLICT ("idEtudiant", "typePoursuite") DO UPDATE SET "typeAvis" = ?',
-                        [$idEtudiant, $data['typePoursuite'], $data['typeAvis'], $data['typeAvis']]);
-        } else {
-            $db->query('INSERT INTO "Avis" ("idEtudiant", "typePoursuite", "typeAvis", "commentaire") 
-                        VALUES (?, ?, ?, ?) ON CONFLICT ("idEtudiant", "typePoursuite") DO UPDATE SET "commentaire" = ?',
-                        [$idEtudiant, 'commentaire_general', 'sans_avis', $data['commentaire'], $data['commentaire']]);
-        }
-    }
-
     public function sauvegarderAvis()
     {
-        if (!$this->request->isAJAX()) {
-            return $this->response->setJSON(['success' => false, 'message' => 'Requête non autorisée']);
-        }
-        
         $json = $this->request->getJSON(true);
+        $db = db_connect();
         
-        if (!isset($json['idEtudiant'], $json['typePoursuite'], $json['typeAvis'])) {
-            return $this->response->setJSON(['success' => false, 'message' => 'Données manquantes']);
-        }
+        $db->query('INSERT INTO "Avis" ("idEtudiant", "typePoursuite", "typeAvis") 
+                    VALUES (?, ?, ?) ON CONFLICT ("idEtudiant", "typePoursuite") DO UPDATE SET "typeAvis" = ?',
+                    [$json['idEtudiant'], $json['typePoursuite'], $json['typeAvis'], $json['typeAvis']]);
         
-        try {
-            $this->sauvegarderAvisCommentaire('avis', $json['idEtudiant'], $json);
-            return $this->response->setJSON(['success' => true, 'message' => 'Avis sauvegardé']);
-        } catch (\Exception $e) {
-            return $this->response->setJSON(['success' => false, 'message' => 'Erreur lors de la sauvegarde']);
-        }
+        return $this->response->setJSON(['success' => true]);
     }
 
     public function sauvegarderCommentaire()
     {
-        if (!$this->request->isAJAX()) {
-            return $this->response->setJSON(['success' => false, 'message' => 'Requête non autorisée']);
-        }
-        
         $json = $this->request->getJSON(true);
+        $db = db_connect();
         
-        if (!isset($json['idEtudiant'], $json['commentaire'])) {
-            return $this->response->setJSON(['success' => false, 'message' => 'Données manquantes']);
-        }
+        $db->query('UPDATE "Etudiant" SET "commentaire" = ? WHERE "idEtudiant" = ?',
+                   [$json['commentaire'], $json['idEtudiant']]);
         
-        try {
-            $this->sauvegarderAvisCommentaire('commentaire', $json['idEtudiant'], $json);
-            return $this->response->setJSON(['success' => true, 'message' => 'Commentaire sauvegardé']);
-        } catch (\Exception $e) {
-            return $this->response->setJSON(['success' => false, 'message' => 'Erreur lors de la sauvegarde']);
-        }
+        return $this->response->setJSON(['success' => true]);
     }
 
     public function avisParEtudiant($idEtudiant)
     {
         $db = db_connect();
-        $resultat = $db->query('SELECT "typePoursuite", "typeAvis", "commentaire" FROM "Avis" WHERE "idEtudiant" = ?', [$idEtudiant])->getResultArray();
         
-        $avis = [];
-        foreach ($resultat as $row) {
-            if ($row['typePoursuite'] === 'commentaire_general') {
-                $avis['commentaire'] = $row['commentaire'];
-            } else {
-                $avis[$row['typePoursuite']] = $row['typeAvis'];
-            }
+        // Récupérer les avis
+        $resultatAvis = $db->query('SELECT "typePoursuite", "typeAvis" FROM "Avis" WHERE "idEtudiant" = ?', [$idEtudiant])->getResultArray();
+        
+        // Récupérer le commentaire depuis la table Etudiant
+        $resultatCommentaire = $db->query('SELECT "commentaire" FROM "Etudiant" WHERE "idEtudiant" = ?', [$idEtudiant])->getRow();
+        
+        $avis = ['commentaire' => $resultatCommentaire->commentaire ?? ''];
+        
+        foreach ($resultatAvis as $row) {
+            $avis[$row['typePoursuite']] = $row['typeAvis'];
         }
         
         return $this->response->setJSON($avis);
@@ -263,41 +228,24 @@ class ScodocController extends BaseController
 
     public function modifierEtudiant()
     {
-        if (!$this->request->isAJAX()) {
-            return $this->response->setJSON(['success' => false, 'message' => 'Requête non autorisée']);
-        }
-        
         $json = $this->request->getJSON(true);
-        
-        if (!isset($json['idEtudiant'])) {
-            return $this->response->setJSON(['success' => false, 'message' => 'ID étudiant manquant']);
-        }
-        
-        // Validation des limites de caractères
-        if (isset($json['apprentissage_but3']) && strlen($json['apprentissage_but3']) > 3) {
-            return $this->response->setJSON(['success' => false, 'message' => 'L\'apprentissage ne peut pas dépasser 3 caractères']);
-        }
-        
-        if (isset($json['mobilite_etranger']) && strlen($json['mobilite_etranger']) > 80) {
-            return $this->response->setJSON(['success' => false, 'message' => 'La mobilité à l\'étranger ne peut pas dépasser 80 caractères']);
-        }
-        
         $db = db_connect();
         
-        try {
-            if (isset($json['mobilite_etranger'])) {
-                $result = $db->query('UPDATE "Etudiant" SET "mobiliteEtranger" = ? WHERE "idEtudiant" = ?',
-                          [$json['mobilite_etranger'], $json['idEtudiant']]);
-            }
-            
-            if (isset($json['apprentissage_but3'])) {
-                $result = $db->query('UPDATE "Semestre" SET "apprentissage" = ? WHERE "idEtudiant" = ? AND "numeroSemestre" = 5',
-                          [$json['apprentissage_but3'], $json['idEtudiant']]);
-            }
-            
-            return $this->response->setJSON(['success' => true, 'message' => 'Données mises à jour']);
-        } catch (\Exception $e) {
-            return $this->response->setJSON(['success' => false, 'message' => 'Erreur lors de la sauvegarde']);
+        if (isset($json['mobilite_etranger'])) {
+            $db->query('UPDATE "Etudiant" SET "mobiliteEtranger" = ? WHERE "idEtudiant" = ?',
+                      [$json['mobilite_etranger'], $json['idEtudiant']]);
         }
+        
+        if (isset($json['apprentissage_but3'])) {
+            $db->query('UPDATE "Semestre" SET "apprentissage" = ? WHERE "idEtudiant" = ? AND "numeroSemestre" = 5',
+                      [$json['apprentissage_but3'], $json['idEtudiant']]);
+        }
+        
+        if (isset($json['commentaire'])) {
+            $db->query('UPDATE "Etudiant" SET "commentaire" = ? WHERE "idEtudiant" = ?',
+                      [$json['commentaire'], $json['idEtudiant']]);
+        }
+        
+        return $this->response->setJSON(['success' => true]);
     }
 }

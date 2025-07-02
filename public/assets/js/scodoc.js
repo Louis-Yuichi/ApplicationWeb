@@ -6,13 +6,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const boutonFlottant = document.getElementById('floatingBtn');
     const menuFlottant = document.getElementById('floatingMenu');
 
-    // Gestion des boutons
     btnModifier.addEventListener('click', function() {
         const idEtudiant = document.getElementById('nomEtudiant').value;
-        if (!idEtudiant) {
-            alert('Veuillez sélectionner un étudiant avant de modifier');
-            return;
-        }
+        if (!idEtudiant) return;
         toggleModeEdition(true);
     });
 
@@ -22,7 +18,6 @@ document.addEventListener('DOMContentLoaded', function() {
         toggleModeEdition(false);
     });
 
-    // Menu flottant
     boutonFlottant.addEventListener('click', () => {
         menuFlottant.style.display = menuFlottant.style.display === 'block' ? 'none' : 'block';
     });
@@ -39,13 +34,12 @@ document.addEventListener('DOMContentLoaded', function() {
 let tabEtudiants = [];
 let valeurs_originales = {};
 
-// Gestion des changements d'année
 document.getElementById('anneePromotion').addEventListener('change', function() {
     const annee = this.value;
     const selectEtu = document.getElementById('nomEtudiant');
 
     selectEtu.innerHTML = '<option value="">Sélectionner un étudiant</option>';
-    viderToutesDonnees(); // Cette fonction vide tout y compris les stats
+    viderToutesDonnees();
     tabEtudiants = [];
 
     if (annee) {
@@ -60,17 +54,13 @@ document.getElementById('anneePromotion').addEventListener('change', function() 
                     selectEtu.appendChild(option);
                 });
                 document.getElementById('nbAvisPromo').textContent = data.length;
-                // Charger les vraies statistiques de la promotion
                 actualiserStatistiquesAvis();
-            })
-            .catch(error => console.error('Erreur:', error));
+            });
     } else {
-        // Si aucune année, remettre à zéro
         document.getElementById('nbAvisPromo').textContent = '0';
     }
 });
 
-// Gestion des étudiants
 document.getElementById('nomEtudiant').addEventListener('change', function() {
     const id = this.value;
     const option = this.selectedOptions[0];
@@ -82,12 +72,10 @@ document.getElementById('nomEtudiant').addEventListener('change', function() {
         afficherInfosEtudiant(etudiant);
         chargerDonneesEtudiant(id);
     } else {
-        // Utiliser une nouvelle fonction qui ne touche pas aux statistiques
         viderDonneesEtudiantSeul();
     }
 });
 
-// Nouvelle fonction pour vider seulement les données de l'étudiant
 function viderDonneesEtudiantSeul() {
     const champsVide = ['ficheNomPrenom', 'parcours_n2', 'parcours_n1', 'parcours_n', 'apprentissage_but1', 
                         'apprentissage_but2', 'apprentissage_but3', 'parcours_but', 'mobilite_etranger', 
@@ -100,14 +88,10 @@ function viderDonneesEtudiantSeul() {
     
     viderCompetences();
     
-    // Réinitialiser seulement les avis individuels de l'étudiant
     document.querySelectorAll('input[type="radio"][name^="avis_"]').forEach(radio => radio.checked = false);
     document.getElementById('commentaireAvis').value = '';
-    
-    // NE PAS toucher aux statistiques de promotion - elles restent affichées
 }
 
-// Garder viderToutesDonnees() pour le changement d'année seulement
 function viderToutesDonnees() {
     const champsVide = ['ficheNomPrenom', 'parcours_n2', 'parcours_n1', 'parcours_n', 'apprentissage_but1', 
                         'apprentissage_but2', 'apprentissage_but3', 'parcours_but', 'mobilite_etranger', 
@@ -123,7 +107,6 @@ function viderToutesDonnees() {
     document.querySelectorAll('input[type="radio"][name^="avis_"]').forEach(radio => radio.checked = false);
     document.getElementById('commentaireAvis').value = '';
     
-    // Remettre les statistiques à zéro seulement lors du changement d'année
     const statsIds = ['stats_ecole_tres_favorable', 'stats_ecole_favorable', 'stats_ecole_assez_favorable', 
                       'stats_ecole_sans_avis', 'stats_ecole_reserve', 'stats_master_tres_favorable', 
                       'stats_master_favorable', 'stats_master_assez_favorable', 'stats_master_sans_avis', 'stats_master_reserve'];
@@ -135,7 +118,7 @@ function viderToutesDonnees() {
 }
 
 function afficherInfosEtudiant(etudiant) {
-    const parcours = etudiant.parcoursEtudes ?etudiant.parcoursEtudes.replace(/\s+/g, '') : '';
+    const parcours = etudiant.parcoursEtudes ? etudiant.parcoursEtudes.replace(/\s+/g, '') : '';
     const mapBut = { 'S1S2': 'BUT 1', 'S3S4': 'BUT 2', 'S5S6': 'BUT 3' };
     
     document.getElementById('parcours_n2').textContent = mapBut[parcours.slice(-12, -8)] || parcours.slice(-12, -8);
@@ -143,6 +126,9 @@ function afficherInfosEtudiant(etudiant) {
     document.getElementById('parcours_n').textContent = mapBut[parcours.slice(-4)] || parcours.slice(-4);
     document.getElementById('parcours_but').textContent = etudiant.parcoursBUT || '';
     document.getElementById('mobilite_etranger').textContent = etudiant.mobiliteEtranger || '';
+    
+    // Afficher le commentaire depuis la table Etudiant
+    document.getElementById('commentaireAvis').value = etudiant.commentaire || '';
 }
 
 function chargerDonneesEtudiant(id) {
@@ -157,11 +143,9 @@ function chargerDonneesEtudiant(id) {
     endpoints.forEach(({ url, handler }) => {
         fetch(url)
             .then(response => response.json())
-            .then(handler)
-            .catch(error => console.error('Erreur:', error));
+            .then(handler);
     });
 
-    // Désactiver les champs par défaut
     setTimeout(() => {
         document.querySelectorAll('input[type="radio"][name^="avis_"]').forEach(radio => radio.disabled = true);
         document.getElementById('commentaireAvis').disabled = true;
@@ -275,7 +259,6 @@ function afficherRessources(ressources) {
         if (['BINR106', 'BINR107', 'BINR207', 'BINR208', 'BINR209', 'BINR308', 'BINR309', 'BINR404', 'BINR511', 'BINR512'].includes(codeRes)) {
             matiere = 'maths';
         } else if (['BINR110', 'BINR212', 'BINR312', 'BINR412'].includes(codeRes)) {
-            // Suppression de BINR514 car pas d'anglais en BUT 3 (S5)
             matiere = 'anglais';
         }
 
@@ -302,13 +285,10 @@ function afficherRessources(ressources) {
 }
 
 function toggleModeEdition(activer, annuler = false) {
-    const idEtudiant = document.getElementById('nomEtudiant').value;
-    
     if (activer) {
         document.getElementById('btnModifier').classList.add('d-none');
         document.getElementById('btnGroup').classList.remove('d-none');
         
-        // Sauvegarder valeurs originales
         valeurs_originales = {
             apprentissage_but3: document.getElementById('apprentissage_but3').textContent,
             mobilite_etranger: document.getElementById('mobilite_etranger').textContent,
@@ -339,29 +319,22 @@ function activerChamps() {
     document.getElementById('mobilite_etranger_edit').classList.remove('d-none');
     document.getElementById('mobilite_etranger_edit').value = valeurs_originales.mobilite_etranger;
     
-    // Ajouter validation en temps réel
     const apprentissageField = document.getElementById('apprentissage_but3_edit');
     const mobiliteField = document.getElementById('mobilite_etranger_edit');
     
-    // Validation apprentissage (3 caractères max)
     apprentissageField.addEventListener('input', function() {
         if (this.value.length > 3) {
             this.value = this.value.substring(0, 3);
             this.style.borderColor = 'red';
-            setTimeout(() => {
-                this.style.borderColor = '';
-            }, 1500);
+            setTimeout(() => this.style.borderColor = '', 1500);
         }
     });
     
-    // Validation mobilité (80 caractères max)
     mobiliteField.addEventListener('input', function() {
         if (this.value.length > 80) {
             this.value = this.value.substring(0, 80);
             this.style.borderColor = 'red';
-            setTimeout(() => {
-                this.style.borderColor = '';
-            }, 1500);
+            setTimeout(() => this.style.borderColor = '', 1500);
         }
     });
     
@@ -400,11 +373,7 @@ function restaurerValeurs() {
 
 function enregistrerModifications() {
     const idEtudiant = document.getElementById('nomEtudiant').value;
-    
-    if (!idEtudiant) {
-        alert('Erreur: aucun étudiant sélectionné');
-        return;
-    }
+    if (!idEtudiant) return;
     
     const nouvelles_valeurs = {
         apprentissage_but3: document.getElementById('apprentissage_but3_edit').value,
@@ -414,23 +383,13 @@ function enregistrerModifications() {
         avis_master: document.querySelector('input[name="avis_master"]:checked')?.value || ''
     };
     
-    // Validation des limites de caractères
-    if (nouvelles_valeurs.apprentissage_but3.length > 3) {
-        alert('Erreur: L\'apprentissage ne peut pas dépasser 3 caractères');
-        return;
-    }
-    
-    if (nouvelles_valeurs.mobilite_etranger.length > 80) {
-        alert('Erreur: La mobilité à l\'étranger ne peut pas dépasser 80 caractères');
-        return;
-    }
-    
-    // Sauvegarder données
-    sauvegarderApprentissageEtMobilite(idEtudiant, nouvelles_valeurs);
-    
-    if (nouvelles_valeurs.commentaire !== valeurs_originales.commentaire) {
-        sauvegarderData('/api/avis/commentaire', { idEtudiant, commentaire: nouvelles_valeurs.commentaire });
-    }
+    // Sauvegarder apprentissage, mobilité et commentaire en une seule requête
+    sauvegarderData('/api/etudiant/modifier', {
+        idEtudiant,
+        apprentissage_but3: nouvelles_valeurs.apprentissage_but3,
+        mobilite_etranger: nouvelles_valeurs.mobilite_etranger,
+        commentaire: nouvelles_valeurs.commentaire
+    });
     
     if (nouvelles_valeurs.avis_ecole && nouvelles_valeurs.avis_ecole !== valeurs_originales.avis_ecole) {
         sauvegarderData('/api/avis/sauvegarder', { idEtudiant, typePoursuite: 'ecole_ingenieur', typeAvis: nouvelles_valeurs.avis_ecole });
@@ -440,17 +399,8 @@ function enregistrerModifications() {
         sauvegarderData('/api/avis/sauvegarder', { idEtudiant, typePoursuite: 'master', typeAvis: nouvelles_valeurs.avis_master });
     }
     
-    // Mettre à jour affichage
     document.getElementById('apprentissage_but3').textContent = nouvelles_valeurs.apprentissage_but3;
     document.getElementById('mobilite_etranger').textContent = nouvelles_valeurs.mobilite_etranger;
-}
-
-function sauvegarderApprentissageEtMobilite(idEtudiant, valeurs) {
-    sauvegarderData('/api/etudiant/modifier', {
-        idEtudiant,
-        apprentissage_but3: valeurs.apprentissage_but3,
-        mobilite_etranger: valeurs.mobilite_etranger
-    });
 }
 
 function sauvegarderData(url, data) {
@@ -465,31 +415,24 @@ function sauvegarderData(url, data) {
     .then(response => response.json())
     .then(result => {
         if (result.success) {
-            console.log('Données sauvegardées');
             if (url.includes('avis')) {
                 actualiserStatistiquesAvis();
             }
-            // Forcer la mise à jour des données de l'étudiant après modification
             if (url.includes('etudiant/modifier')) {
                 const idEtudiant = document.getElementById('nomEtudiant').value;
                 if (idEtudiant) {
-                    // Recharger les infos de l'étudiant depuis la base
                     const etudiantIndex = tabEtudiants.findIndex(e => e.idEtudiant === idEtudiant);
                     if (etudiantIndex !== -1) {
-                        // Mettre à jour les données dans le tableau local
                         if (data.mobilite_etranger !== undefined) {
                             tabEtudiants[etudiantIndex].mobiliteEtranger = data.mobilite_etranger;
+                        }
+                        if (data.commentaire !== undefined) {
+                            tabEtudiants[etudiantIndex].commentaire = data.commentaire;
                         }
                     }
                 }
             }
-        } else {
-            alert('Erreur: ' + (result.message || 'Erreur inconnue'));
         }
-    })
-    .catch(error => {
-        console.error('Erreur:', error);
-        alert('Erreur de connexion');
     });
 }
 
@@ -511,34 +454,7 @@ function actualiserStatistiquesAvis() {
             });
             
             document.getElementById('nbAvisPromo').textContent = stats.totalAvisPromotion || 0;
-        })
-        .catch(error => console.error('Erreur:', error));
-}
-
-function viderToutesDonnees() {
-    const champsVide = ['ficheNomPrenom', 'parcours_n2', 'parcours_n1', 'parcours_n', 'apprentissage_but1', 
-                        'apprentissage_but2', 'apprentissage_but3', 'parcours_but', 'mobilite_etranger', 
-                        'abs_but1', 'abs_but2', 'abs_but3'];
-    
-    champsVide.forEach(champ => {
-        const element = document.getElementById(champ);
-        if (element) element.textContent = '';
-    });
-    
-    viderCompetences();
-    
-    document.querySelectorAll('input[type="radio"][name^="avis_"]').forEach(radio => radio.checked = false);
-    document.getElementById('commentaireAvis').value = '';
-    
-    // Remettre les statistiques à zéro seulement lors du changement d'année
-    const statsIds = ['stats_ecole_tres_favorable', 'stats_ecole_favorable', 'stats_ecole_assez_favorable', 
-                      'stats_ecole_sans_avis', 'stats_ecole_reserve', 'stats_master_tres_favorable', 
-                      'stats_master_favorable', 'stats_master_assez_favorable', 'stats_master_sans_avis', 'stats_master_reserve'];
-    
-    statsIds.forEach(id => {
-        const element = document.getElementById(id);
-        if (element) element.textContent = '0';
-    });
+        });
 }
 
 function remplirAnneesImport() {
@@ -557,13 +473,11 @@ function remplirAnneesImport() {
     }
 }
 
-// Validation import
 document.getElementById('importForm').addEventListener('submit', function(e) {
     const fichiers = this.querySelector('input[type="file"]').files;
     
     if (fichiers.length === 0) {
         e.preventDefault();
-        alert('Veuillez sélectionner au moins un fichier');
         return;
     }
     
@@ -571,7 +485,6 @@ document.getElementById('importForm').addEventListener('submit', function(e) {
         const nomFichier = fichiers[i].name.toLowerCase();
         if (nomFichier.includes('s6') || nomFichier.includes('semestre6') || nomFichier.includes('sem6')) {
             e.preventDefault();
-            alert('Les fichiers contenant des données du semestre 6 ne sont pas autorisés');
             return;
         }
     }
@@ -581,10 +494,7 @@ function exporterPDF() {
     const idEtudiant = document.getElementById('nomEtudiant').value;
     const anneePromotion = document.getElementById('anneePromotion').value;
     
-    if (!idEtudiant) {
-        alert('Veuillez sélectionner un étudiant');
-        return;
-    }
+    if (!idEtudiant) return;
 
     const donneesPDF = {
         nomEtudiant: document.getElementById('ficheNomPrenom').textContent,
@@ -628,7 +538,6 @@ function exporterPDF() {
         }
     };
     
-    // Récupérer compétences et ressources
     const competenceIds = [
         'BIN1_but1_moy', 'BIN1_but1_rang', 'BIN1_but2_moy', 'BIN1_but2_rang', 'BIN1_but3_moy', 'BIN1_but3_rang',
         'BIN2_but1_moy', 'BIN2_but1_rang', 'BIN2_but2_moy', 'BIN2_but2_rang', 'BIN2_but3_moy', 'BIN2_but3_rang',

@@ -13,7 +13,6 @@ class CreateAvis extends Migration
 			'idEtudiant'    => ['type' => 'INT'                        , 'null' => false],
 			'typePoursuite' => ['type' => 'VARCHAR', 'constraint' => 20, 'null' => false],
 			'typeAvis'      => ['type' => 'VARCHAR', 'constraint' => 20, 'null' => false],
-			'commentaire'   => ['type' => 'TEXT'                       , 'null' => true ]
 		]);
 
 		$this->forge->addPrimaryKey(['idEtudiant', 'typePoursuite']);

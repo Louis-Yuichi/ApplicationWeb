@@ -37,7 +37,6 @@ $routes->get  ('api/apprentissage/(:num)'               , 'ScodocController::app
 $routes->get  ('api/competences/(:num)'                 , 'ScodocController::competencesParEtudiant/$1'   );
 $routes->get  ('api/ressources/(:num)'                  , 'ScodocController::ressourcesParEtudiant/$1'    );
 $routes->post ('/api/avis/sauvegarder'                  , 'ScodocController::sauvegarderAvis'             );
-$routes->post ('/api/avis/commentaire'                  , 'ScodocController::sauvegarderCommentaire'      );
 $routes->get  ('/api/avis/etudiant/(:segment)'          , 'ScodocController::avisParEtudiant/$1'          );
 $routes->get  ('/api/avis/stats/(:segment)'             , 'ScodocController::statistiquesAvisPromotion/$1');
 $routes->post ('/api/etudiant/modifier'                 , 'ScodocController::modifierEtudiant'            );
