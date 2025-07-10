@@ -1,4 +1,4 @@
-# Application Web de Gestion - Stage DT231159
+# Application Web de Gestion
 
 Application web développée avec CodeIgniter 4 et Twig pour la gestion des données étudiantes et Parcoursup.
 
