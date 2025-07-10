@@ -7,14 +7,6 @@ Application web développée avec CodeIgniter 4 et Twig pour la gestion des donn
 - PHP 8.1 ou supérieur
 - PostgreSQL
 - Composer
-- Serveur web (Apache/Nginx) ou utilisation de `php spark serve`
-
-Extensions PHP requises :
-- intl
-- mbstring
-- pgsql
-- json
-- libcurl
 
 ## Installation
 
@@ -55,19 +47,14 @@ Modifiez le fichier `.env` avec vos paramètres :
 # ENVIRONMENT
 #--------------------------------------------------------------------
 
-CI_ENVIRONMENT = development
+# CI_ENVIRONMENT = development
 
 #--------------------------------------------------------------------
 # APP
 #--------------------------------------------------------------------
 
-# Pour php spark serve (développement local)
-app.baseURL = 'http://localhost:8080/'
-
-# Pour un serveur web classique (remplacez par votre domaine)
-# app.baseURL = 'http://woody/~dt231159/STAGE/ApplicationWeb/public/'
-
-app.indexPage = ''
+# app.baseURL = 'http://localhost:8080/'
+# app.indexPage = ''
 
 #--------------------------------------------------------------------
 # DATABASE
@@ -85,7 +72,7 @@ database.default.port = 5432
 # database.default.hostname = woody
 # database.default.database = dt231159
 # database.default.username = dt231159
-# database.default.password = VotreMotDePasse
+# database.default.password = MotDePasse
 ```
 
 ### 4. Configuration de la base de données
@@ -140,7 +127,7 @@ Les migrations vont créer les tables suivantes :
 
 ### 5. Configuration du serveur web
 
-#### Serveur de développement (Recommandé pour le développement)
+#### Serveur de développement
 
 ```bash
 php spark serve
