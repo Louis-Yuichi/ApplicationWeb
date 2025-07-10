@@ -132,24 +132,49 @@ class ScodocController extends BaseController
     public function competencesParEtudiant($idEtudiant)
     {
         $db = db_connect();
-        $resultat = $db->query('SELECT "numeroSemestre", "codeCompetence", "moyenneCompetence",
-                              ( SELECT COUNT(*) + 1 FROM "Competence" c2 WHERE c2."numeroSemestre" = c1."numeroSemestre"
-                                AND c2."codeCompetence" = c1."codeCompetence"
-                                AND CAST(c2."moyenneCompetence" AS FLOAT) > CAST(c1."moyenneCompetence" AS FLOAT)
-                              ) as "rangCompetence" FROM "Competence" c1 WHERE c1."idEtudiant" = ? 
-                                ORDER BY c1."numeroSemestre", c1."codeCompetence"', [$idEtudiant])->getResultArray();
+        
+        // Récupérer l'année de promotion de l'étudiant
+        $promotion = $db->query('SELECT "anneePromotion" FROM "Etudiant" WHERE "idEtudiant" = ?', 
+                      [$idEtudiant])->getRow()->anneePromotion;
+        
+        $resultat = $db->query('SELECT c1."numeroSemestre", c1."codeCompetence", c1."moyenneCompetence",
+                          ( SELECT COUNT(*) + 1 FROM "Competence" c2 
+                            JOIN "Etudiant" e ON c2."idEtudiant" = e."idEtudiant"
+                            WHERE c2."numeroSemestre" = c1."numeroSemestre"
+                            AND c2."codeCompetence" = c1."codeCompetence"
+                            AND CAST(c2."moyenneCompetence" AS FLOAT) > CAST(c1."moyenneCompetence" AS FLOAT)
+                            AND e."anneePromotion" = ? 
+                          ) as "rangCompetence" 
+                          FROM "Competence" c1 
+                          WHERE c1."idEtudiant" = ? 
+                          ORDER BY c1."numeroSemestre", c1."codeCompetence"', 
+                          [$promotion, $idEtudiant])->getResultArray();
+                          
         return $this->response->setJSON($resultat);
     }
 
     public function ressourcesParEtudiant($idEtudiant)
     {
         $db = db_connect();
-        $resultat = $db->query('SELECT "numeroSemestre", "codeRessource", "moyenneRessource",
-                          ( SELECT COUNT(*) + 1 FROM "Ressource" r2 WHERE r2."numeroSemestre" = r1."numeroSemestre"
-                            AND r2."codeRessource" = r1."codeRessource"
-                            AND CAST(r2."moyenneRessource" AS FLOAT) > CAST(r1."moyenneRessource" AS FLOAT)
-                          ) as "rangRessource" FROM "Ressource" r1 WHERE r1."idEtudiant" = ? 
-                            ORDER BY r1."numeroSemestre", r1."codeRessource"', [$idEtudiant])->getResultArray();
+        
+        // Récupérer l'année de promotion de l'étudiant
+        $promotion = $db->query('SELECT "anneePromotion" FROM "Etudiant" WHERE "idEtudiant" = ?', 
+                       [$idEtudiant])->getRow()->anneePromotion;
+        
+        // Toutes les ressources seront maintenant calculées par promotion
+        $resultat = $db->query('SELECT r1."numeroSemestre", r1."codeRessource", r1."moyenneRessource",
+                      ( SELECT COUNT(*) + 1 FROM "Ressource" r2 
+                        JOIN "Etudiant" e ON r2."idEtudiant" = e."idEtudiant"
+                        WHERE r2."numeroSemestre" = r1."numeroSemestre"
+                        AND r2."codeRessource" = r1."codeRessource"
+                        AND CAST(r2."moyenneRessource" AS FLOAT) > CAST(r1."moyenneRessource" AS FLOAT)
+                        AND e."anneePromotion" = ? 
+                      ) as "rangRessource" 
+                      FROM "Ressource" r1 
+                      WHERE r1."idEtudiant" = ? 
+                      ORDER BY r1."numeroSemestre", r1."codeRessource"', 
+                      [$promotion, $idEtudiant])->getResultArray();
+    
         return $this->response->setJSON($resultat);
     }
 
@@ -247,5 +272,35 @@ class ScodocController extends BaseController
         }
         
         return $this->response->setJSON(['success' => true]);
+    }
+
+    public function supprimerEtudiant()
+    {
+        $json = $this->request->getJSON(true);
+        $db = db_connect();
+        
+        $db->transStart();
+        
+        // Suppression des données dans toutes les tables liées
+        $db->query('DELETE FROM "Avis" WHERE "idEtudiant" = ?', [$json['idEtudiant']]);
+        $db->query('DELETE FROM "Ressource" WHERE "idEtudiant" = ?', [$json['idEtudiant']]);
+        $db->query('DELETE FROM "Competence" WHERE "idEtudiant" = ?', [$json['idEtudiant']]);
+        $db->query('DELETE FROM "Semestre" WHERE "idEtudiant" = ?', [$json['idEtudiant']]);
+        $db->query('DELETE FROM "Etudiant" WHERE "idEtudiant" = ?', [$json['idEtudiant']]);
+        
+        $db->transComplete();
+        
+        return $this->response->setJSON(['success' => $db->transStatus()]);
+    }
+    
+    private function recalculerRangs($anneePromotion = null)
+    {
+        // Cette méthode peut être appelée après suppression d'un étudiant
+        // ou autre modification qui nécessite de recalculer les rangs
+        
+        // Le recalcul est en fait automatique car nos requêtes calculent le rang à la demande
+        // Cette méthode reste disponible si vous souhaitez implémenter un cache de rangs plus tard
+        
+        return true;
     }
 }
