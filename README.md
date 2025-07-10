@@ -104,14 +104,50 @@ CREATE USER votre_username WITH PASSWORD 'votre_password';
 
 -- Accordez les privilèges
 GRANT ALL PRIVILEGES ON DATABASE votre_nom_base TO votre_username;
+
+-- Quittez PostgreSQL
+\q
 ```
 
-#### Structure des tables
+#### Exécuter les migrations
 
-Exécutez les scripts SQL fournis pour créer les tables nécessaires :
-- Table `Utilisateur` pour l'authentification
-- Tables pour la gestion des étudiants
-- Tables pour Parcoursup
+Les migrations vont créer automatiquement toutes les tables nécessaires :
+
+```bash
+# Exécuter toutes les migrations
+php spark migrate
+
+# Vérifier le statut des migrations
+php spark migrate:status
+
+# Si vous devez revenir en arrière (rollback)
+php spark migrate:rollback
+
+# Pour réinitialiser complètement la base
+php spark migrate:refresh
+```
+
+#### Tables créées par les migrations
+
+Les migrations vont créer les tables suivantes :
+- **Utilisateur** : Gestion des utilisateurs et authentification
+- **Promotion** : Gestion des promotions étudiantes
+- **Etudiant** : Informations des étudiants
+- **Evaluation** : Système d'évaluation
+- **Competence** : Gestion des compétences
+- **Parcoursup_Candidat** : Données Parcoursup
+- **Export_Log** : Historique des exports
+
+#### Initialiser les données de base (optionnel)
+
+```bash
+# Exécuter les seeders pour insérer des données de test
+php spark db:seed DatabaseSeeder
+
+# Ou des seeders spécifiques
+php spark db:seed UtilisateurSeeder
+php spark db:seed PromotionSeeder
+```
 
 ### 5. Configuration du serveur web
 
@@ -163,7 +199,11 @@ ApplicationWeb/
 │   ├── Controllers/        # Contrôleurs de l'application
 │   ├── Models/            # Modèles pour la base de données
 │   ├── Views/             # Templates Twig
-│   └── Config/            # Configuration de l'application
+│   ├── Config/            # Configuration de l'application
+│   ├── Database/
+│   │   ├── Migrations/    # Fichiers de migration
+│   │   └── Seeds/         # Fichiers de peuplement
+│   └── ...
 ├── public/
 │   ├── assets/            # CSS, JS, images
 │   ├── index.php          # Point d'entrée principal
@@ -178,9 +218,9 @@ ApplicationWeb/
 
 ### Première connexion
 
-1. Démarrez votre serveur : `php spark serve`
-2. Accédez à : `http://localhost:8080/`
-3. Créez un compte ou utilisez les identifiants par défaut
+1. **Démarrez votre serveur** : `php spark serve`
+2. **Accédez à** : `http://localhost:8080/`
+3. **Créez un compte** ou utilisez les identifiants par défaut (si seeders exécutés)
 
 ### Fonctionnalités principales
 
@@ -197,17 +237,22 @@ ApplicationWeb/
 # Démarrer le serveur de développement
 php spark serve
 
-# Vider le cache
-php spark cache:clear
+# Gestion de la base de données
+php spark migrate                    # Exécuter les migrations
+php spark migrate:status            # Statut des migrations
+php spark migrate:rollback          # Annuler la dernière migration
+php spark migrate:refresh           # Réinitialiser toutes les migrations
+php spark db:seed DatabaseSeeder    # Insérer des données de test
 
-# Lister les routes
-php spark routes
+# Création de fichiers
+php spark make:migration CreateTableNom    # Créer une migration
+php spark make:seeder NomSeeder            # Créer un seeder
+php spark make:controller MonController    # Créer un contrôleur
+php spark make:model MonModel              # Créer un modèle
 
-# Créer un contrôleur
-php spark make:controller MonController
-
-# Créer un modèle
-php spark make:model MonModel
+# Autres commandes
+php spark cache:clear               # Vider le cache
+php spark routes                    # Lister les routes
 ```
 
 ### Ajout de nouvelles fonctionnalités
@@ -216,6 +261,18 @@ php spark make:model MonModel
 2. **Modèles** : Créez vos modèles dans `app/Models/`
 3. **Vues** : Ajoutez vos templates Twig dans `app/Views/`
 4. **Routes** : Configurez vos routes dans `app/Config/Routes.php`
+5. **Migrations** : Créez des migrations pour les modifications de base de données
+
+### Créer une nouvelle migration
+
+```bash
+# Créer une migration
+php spark make:migration CreateTableExample
+
+# Éditer le fichier créé dans app/Database/Migrations/
+# Puis exécuter la migration
+php spark migrate
+```
 
 ## Dépendances principales
 
@@ -228,17 +285,31 @@ php spark make:model MonModel
 
 ### Erreur de connexion à la base de données
 
-1. Vérifiez que PostgreSQL est démarré :
+1. **Vérifiez que PostgreSQL est démarré** :
    ```bash
    sudo systemctl status postgresql
    ```
 
-2. Testez la connexion :
+2. **Testez la connexion** :
    ```bash
    psql -h localhost -U votre_username -d votre_base
    ```
 
-3. Vérifiez les paramètres dans `.env`
+3. **Vérifiez les paramètres dans `.env`**
+
+### Erreur lors des migrations
+
+1. **Vérifiez le statut des migrations** :
+   ```bash
+   php spark migrate:status
+   ```
+
+2. **En cas d'erreur, réinitialisez** :
+   ```bash
+   php spark migrate:refresh
+   ```
+
+3. **Vérifiez que la base de données existe et est accessible**
 
 ### Erreur 404 sur les routes
 
@@ -254,17 +325,36 @@ chmod -R 755 writable/
 chmod -R 644 .env
 ```
 
+## Structure de la base de données
+
+### Tables principales
+
+- **utilisateur** : Gestion des comptes utilisateurs
+- **promotion** : Promotions étudiantes
+- **etudiant** : Données des étudiants
+- **evaluation** : Système d'évaluation
+- **competence** : Référentiel de compétences
+- **parcoursup_candidat** : Données d'import Parcoursup
+
+### Relations
+
+- Un utilisateur peut gérer plusieurs promotions
+- Une promotion contient plusieurs étudiants
+- Les étudiants ont des évaluations liées aux compétences
+
 ## Support
 
 Pour toute question ou problème :
 1. Vérifiez ce README
 2. Consultez la documentation CodeIgniter 4
-3. Contactez l'équipe de développement
+3. Vérifiez les logs dans `writable/logs/`
+4. Contactez l'équipe de développement
 
 ## Changelog
 
 ### Version 1.0
 - Authentification utilisateur
+- Système de migrations complet
 - Gestion des données ScoDoc
 - Gestion Parcoursup
 - Export PDF
@@ -272,4 +362,7 @@ Pour toute question ou problème :
 
 ---
 
-**Note importante** : N'oubliez pas de configurer votre fichier `.env` avec vos propres paramètres avant de démarrer l'application !
+**Note importante** : 
+1. Configurez votre fichier `.env` avec vos propres paramètres
+2. Exécutez `php spark migrate` pour créer les tables
+3. Optionnel : Exécutez `php spark db:seed DatabaseSeeder` pour les données de test
