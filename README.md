@@ -138,58 +138,15 @@ Les migrations vont créer les tables suivantes :
 - **Parcoursup_Candidat** : Données Parcoursup
 - **Export_Log** : Historique des exports
 
-#### Initialiser les données de base (optionnel)
-
-```bash
-# Exécuter les seeders pour insérer des données de test
-php spark db:seed DatabaseSeeder
-
-# Ou des seeders spécifiques
-php spark db:seed UtilisateurSeeder
-php spark db:seed PromotionSeeder
-```
-
 ### 5. Configuration du serveur web
 
-#### Option A : Serveur de développement (Recommandé pour le développement)
+#### Serveur de développement (Recommandé pour le développement)
 
 ```bash
 php spark serve
 ```
 
 Votre application sera accessible sur : `http://localhost:8080/`
-
-#### Option B : Serveur Apache/Nginx
-
-Configurez votre serveur web pour pointer vers le dossier `public/` du projet.
-
-**Apache - Fichier .htaccess (déjà inclus) :**
-```apache
-RewriteEngine On
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^(.*)$ index.php/$1 [QSA,L]
-```
-
-**Nginx - Configuration :**
-```nginx
-server {
-    listen 80;
-    server_name votre-domaine.com;
-    root /chemin/vers/votre/projet/public;
-    index index.php;
-
-    location / {
-        try_files $uri $uri/ /index.php?$query_string;
-    }
-
-    location ~ \.php$ {
-        fastcgi_pass unix:/var/run/php/php8.1-fpm.sock;
-        fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
-        include fastcgi_params;
-    }
-}
-```
 
 ## Structure du projet
 
@@ -220,14 +177,13 @@ ApplicationWeb/
 
 1. **Démarrez votre serveur** : `php spark serve`
 2. **Accédez à** : `http://localhost:8080/`
-3. **Créez un compte** ou utilisez les identifiants par défaut (si seeders exécutés)
+3. **Créez un compte**
 
 ### Fonctionnalités principales
 
 - **Authentification** : Inscription et connexion des utilisateurs
 - **Gestion ScoDoc** : Import et gestion des données étudiantes
 - **Gestion Parcoursup** : Traitement des données Parcoursup
-- **Export PDF** : Génération de rapports en PDF
 
 ## Développement
 
@@ -244,34 +200,9 @@ php spark migrate:rollback          # Annuler la dernière migration
 php spark migrate:refresh           # Réinitialiser toutes les migrations
 php spark db:seed DatabaseSeeder    # Insérer des données de test
 
-# Création de fichiers
-php spark make:migration CreateTableNom    # Créer une migration
-php spark make:seeder NomSeeder            # Créer un seeder
-php spark make:controller MonController    # Créer un contrôleur
-php spark make:model MonModel              # Créer un modèle
-
 # Autres commandes
 php spark cache:clear               # Vider le cache
 php spark routes                    # Lister les routes
-```
-
-### Ajout de nouvelles fonctionnalités
-
-1. **Contrôleurs** : Ajoutez vos contrôleurs dans `app/Controllers/`
-2. **Modèles** : Créez vos modèles dans `app/Models/`
-3. **Vues** : Ajoutez vos templates Twig dans `app/Views/`
-4. **Routes** : Configurez vos routes dans `app/Config/Routes.php`
-5. **Migrations** : Créez des migrations pour les modifications de base de données
-
-### Créer une nouvelle migration
-
-```bash
-# Créer une migration
-php spark make:migration CreateTableExample
-
-# Éditer le fichier créé dans app/Database/Migrations/
-# Puis exécuter la migration
-php spark migrate
 ```
 
 ## Dépendances principales
@@ -280,50 +211,6 @@ php spark migrate
 - **Twig** : Moteur de templates
 - **PhpSpreadsheet** : Traitement des fichiers Excel
 - **TCPDF** : Génération de PDF
-
-## Dépannage
-
-### Erreur de connexion à la base de données
-
-1. **Vérifiez que PostgreSQL est démarré** :
-   ```bash
-   sudo systemctl status postgresql
-   ```
-
-2. **Testez la connexion** :
-   ```bash
-   psql -h localhost -U votre_username -d votre_base
-   ```
-
-3. **Vérifiez les paramètres dans `.env`**
-
-### Erreur lors des migrations
-
-1. **Vérifiez le statut des migrations** :
-   ```bash
-   php spark migrate:status
-   ```
-
-2. **En cas d'erreur, réinitialisez** :
-   ```bash
-   php spark migrate:refresh
-   ```
-
-3. **Vérifiez que la base de données existe et est accessible**
-
-### Erreur 404 sur les routes
-
-1. Vérifiez que le fichier `.htaccess` est présent dans `public/`
-2. Assurez-vous que `mod_rewrite` est activé sur Apache
-3. Vérifiez que `app.baseURL` est correct dans `.env`
-
-### Problèmes de permissions
-
-```bash
-# Donner les bonnes permissions
-chmod -R 755 writable/
-chmod -R 644 .env
-```
 
 ## Structure de la base de données
 
@@ -359,10 +246,3 @@ Pour toute question ou problème :
 - Gestion Parcoursup
 - Export PDF
 - Interface responsive
-
----
-
-**Note importante** : 
-1. Configurez votre fichier `.env` avec vos propres paramètres
-2. Exécutez `php spark migrate` pour créer les tables
-3. Optionnel : Exécutez `php spark db:seed DatabaseSeeder` pour les données de test
