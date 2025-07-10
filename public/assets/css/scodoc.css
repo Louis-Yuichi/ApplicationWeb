@@ -186,16 +186,16 @@
 
 .menu-item.text-danger
 {
-    color: #dc3545 !important;
+	color: #dc3545 !important;
 }
 
 .menu-item.text-danger:hover
 {
-    background-color: #f8d7da;
-    color: #721c24 !important;
+	background-color: #f8d7da;
+	color: #721c24 !important;
 }
 
 .menu-item.text-danger i
 {
-    color: #dc3545 !important;
+	color: #dc3545 !important;
 }
