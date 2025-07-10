@@ -1,8 +1,10 @@
-body {
+body
+{
 	padding-bottom: 120px;
 }
 
-.table-container {
+.table-container
+{
 	max-height: calc(100vh - 460px);
 	overflow-y: auto;
 	border: 1px solid #dee2e6;
@@ -12,12 +14,14 @@ body {
 	position: relative; /* Ajouté */
 }
 
-.table-responsive {
+.table-responsive
+{
 	margin: 0;
 	overflow: visible; /* Modifié pour permettre le sticky */
 }
 
-table {
+table
+{
 	table-layout: auto !important;
 	width: 100%;
 	white-space: nowrap;
@@ -25,45 +29,53 @@ table {
 }
 
 /* L'en-tête sticky - partie la plus importante */
-thead {
+thead
+{
 	position: sticky;
 	top: 0;
 	z-index: 10; /* Augmenté pour être sûr qu'il reste au-dessus */
 	background-color: #212529; /* Assurez-vous que l'arrière-plan est opaque */
 }
 
-.table-dark th {
+.table-dark th
+{
 	background-color: #212529 !important; /* Renforcé avec !important */
 	border-bottom: 2px solid #454d55; /* Ajouté pour une meilleure séparation */
 }
 
 /* Pour éviter que le contenu ne passe sous l'en-tête */
-tbody tr:first-child td {
+tbody tr:first-child td
+{
 	border-top: none;
 }
 
-tbody tr:last-child td {
+tbody tr:last-child td
+{
 	border-bottom: 0;
 }
 
 /* Styles pour l'édition */
-.editable-cell {
+.editable-cell
+{
 	cursor: pointer;
 	position: relative;
 	padding: 8px 12px;
 	transition: background-color 0.2s;
 }
 
-.editable-cell:hover {
+.editable-cell:hover
+{
 	background-color: #f8f9fa;
 }
 
-.editable-cell.editing {
+.editable-cell.editing
+{
 	background-color: #fff3cd;
 	padding: 4px;
 }
 
-.editable-input {
+.editable-input
+{
 	width: 100%;
 	border: 2px solid #ffc107;
 	background: white;
@@ -72,7 +84,8 @@ tbody tr:last-child td {
 	border-radius: 4px;
 }
 
-.save-indicator {
+.save-indicator
+{
 	position: absolute;
 	top: 2px;
 	right: 2px;
@@ -84,23 +97,27 @@ tbody tr:last-child td {
 	transition: opacity 0.3s;
 }
 
-.save-indicator.show {
+.save-indicator.show
+{
 	opacity: 1;
 }
 
-.readonly-cell {
+.readonly-cell
+{
 	background-color: #f8f9fa;
 	color: #6c757d;
 }
 
 /* Animation pour les notes mises à jour */
-.note-updated {
+.note-updated
+{
 	background-color: #d4edda !important;
 	transition: background-color 0.3s ease;
 }
 
 /* Style pour les messages */
-#messageArea {
+#messageArea
+{
 	position: fixed;
 	top: 20px;
 	right: 20px;
@@ -109,7 +126,8 @@ tbody tr:last-child td {
 }
 
 /* Style pour le spinner dans le bouton */
-.spinner-border-sm {
+.spinner-border-sm
+{
 	width: 1rem;
 	height: 1rem;
 	margin-left: 0.5rem;

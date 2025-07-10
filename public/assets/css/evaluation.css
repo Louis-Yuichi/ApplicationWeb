@@ -1,8 +1,10 @@
-body {
+body
+{
 	padding-bottom: 120px;
 }
 
-.table-container {
+.table-container
+{
 	max-height: calc(100vh - 539px);
 	overflow-y: auto;
 	border: 1px solid #dee2e6;
@@ -10,32 +12,38 @@ body {
 	box-shadow: 0 0 10px rgba(0,0,0,0.1);
 }
 
-.table-responsive {
+.table-responsive
+{
 	margin: 0;
 }
 
-table {
+table
+{
 	table-layout: auto !important;
 	width: 100%;
 	white-space: nowrap;
 	margin-bottom: 0 !important;
 }
 
-thead {
+thead
+{
 	position: sticky;
 	top: 0;
 	z-index: 1;
 }
 
-.table-dark th {
+.table-dark th
+{
 	background-color: #212529;
 }
 
-tbody tr:last-child td {
+tbody tr:last-child td
+{
 	border-bottom: 0;
 }
 
-.info-card {
+.info-card
+{
 	background: linear-gradient(135deg, #273c99 0%, #2f2755 100%);
 	color: white;
 	border-radius: 15px;
@@ -44,28 +52,33 @@ tbody tr:last-child td {
 }
 
 /* Styles pour l'édition locale */
-.editable-cell {
+.editable-cell
+{
 	cursor: pointer;
 	position: relative;
 	padding: 8px 12px;
 	transition: background-color 0.2s;
 }
 
-.editable-cell:hover {
+.editable-cell:hover
+{
 	background-color: #f8f9fa;
 }
 
-.editable-cell.editing {
+.editable-cell.editing
+{
 	background-color: #fff3cd;
 	padding: 4px;
 }
 
-.editable-cell.modified {
+.editable-cell.modified
+{
 	background-color: #e7f3ff;
 	border-left: 3px solid #007bff;
 }
 
-.editable-input {
+.editable-input
+{
 	width: 100%;
 	border: 2px solid #ffc107;
 	background: white;
@@ -74,7 +87,8 @@ tbody tr:last-child td {
 	border-radius: 4px;
 }
 
-.modification-indicator {
+.modification-indicator
+{
 	position: absolute;
 	top: 2px;
 	right: 2px;
@@ -85,12 +99,14 @@ tbody tr:last-child td {
 	opacity: 0.8;
 }
 
-.readonly-cell {
+.readonly-cell
+{
 	background-color: #f8f9fa;
 	color: #6c757d;
 }
 
 /* Tooltip pour indiquer qu'une cellule est éditable */
-.editable-cell[title] {
+.editable-cell[title]
+{
 	position: relative;
 }

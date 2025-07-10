@@ -57,7 +57,8 @@ abstract class BaseController extends Controller
 		$this->session = \Config\Services::session();
 	}
 
-	protected function view(string $viewName, array $data = []) {
+	protected function view(string $viewName, array $data = [])
+	{
 
 		$viewsPath = realpath(__DIR__ . '/../Views');
 		$loader = new \Twig\Loader\FilesystemLoader($viewsPath);
@@ -65,7 +66,7 @@ abstract class BaseController extends Controller
 			'cache' => false, // Mettre un dossier ('cache/') en production pour améliorer les performances
 		]);
 
-// Rendu du template accueil.twig avec des variables
+		// Rendu du template accueil.twig avec des variables
 		$data['userName'] = session()->get('userName');
 		$data['userPrenom'] = session()->get('userPrenom');
 		$data['isLoggedIn'] = session()->get('isLoggedIn');

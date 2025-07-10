@@ -98,32 +98,16 @@ GRANT ALL PRIVILEGES ON DATABASE votre_nom_base TO votre_username;
 
 #### Exécuter les migrations
 
-Les migrations vont créer automatiquement toutes les tables nécessaires :
+Les migrations vont créer automatiquement toutes les tables nécessaires avec ces commandes :
 
 ```bash
 # Exécuter toutes les migrations
 php spark migrate
 
-# Vérifier le statut des migrations
-php spark migrate:status
-
-# Si vous devez revenir en arrière (rollback)
+# Et ensuite pour être sur :
 php spark migrate:rollback
-
-# Pour réinitialiser complètement la base
-php spark migrate:refresh
+php spark migrate
 ```
-
-#### Tables créées par les migrations
-
-Les migrations vont créer les tables suivantes :
-- **Utilisateur** : Gestion des utilisateurs et authentification
-- **Promotion** : Gestion des promotions étudiantes
-- **Etudiant** : Informations des étudiants
-- **Evaluation** : Système d'évaluation
-- **Competence** : Gestion des compétences
-- **Parcoursup_Candidat** : Données Parcoursup
-- **Export_Log** : Historique des exports
 
 ### 5. Configuration du serveur web
 

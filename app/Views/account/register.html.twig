@@ -5,13 +5,14 @@
 {% block javascript %}
 <script>
 document.querySelector('form').addEventListener('submit', function(e) {
-    const password = document.querySelector('input[name="password"]').value;
-    const confirm = document.querySelector('input[name="password_confirm"]').value;
-    
-    if (password !== confirm) {
+	const password = document.querySelector('input[name="password"]').value;
+	const confirm = document.querySelector('input[name="password_confirm"]').value;
+	
+	if (password !== confirm)
+	{
 		e.preventDefault();
-        alert('Les mots de passe ne correspondent pas');
-    }
+		alert('Les mots de passe ne correspondent pas');
+	}
 });
 </script>
 {% endblock %}

@@ -3,90 +3,104 @@
 {% block css %}
 	<link rel="stylesheet" href="assets/css/accueil.css">
 	<style>
-.flash-message {
-    position: fixed;
-    top: 30px;
-    left: 50%;
-    transform: translateX(-50%);
-    min-width: 300px;
-    max-width: 90vw;
-    padding: 16px 32px;
-    border-radius: 8px;
-    font-size: 1.1em;
-    z-index: 9999;
-    opacity: 1;
-    pointer-events: none;
-    transition: opacity 0.5s, top 0.5s;
+.flash-message
+{
+	position: fixed;
+	top: 30px;
+	left: 50%;
+	transform: translateX(-50%);
+	min-width: 300px;
+	max-width: 90vw;
+	padding: 16px 32px;
+	border-radius: 8px;
+	font-size: 1.1em;
+	z-index: 9999;
+	opacity: 1;
+	pointer-events: none;
+	transition: opacity 0.5s, top 0.5s;
 }
-.flash-success {
-    background: #28a745;
-    color: #fff;
-    border: 1px solid #218838;
-    animation: slideDownFadeOut 3s forwards;
+.flash-success
+{
+	background: #28a745;
+	color: #fff;
+	border: 1px solid #218838;
+	animation: slideDownFadeOut 3s forwards;
 }
-.flash-error {
-    background: #dc3545;
-    color: #fff;
-    border: 1px solid #b21f2d;
-    animation: slideDownFadeOut 3s forwards;
+.flash-error
+{
+	background: #dc3545;
+	color: #fff;
+	border: 1px solid #b21f2d;
+	animation: slideDownFadeOut 3s forwards;
 }
-@keyframes slideDownFadeOut {
-    0%   { opacity: 0; top: 0px; }
-    10%  { opacity: 1; top: 30px; }
-    80%  { opacity: 1; top: 30px; }
-    100% { opacity: 0; top: 0px; }
+@keyframes slideDownFadeOut
+{
+	0%   { opacity: 0; top:  0px; }
+	10%  { opacity: 1; top: 30px; }
+	80%  { opacity: 1; top: 30px; }
+	100% { opacity: 0; top:  0px; }
 }
 </style>
 {% endblock %}
 
 {% block javascript %}
 <script>
-window.addEventListener('DOMContentLoaded', function() {
-    setTimeout(function() {
-        let flash = document.querySelector('.flash-message');
-        if (flash) flash.remove();
-    }, 3200);
+window.addEventListener('DOMContentLoaded', function()
+{
+	setTimeout(function()
+	{
+		let flash = document.querySelector('.flash-message');
+		if (flash) flash.remove();
+	}, 3200);
 
-    const searchInput = document.getElementById('searchInput');
-    const tableBody = document.querySelector('tbody');
-    const rows = Array.from(tableBody.querySelectorAll('tr'));
+	const searchInput = document.getElementById('searchInput');
+	const tableBody = document.querySelector('tbody');
+	const rows = Array.from(tableBody.querySelectorAll('tr'));
 
-    // Auto-sélectionner l'année actuelle si aucune n'est sélectionnée
-    const anneeSelect = document.querySelector('select[name="annee"]');
-    if (!anneeSelect.value) {
-        const anneeActuelle = new Date().getFullYear();
-        const anneeDefaut = anneeActuelle + '/' + (anneeActuelle + 1);
-        anneeSelect.value = anneeDefaut;
-        anneeSelect.form.submit();
-    }
+	// Auto-sélectionner l'année actuelle si aucune n'est sélectionnée
+	const anneeSelect = document.querySelector('select[name="annee"]');
+	if (!anneeSelect.value)
+	{
+		const anneeActuelle = new Date().getFullYear();
+		const anneeDefaut = anneeActuelle + '/' + (anneeActuelle + 1);
+		anneeSelect.value = anneeDefaut;
+		anneeSelect.form.submit();
+	}
 
-    searchInput.addEventListener('input', function() {
-        const searchValue = this.value.toLowerCase();
-        
-        rows.forEach(row => {
-            const numCandidat = row.querySelector('td')?.textContent.toLowerCase() || '';
-            
-            if (searchValue === '' || numCandidat.includes(searchValue)) {
-                row.style.display = '';
-            } else {
-                row.style.display = 'none';
-            }
-        });
+	searchInput.addEventListener('input', function()
+	{
+		const searchValue = this.value.toLowerCase();
+		
+		rows.forEach(row =>
+		{
+			const numCandidat = row.querySelector('td')?.textContent.toLowerCase() || '';
+			
+			if (searchValue === '' || numCandidat.includes(searchValue))
+			{
+				row.style.display = '';
+			} else
+			{
+				row.style.display = 'none';
+			}
+		});
 
-        // Si aucun résultat, affiche un message
-        const visibleRows = rows.filter(row => row.style.display !== 'none');
-        if (visibleRows.length === 0) {
-            if (!document.getElementById('noResults')) {
-                const noResults = document.createElement('tr');
-                noResults.id = 'noResults';
-                noResults.innerHTML = `<td colspan="${rows[0].cells.length}" class="text-center">Aucun candidat trouvé</td>`;
-                tableBody.appendChild(noResults);
-            }
-        } else {
-            const noResults = document.getElementById('noResults');
-            if (noResults) noResults.remove();
-        }
-    });
+		// Si aucun résultat, affiche un message
+		const visibleRows = rows.filter(row => row.style.display !== 'none');
+		if (visibleRows.length === 0)
+		{
+			if (!document.getElementById('noResults'))
+			{
+				const noResults = document.createElement('tr');
+				noResults.id = 'noResults';
+				noResults.innerHTML = `<td colspan="${rows[0].cells.length}" class="text-center">Aucun candidat trouvé</td>`;
+				tableBody.appendChild(noResults);
+			}
+		} else
+		{
+			const noResults = document.getElementById('noResults');
+			if (noResults) noResults.remove();
+		}
+	});
 });
 </script>
 {% endblock %}
@@ -95,14 +109,14 @@ window.addEventListener('DOMContentLoaded', function() {
 
 {# Messages flash #}
 {% if success %}
-    <div id="flash-success" class="flash-message flash-success">
-        {{ success }}
-    </div>
+	<div id="flash-success" class="flash-message flash-success">
+		{{ success }}
+	</div>
 {% endif %}
 {% if error %}
-    <div id="flash-error" class="flash-message flash-error">
-        {{ error }}
-    </div>
+	<div id="flash-error" class="flash-message flash-error">
+		{{ error }}
+	</div>
 {% endif %}
 
 <div class="container py-5">
@@ -179,7 +193,8 @@ window.addEventListener('DOMContentLoaded', function() {
 				</form>
 
 				<script>
-				function closeModal() {
+				function closeModal()
+				{
 					const modal = bootstrap.Modal.getInstance(document.getElementById('importModal'));
 					if (modal) modal.hide();
 				}
