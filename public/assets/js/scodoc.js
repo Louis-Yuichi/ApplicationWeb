@@ -1,4 +1,4 @@
-// Fonction pour afficher les messages d'erreur
+// Fonction pour afficher les messages d'erreur sans préfixe "Erreur"
 function afficherErreur(message) {
     // Supprimer les anciens messages
     const ancienMessage = document.querySelector('.message-erreur');
@@ -10,7 +10,7 @@ function afficherErreur(message) {
     messageDiv.className = 'alert alert-danger message-erreur';
     messageDiv.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
     messageDiv.innerHTML = `
-        <strong>Erreur !</strong> ${message}
+        <strong>${message}</strong>
         <button type="button" class="btn-close" aria-label="Close"></button>
     `;
     
@@ -24,6 +24,34 @@ function afficherErreur(message) {
     }, 5000);
     
     // Permettre la fermeture manuelle
+    messageDiv.querySelector('.btn-close').addEventListener('click', () => {
+        messageDiv.remove();
+    });
+}
+
+// Fonction pour afficher les messages de succès
+function afficherSucces(message) {
+    const ancienMessage = document.querySelector('.message-succes');
+    if (ancienMessage) {
+        ancienMessage.remove();
+    }
+    
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'alert alert-success message-succes';
+    messageDiv.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+    messageDiv.innerHTML = `
+        <strong>${message}</strong>
+        <button type="button" class="btn-close" aria-label="Close"></button>
+    `;
+    
+    document.body.appendChild(messageDiv);
+    
+    setTimeout(() => {
+        if (messageDiv.parentNode) {
+            messageDiv.remove();
+        }
+    }, 3000);
+    
     messageDiv.querySelector('.btn-close').addEventListener('click', () => {
         messageDiv.remove();
     });
@@ -647,5 +675,123 @@ function exporterPDF() {
     form.submit();
     document.body.removeChild(form);
     
+    document.getElementById('floatingMenu').style.display = 'none';
+}
+
+function supprimerEtudiant() {
+    const idEtudiant = document.getElementById('nomEtudiant').value;
+    const nomEtudiant = document.getElementById('ficheNomPrenom').textContent;
+    
+    if (!idEtudiant) {
+        afficherErreur('Veuillez sélectionner un étudiant');
+        return;
+    }
+    
+    if (!confirm(`Êtes-vous sûr de vouloir supprimer l'étudiant ${nomEtudiant} ?\nCette action est irréversible.`)) {
+        return;
+    }
+    
+    fetch('/api/etudiant/supprimer', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({ idEtudiant })
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
+            afficherSucces(result.message);
+            
+            // Supprimer l'étudiant de la liste visuelle
+            const selectEtudiant = document.getElementById('nomEtudiant');
+            const optionASupprimer = selectEtudiant.querySelector(`option[value="${idEtudiant}"]`);
+            if (optionASupprimer) {
+                optionASupprimer.remove();
+            }
+            
+            // Retirer l'étudiant du tableau tabEtudiants
+            const indexEtudiant = tabEtudiants.findIndex(e => e.idEtudiant === idEtudiant);
+            if (indexEtudiant !== -1) {
+                tabEtudiants.splice(indexEtudiant, 1);
+            }
+            
+            // Vider toutes les données affichées
+            viderToutesDonnees();
+            
+            // Réinitialiser la sélection
+            selectEtudiant.value = '';
+            
+            // Actualiser les statistiques
+            actualiserStatistiquesAvis();
+            
+        } else {
+            afficherErreur(result.message);
+        }
+    })
+    .catch(() => {
+        afficherErreur('Erreur de communication avec le serveur');
+    });
+    
+    // Fermer le menu flottant
+    document.getElementById('floatingMenu').style.display = 'none';
+}
+
+function supprimerPromotion() {
+    const anneePromotion = document.getElementById('anneePromotion').value;
+    
+    if (!anneePromotion) {
+        afficherErreur('Veuillez sélectionner une année de promotion');
+        return;
+    }
+    
+    if (!confirm(`Êtes-vous sûr de vouloir supprimer TOUTE la promotion ${anneePromotion} ?\nTous les étudiants et leurs données seront définitivement supprimés.\nCette action est irréversible.`)) {
+        return;
+    }
+    
+    fetch('/api/promotion/supprimer', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({ anneePromotion })
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
+            afficherSucces(result.message);
+            
+            // Supprimer l'année de la liste des promotions
+            const selectAnnee = document.getElementById('anneePromotion');
+            const optionASupprimer = selectAnnee.querySelector(`option[value="${anneePromotion}"]`);
+            if (optionASupprimer) {
+                optionASupprimer.remove();
+            }
+            
+            // Vider la liste des étudiants
+            const selectEtudiant = document.getElementById('nomEtudiant');
+            selectEtudiant.innerHTML = '<option value="">Sélectionner un étudiant</option>';
+            
+            // Vider le tableau tabEtudiants
+            tabEtudiants = [];
+            
+            // Vider toutes les données
+            viderToutesDonnees();
+            
+            // Réinitialiser les sélections
+            selectAnnee.value = '';
+            selectEtudiant.value = '';
+            
+        } else {
+            afficherErreur(result.message);
+        }
+    })
+    .catch(() => {
+        afficherErreur('Erreur de communication avec le serveur');
+    });
+    
+    // Fermer le menu flottant
     document.getElementById('floatingMenu').style.display = 'none';
 }

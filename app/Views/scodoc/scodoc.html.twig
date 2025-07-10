@@ -280,9 +280,9 @@
 
 	<!-- Menu flottant -->
 	<div class="floating-btn" id="floatingBtn">
-		<i class="fas fa-ellipsis-v"></i>
-	</div>
-	<div class="floating-menu" id="floatingMenu">
+        <i class="fas fa-ellipsis-v"></i>
+    </div>
+    <div class="floating-menu" id="floatingMenu">
         <a href="#" class="menu-item" data-action="import" data-bs-toggle="modal" data-bs-target="#importModal">
             <i class="fas fa-file-import"></i>
             Importer
@@ -291,6 +291,15 @@
         <a href="#" class="menu-item" onclick="exporterPDF()">
             <i class="fas fa-file-pdf"></i>
             Exporter
+        </a>
+        <div class="menu-separator"></div>
+        <a href="#" class="menu-item text-danger" onclick="supprimerEtudiant()">
+            <i class="fas fa-user-times"></i>
+            Supprimer étudiant
+        </a>
+        <a href="#" class="menu-item text-danger" onclick="supprimerPromotion()">
+            <i class="fas fa-trash-alt"></i>
+            Supprimer promotion
         </a>
     </div>
 

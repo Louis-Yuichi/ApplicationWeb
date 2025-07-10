@@ -15,7 +15,103 @@ class ExportController extends Controller
             $this->genererPDFSimple($idEtudiant);
         }
     }
-    
+
+	public function supprimerEtudiant()
+    {
+        if (!$this->request->isAJAX()) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Requête non autorisée']);
+        }
+
+        $json = $this->request->getJSON(true);
+        $idEtudiant = $json['idEtudiant'] ?? null;
+
+        if (empty($idEtudiant)) {
+            return $this->response->setJSON(['success' => false, 'message' => 'ID étudiant manquant']);
+        }
+
+        $db = db_connect();
+        
+        try {
+            $db->transStart();
+
+            // Supprimer dans l'ordre des dépendances
+            $db->query('DELETE FROM "Avis" WHERE "idEtudiant" = ?', [$idEtudiant]);
+            $db->query('DELETE FROM "Competence" WHERE "idEtudiant" = ?', [$idEtudiant]);
+            $db->query('DELETE FROM "Ressource" WHERE "idEtudiant" = ?', [$idEtudiant]);
+            $db->query('DELETE FROM "Semestre" WHERE "idEtudiant" = ?', [$idEtudiant]);
+            $db->query('DELETE FROM "Etudiant" WHERE "idEtudiant" = ?', [$idEtudiant]);
+
+            $db->transComplete();
+
+            if ($db->transStatus() === false) {
+                return $this->response->setJSON(['success' => false, 'message' => 'Erreur lors de la suppression']);
+            }
+
+            return $this->response->setJSON(['success' => true, 'message' => 'Étudiant supprimé avec succès']);
+
+        } catch (\Exception $e) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Erreur lors de la suppression']);
+        }
+    }
+
+    public function supprimerPromotion()
+    {
+        if (!$this->request->isAJAX()) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Requête non autorisée']);
+        }
+
+        $json = $this->request->getJSON(true);
+        $anneePromotion = $json['anneePromotion'] ?? null;
+
+        if (empty($anneePromotion)) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Année de promotion manquante']);
+        }
+
+        $db = db_connect();
+        
+        try {
+            // Vérifier si la promotion existe
+            $nbEtudiants = $db->query('SELECT COUNT(*) as nb FROM "Etudiant" WHERE "anneePromotion" = ?', [$anneePromotion])->getRow();
+            
+            if ($nbEtudiants->nb == 0) {
+                return $this->response->setJSON(['success' => false, 'message' => 'Promotion introuvable']);
+            }
+
+            $db->transStart();
+
+            // Récupérer tous les étudiants de la promotion
+            $etudiants = $db->query('SELECT "idEtudiant" FROM "Etudiant" WHERE "anneePromotion" = ?', [$anneePromotion])->getResultArray();
+            $idsEtudiants = array_column($etudiants, 'idEtudiant');
+
+            if (!empty($idsEtudiants)) {
+                $placeholders = str_repeat('?,', count($idsEtudiants) - 1) . '?';
+                
+                // Supprimer dans l'ordre des dépendances
+                $db->query("DELETE FROM \"Avis\" WHERE \"idEtudiant\" IN ($placeholders)", $idsEtudiants);
+                $db->query("DELETE FROM \"Competence\" WHERE \"idEtudiant\" IN ($placeholders)", $idsEtudiants);
+                $db->query("DELETE FROM \"Ressource\" WHERE \"idEtudiant\" IN ($placeholders)", $idsEtudiants);
+                $db->query("DELETE FROM \"Semestre\" WHERE \"idEtudiant\" IN ($placeholders)", $idsEtudiants);
+            }
+
+            // Supprimer les étudiants
+            $db->query('DELETE FROM "Etudiant" WHERE "anneePromotion" = ?', [$anneePromotion]);
+
+            $db->transComplete();
+
+            if ($db->transStatus() === false) {
+                return $this->response->setJSON(['success' => false, 'message' => 'Erreur lors de la suppression de la promotion']);
+            }
+
+            return $this->response->setJSON([
+                'success' => true, 
+                'message' => "Promotion $anneePromotion supprimée avec succès ({$nbEtudiants->nb} étudiant(s))"
+            ]);
+
+        } catch (\Exception $e) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Erreur lors de la suppression de la promotion']);
+        }
+    }
+
     private function genererPDFAvecDonnees($donnees)
     {
         require_once ROOTPATH . 'vendor/setasign/fpdf/fpdf.php';
