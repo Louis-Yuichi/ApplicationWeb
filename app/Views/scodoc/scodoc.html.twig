@@ -46,18 +46,18 @@
 						<tr>
 							<td>Apprentissage</td>
 							<td>BUT 1</td>
-                            <td>
-                                <span id="apprentissage_but1"></span>
-                            </td>
-                            <td>BUT 2</td>
-                            <td>
-                                <span id="apprentissage_but2"></span>
-                            </td>
-                            <td>BUT 3</td>
-                            <td>
-                                <span id="apprentissage_but3"></span>
-                                <input type="text" id="apprentissage_but3_edit" class="form-control form-control-sm edit-field d-none" placeholder="Apprentissage...">
-                            </td>
+							<td>
+								<span id="apprentissage_but1"></span>
+							</td>
+							<td>BUT 2</td>
+							<td>
+								<span id="apprentissage_but2"></span>
+							</td>
+							<td>BUT 3</td>
+							<td>
+								<span id="apprentissage_but3"></span>
+								<input type="text" id="apprentissage_but3_edit" class="form-control form-control-sm edit-field d-none" placeholder="Apprentissage...">
+							</td>
 						</tr>
 						<tr>
 							<td>Parcours d’études :</td>
@@ -75,10 +75,10 @@
 						<tr>
 							<td>Si mobilité à l'étranger (lieu, durée)</td>
 							<td colspan="6">
-                                <span id="mobilite_etranger"></span>
-                                <input type="text" id="mobilite_etranger_edit" class="form-control edit-field d-none" placeholder="Mobilité...">
-                            </td>
-                        </tr>
+								<span id="mobilite_etranger"></span>
+								<input type="text" id="mobilite_etranger_edit" class="form-control edit-field d-none" placeholder="Mobilité...">
+							</td>
+						</tr>
 					</tbody>
 				</table>
 			</div>
@@ -260,8 +260,8 @@
 						<tr>
 							<td>Commentaire</td>
 							<td colspan="6">
-                                <textarea id="commentaireAvis" class="form-control edit-field" rows="3" placeholder="Commentaire général sur l'étudiant..." disabled></textarea>
-                            </td>
+								<textarea id="commentaireAvis" class="form-control edit-field" rows="3" placeholder="Commentaire général sur l'étudiant..." disabled></textarea>
+							</td>
 						</tr>
 					</tbody>
 				</table>
@@ -280,30 +280,30 @@
 
 	<!-- Menu flottant -->
 	<div class="floating-btn" id="floatingBtn">
-        <i class="fas fa-ellipsis-v"></i>
-    </div>
-    <div class="floating-menu" id="floatingMenu">
-        <a href="#" class="menu-item" data-action="import" data-bs-toggle="modal" data-bs-target="#importModal">
-            <i class="fas fa-file-import"></i>
-            Importer
-        </a>
-        <div class="menu-separator"></div>
-        <a href="#" class="menu-item" onclick="exporterPDF()">
-            <i class="fas fa-file-pdf"></i>
-            Exporter
-        </a>
-        <div class="menu-separator"></div>
-        <a href="#" class="menu-item text-danger" onclick="supprimerEtudiant()">
-            <i class="fas fa-user-times"></i>
-            Supprimer étudiant
-        </a>
-        <a href="#" class="menu-item text-danger" onclick="supprimerPromotion()">
-            <i class="fas fa-trash-alt"></i>
-            Supprimer promotion
-        </a>
-    </div>
+		<i class="fas fa-ellipsis-v"></i>
+	</div>
+	<div class="floating-menu" id="floatingMenu">
+		<a href="#" class="menu-item" data-action="import" data-bs-toggle="modal" data-bs-target="#importModal">
+			<i class="fas fa-file-import"></i>
+			Importer
+		</a>
+		<div class="menu-separator"></div>
+		<a href="#" class="menu-item" onclick="exporterPDF()">
+			<i class="fas fa-file-pdf"></i>
+			Exporter
+		</a>
+		<div class="menu-separator"></div>
+		<a href="#" class="menu-item text-danger" onclick="supprimerEtudiant()">
+			<i class="fas fa-user-times"></i>
+			Supprimer étudiant
+		</a>
+		<a href="#" class="menu-item text-danger" onclick="supprimerPromotion()">
+			<i class="fas fa-trash-alt"></i>
+			Supprimer promotion
+		</a>
+	</div>
 
-	<!-- Modal Importer (copié depuis parcoursup.html.twig) -->
+	<!-- Modal Importer -->
 	<div class="modal fade" id="importModal" tabindex="-1" aria-labelledby="importModalLabel" aria-hidden="true">
 		<div class="modal-dialog modal-dialog-centered">
 			<div class="modal-content">
@@ -319,8 +319,8 @@
 
 						<div class="mb-3">
 							<select class="form-select" name="anneePromotion" id="anneeImport" required>
-                                <option value="" selected>Année de la promotion</option>
-                            </select>
+								<option value="" selected>Année de la promotion</option>
+							</select>
 						</div>
 
 						<button type="submit" class="btn btn-primary rounded-pill">Confirmer</button>
