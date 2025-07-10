@@ -292,15 +292,4 @@ class ScodocController extends BaseController
         
         return $this->response->setJSON(['success' => $db->transStatus()]);
     }
-    
-    private function recalculerRangs($anneePromotion = null)
-    {
-        // Cette méthode peut être appelée après suppression d'un étudiant
-        // ou autre modification qui nécessite de recalculer les rangs
-        
-        // Le recalcul est en fait automatique car nos requêtes calculent le rang à la demande
-        // Cette méthode reste disponible si vous souhaitez implémenter un cache de rangs plus tard
-        
-        return true;
-    }
 }
